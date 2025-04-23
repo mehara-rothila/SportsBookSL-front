@@ -211,7 +211,7 @@ export default function FacilityDetailPage() {
         const reviewLimit = 5;
         try {
             const data = await facilityService.getFacilityReviews(id, nextPage, reviewLimit);
-            setReviews(prev => [...prev, ...(data.reviews || [])]);
+            setReviews(prev => [...prev, ...((data.reviews || []) as unknown as Review[])]);
             setReviewPage(nextPage);
             setTotalReviewPages(data.pages || 1);
             setHasMoreReviews(nextPage < (data.pages || 1));
