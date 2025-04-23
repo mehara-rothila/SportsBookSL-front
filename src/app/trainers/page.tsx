@@ -816,9 +816,9 @@ export default function TrainersPage() {
                                     <span className="ml-2 text-sm text-white/70">({trainer.reviewCount || 0} reviews)</span>
                                   </div>
                                 </div>
-                                <p className="text-xl font-bold text-emerald-300 flex-shrink-0 ml-4">
-                                  {formatCurrency(trainer.hourlyRate)}<span className="text-sm text-emerald-300/70 font-normal">/hr</span>
-                                </p>
+                                <p className="text-xl font-bold text-white flex-shrink-0 ml-4 px-3 py-1 bg-emerald-600/80 rounded-lg shadow-sm">
+  {formatCurrency(trainer.hourlyRate)}<span className="text-sm text-white/90 font-normal ml-1">/hr</span>
+</p>
                               </div>
 
                               {/* Specialization */}
