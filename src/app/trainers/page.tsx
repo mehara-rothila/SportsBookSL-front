@@ -145,8 +145,17 @@ export default function TrainersPage() {
       else if (sortBy === 'experience') params.sort = '-experienceYears';
 
       const data = await trainerService.getTrainers(params);
-      setTrainers(data.trainers || []);
-      setTotalPages(data.pages || 1);
+      setTrainers((data.trainers || []).map(trainer => ({
+        ...trainer,
+        profileImage: trainer.profileImage || FALLBACK_IMAGE,
+        rating: trainer.rating || 0,
+        reviewCount: trainer.reviewCount || 0,
+        availability: trainer.availability || [],
+        certifications: trainer.certifications || [],
+        bio: trainer.bio || "",
+        languages: trainer.languages || []
+      } as Trainer)));
+            setTotalPages(data.pages || 1);
       setTotalCount(data.count || 0);
 
     } catch (err: any) {
