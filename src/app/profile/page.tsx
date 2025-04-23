@@ -393,8 +393,8 @@ function ProfilePageContent() {
 
             // If the function is indeed called 'getUserApplicationDetails' in your service file,
             // ensure it's properly exported: `export function getUserApplicationDetails(...) { ... }`
-             const details = await financialAidService.getUserApplicationDetails(appId);
-
+// Corrected line using the exported function
+const details = await financialAidService.getAdminApplicationById(appId);
             setSelectedAidApp(details);
         } catch (err: any) {
             toast.error(`Error loading details: ${err.message}`);
