@@ -1,7 +1,6 @@
-// src/components/notifications/NotificationCenter.tsx
 'use client';
 
-import { useState, useEffect, Fragment, useCallback } from 'react';
+import { useState, useEffect, Fragment, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { XMarkIcon, BellIcon } from '@heroicons/react/24/outline';
 import {
@@ -13,7 +12,7 @@ import { Transition } from '@headlessui/react';
 import { format, parseISO } from 'date-fns';
 import * as notificationService from '@/services/notificationService';
 import type { Notification } from '@/services/notificationService';
-import { useNotificationContext } from '@/context/NotificationContext'; // Import the context hook
+import { useNotificationContext } from '@/context/NotificationContext';
 
 export default function NotificationCenter() {
   // Use context for unread count
@@ -22,6 +21,31 @@ export default function NotificationCenter() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const notificationPanelRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isOpen && 
+        notificationPanelRef.current && 
+        !notificationPanelRef.current.contains(event.target as Node) && 
+        !(event.target as Element).closest('.notification-bell-button')
+      ) {
+        setIsOpen(false);
+      }
+    };
+    
+    // Only add the event listener if the dropdown is open
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   // Fetch notifications when dropdown opens
   const fetchNotifications = useCallback(async () => {
@@ -31,13 +55,13 @@ export default function NotificationCenter() {
       const data = await notificationService.getUserNotifications({ limit: 10 }); // Fetch recent ones for dropdown
       setNotifications(data.notifications || []);
       setUnreadCount(data.unreadCount || 0); // Sync count from API
-    } catch (error: any) {
+      setHasLoadedOnce(true);
+    } catch (error) {
       console.error("Error fetching notifications:", error);
       toast.error("Could not load notifications.");
     } finally {
       setIsLoading(false);
     }
-  // Add setUnreadCount to dependency array as it comes from context
   }, [isOpen, setUnreadCount]);
 
   useEffect(() => {
@@ -48,14 +72,14 @@ export default function NotificationCenter() {
 
   // Mark a single notification as read
   const handleMarkAsRead = async (notificationId: string, isCurrentlyRead: boolean) => {
-      if (isCurrentlyRead) return;
-      try {
-          const data = await notificationService.markNotificationsRead({ notificationIds: [notificationId] });
-          setNotifications(prev => prev.map(n => n._id === notificationId ? { ...n, isRead: true } : n));
-          setUnreadCount(data.unreadCount); // Update count from API response
-      } catch (error: any) {
-          toast.error(`Failed to mark notification as read: ${error.message}`);
-      }
+    if (isCurrentlyRead) return;
+    try {
+      const data = await notificationService.markNotificationsRead({ notificationIds: [notificationId] });
+      setNotifications(prev => prev.map(n => n._id === notificationId ? { ...n, isRead: true } : n));
+      setUnreadCount(data.unreadCount); // Update count from API response
+    } catch (error: any) {
+      toast.error(`Failed to mark notification as read: ${error.message}`);
+    }
   };
 
   // Mark all as read
@@ -63,174 +87,314 @@ export default function NotificationCenter() {
     if (unreadCount === 0) return;
     const originalNotifications = [...notifications];
     const originalUnreadCount = unreadCount;
+    
+    // Optimistic UI update
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-    setUnreadCount(0); // Optimistic UI update
+    setUnreadCount(0);
+    
     try {
-        await notificationService.markNotificationsRead({ markAll: true });
-        toast.success("All notifications marked as read.");
+      await notificationService.markNotificationsRead({ markAll: true });
+      toast.success("All notifications marked as read.");
     } catch (error: any) {
-        toast.error(`Failed to mark all as read: ${error.message}`);
-        setNotifications(originalNotifications); // Rollback
-        setUnreadCount(originalUnreadCount);
+      toast.error(`Failed to mark all as read: ${error.message}`);
+      setNotifications(originalNotifications); // Rollback
+      setUnreadCount(originalUnreadCount);
     }
   };
 
   // Delete a single notification
-  const handleDeleteNotification = async (notificationId: string) => {
-      const originalNotifications = [...notifications];
-      const originalUnreadCount = unreadCount;
-      setNotifications(prev => prev.filter(n => n._id !== notificationId));
-      // --- FIXED LINE BELOW ---
-      // Calculate the new count using the current state value and pass the number directly
-      setUnreadCount(Math.max(0, unreadCount - 1)); // Optimistic decrease
-      try {
-          const data = await notificationService.deleteNotification(notificationId);
-          setUnreadCount(data.unreadCount); // Sync with API response
-          toast.success("Notification deleted.");
-      } catch (error: any) {
-          toast.error(`Failed to delete notification: ${error.message}`);
-          setNotifications(originalNotifications); // Rollback
-          setUnreadCount(originalUnreadCount);
-      }
-  };
-
-  // Close dropdown when clicking outside (keep this logic)
-  useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
-          const target = event.target as HTMLElement;
-          // Check if the click target or its ancestor has the class 'notification-center' or 'notification-bell-button'
-          if (isOpen && !target.closest('.notification-center') && !target.closest('.notification-bell-button')) {
-              setIsOpen(false);
-          }
-      };
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => { document.removeEventListener('mousedown', handleClickOutside); };
-  }, [isOpen]);
-
-
-  // --- Icon logic ---
-  const getNotificationIcon = (type: string) => {
-    switch (type?.toLowerCase()) { // Add null check and lowercase for robustness
-      case 'booking_created':
-      case 'booking_status_update':
-      case 'booking_reminder':
-        return <CalendarIcon className="h-6 w-6 text-blue-500" />;
-      case 'transportation_update':
-        return <TruckIcon className="h-6 w-6 text-green-500" />;
-      case 'weather_alert':
-        return <CloudIcon className="h-6 w-6 text-purple-500" />;
-      case 'donation_received':
-      case 'donation_thankyou':
-        return <CurrencyDollarIcon className="h-6 w-6 text-amber-500" />;
-      case 'financial_aid_update':
-      case 'financial_aid_approved': // Example specific types
-      case 'financial_aid_rejected':
-      case 'financial_aid_needs_info':
-         return <LifebuoyIcon className="h-6 w-6 text-indigo-500" />;
-      case 'system_announcement':
-        return <ExclamationTriangleIcon className="h-6 w-6 text-red-500" />;
-      default:
-        // Provide a generic fallback icon
-        return <BellIcon className="h-6 w-6 text-gray-500" />;
+  const handleDeleteNotification = async (notificationId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    const originalNotifications = [...notifications];
+    const originalUnreadCount = unreadCount;
+    const notificationToDelete = notifications.find(n => n._id === notificationId);
+    
+    // Optimistic UI update
+    setNotifications(prev => prev.filter(n => n._id !== notificationId));
+    if (notificationToDelete && !notificationToDelete.isRead) {
+      setUnreadCount(Math.max(0, unreadCount - 1));
+    }
+    
+    try {
+      const data = await notificationService.deleteNotification(notificationId);
+      setUnreadCount(data.unreadCount); // Sync with API response
+      toast.success("Notification deleted.");
+    } catch (error: any) {
+      toast.error(`Failed to delete notification: ${error.message}`);
+      setNotifications(originalNotifications); // Rollback
+      setUnreadCount(originalUnreadCount);
     }
   };
 
-   // --- Format Date ---
-    const formatNotificationDate = (dateStr: string | undefined): string => {
-        if (!dateStr) return ''; // Handle undefined case
-        try {
-            // Consider using formatDistanceToNow for relative time eventually
-            return format(parseISO(dateStr), 'MMM d, h:mm a');
-        } catch { return 'Invalid Date'; }
-    };
+  // --- Icon logic ---
+  const getNotificationIcon = (type: string) => {
+    switch (type?.toLowerCase()) {
+      case 'booking_created':
+      case 'booking_status_update':
+      case 'booking_reminder':
+        return (
+          <div className="p-2 bg-blue-100/80 rounded-full shadow-sm border border-blue-200/50">
+            <CalendarIcon className="h-5 w-5 text-blue-600" />
+          </div>
+        );
+      case 'transportation_update':
+        return (
+          <div className="p-2 bg-emerald-100/80 rounded-full shadow-sm border border-emerald-200/50">
+            <TruckIcon className="h-5 w-5 text-emerald-600" />
+          </div>
+        );
+      case 'weather_alert':
+        return (
+          <div className="p-2 bg-purple-100/80 rounded-full shadow-sm border border-purple-200/50">
+            <CloudIcon className="h-5 w-5 text-purple-600" />
+          </div>
+        );
+      case 'donation_received':
+      case 'donation_thankyou':
+        return (
+          <div className="p-2 bg-amber-100/80 rounded-full shadow-sm border border-amber-200/50">
+            <CurrencyDollarIcon className="h-5 w-5 text-amber-600" />
+          </div>
+        );
+      case 'financial_aid_update':
+      case 'financial_aid_approved':
+      case 'financial_aid_rejected':
+      case 'financial_aid_needs_info':
+        return (
+          <div className="p-2 bg-indigo-100/80 rounded-full shadow-sm border border-indigo-200/50">
+            <LifebuoyIcon className="h-5 w-5 text-indigo-600" />
+          </div>
+        );
+      case 'system_announcement':
+        return (
+          <div className="p-2 bg-red-100/80 rounded-full shadow-sm border border-red-200/50">
+            <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
+          </div>
+        );
+      default:
+        // Provide a generic fallback icon
+        return (
+          <div className="p-2 bg-gray-100/80 rounded-full shadow-sm border border-gray-200/50">
+            <BellIcon className="h-5 w-5 text-gray-600" />
+          </div>
+        );
+    }
+  };
+
+  // --- Format Date ---
+  const formatNotificationDate = (dateStr: string | undefined): string => {
+    if (!dateStr) return '';
+    try {
+      return format(parseISO(dateStr), 'MMM d, h:mm a');
+    } catch { return 'Invalid Date'; }
+  };
 
   return (
-    <div className="notification-center relative"> {/* Added class for outside click detection */}
+    <div className="notification-center relative">
       <button
         type="button"
-        className="notification-bell-button relative p-1 rounded-full text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500" // Added class
-        onClick={() => setIsOpen(!isOpen)}
+        className="notification-bell-button relative rounded-full flex items-center justify-center h-8 w-8 focus:outline-none transition-all duration-300"
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+        aria-label="Notifications"
       >
         <span className="sr-only">View notifications</span>
-        <BellIcon className="h-6 w-6" />
-        {/* Use unreadCount from context */}
+        <BellIcon className={`h-5 w-5 ${unreadCount > 0 ? 'text-white' : 'text-white/80'}`} />
+        
+        {/* Unread badge with animation */}
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 inline-flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-xs font-medium text-white pointer-events-none">
+          <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center h-4 w-4 rounded-full bg-gradient-to-r from-red-500 to-rose-600 text-[10px] font-bold text-white transform animate-pulse-slow">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
+        )}
+        
+        {/* Subtle ping animation when there are unread notifications */}
+        {unreadCount > 0 && (
+          <span className="absolute inset-0 rounded-full bg-emerald-400/30 animate-ping-slow opacity-75"></span>
         )}
       </button>
 
       {/* Dropdown Panel */}
       <Transition
-         show={isOpen}
-         as={Fragment}
-         enter="transition ease-out duration-100"
-         enterFrom="transform opacity-0 scale-95"
-         enterTo="transform opacity-100 scale-100"
-         leave="transition ease-in duration-75"
-         leaveFrom="transform opacity-100 scale-100"
-         leaveTo="transform opacity-0 scale-95"
-       >
-        {/* Added notification-panel class for outside click detection */}
-        <div className="notification-panel absolute right-0 mt-2 w-80 sm:w-96 origin-top-right bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden z-50 max-h-[70vh] flex flex-col">
-          {/* Header */}
-          <div className="p-3 px-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center sticky top-0 z-10">
-            <h3 className="text-base font-semibold text-gray-800">Notifications</h3>
-            {unreadCount > 0 && (
-              <button type="button" className="text-xs font-medium text-primary-600 hover:text-primary-700" onClick={handleMarkAllAsRead} > Mark all as read </button>
-            )}
-             <button type="button" className="-mr-1 p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100" onClick={() => setIsOpen(false)}><span className='sr-only'>Close</span><XMarkIcon className="h-5 w-5" /></button>
+        show={isOpen}
+        as={Fragment}
+        enter="transition ease-out duration-200"
+        enterFrom="transform opacity-0 scale-95"
+        enterTo="transform opacity-100 scale-100"
+        leave="transition ease-in duration-150"
+        leaveFrom="transform opacity-100 scale-100"
+        leaveTo="transform opacity-0 scale-95"
+      >
+        <div 
+          ref={notificationPanelRef}
+          className="notification-panel absolute right-0 mt-2 w-full sm:w-80 md:w-96 origin-top-right rounded-xl overflow-hidden z-50 max-h-[70vh] flex flex-col backdrop-blur-md bg-white/90 shadow-xl border border-white/50 ring-1 ring-black/5"
+          style={{ 
+            maxWidth: '95vw',
+            right: window.innerWidth < 640 ? '50%' : 0,
+            transform: window.innerWidth < 640 ? 'translateX(50%)' : 'none'
+          }}
+        >
+          {/* Header with glassmorphism */}
+          <div className="p-3 px-4 backdrop-blur-sm bg-gradient-to-r from-emerald-50/80 to-emerald-100/80 border-b border-emerald-200/50 flex justify-between items-center sticky top-0 z-10">
+            <h3 className="text-base font-semibold text-emerald-800 flex items-center">
+              <BellIcon className="w-4 h-4 mr-2 text-emerald-600" />
+              Notifications
+              {unreadCount > 0 && (
+                <span className="ml-2 text-xs font-medium py-0.5 px-1.5 bg-emerald-100 text-emerald-700 rounded-full">
+                  {unreadCount} new
+                </span>
+              )}
+            </h3>
+            
+            <div className="flex gap-1">
+              {unreadCount > 0 && (
+                <button 
+                  type="button" 
+                  className="text-xs font-medium text-emerald-600 hover:text-emerald-800 py-1 px-2 rounded hover:bg-emerald-50/80 transition-colors"
+                  onClick={handleMarkAllAsRead}
+                >
+                  Mark all read
+                </button>
+              )}
+              
+              <button 
+                type="button" 
+                className="p-1 rounded-md text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50/80 transition-colors" 
+                onClick={() => setIsOpen(false)}
+              >
+                <span className="sr-only">Close</span>
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
-           {/* Body */}
+          {/* Body */}
           <div className="overflow-y-auto flex-grow">
-            {isLoading ? (
-                 <div className="p-6 text-center text-gray-500">Loading...</div>
+            {isLoading && !hasLoadedOnce ? (
+              <div className="p-8 text-center">
+                <div className="animate-spin h-8 w-8 border-4 border-emerald-200 border-t-emerald-600 rounded-full mx-auto mb-4"></div>
+                <p className="text-sm text-emerald-600">Loading notifications...</p>
+              </div>
             ) : notifications.length === 0 ? (
-                 <div className="p-8 text-center"> <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-400 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg> <p className="text-sm text-gray-500">You're all caught up!</p> </div>
+              <div className="p-8 text-center">
+                <div className="h-16 w-16 mx-auto mb-4 rounded-full bg-emerald-50 flex items-center justify-center">
+                  <BellIcon className="h-8 w-8 text-emerald-400" />
+                </div>
+                <p className="text-base font-medium text-emerald-700 mb-1">All caught up!</p>
+                <p className="text-sm text-emerald-600/80">You have no new notifications.</p>
+              </div>
             ) : (
-                 <ul role="list" className="divide-y divide-gray-100">
-                    {notifications.map((notification) => (
-                      <li key={notification._id} className={`relative transition-colors duration-150 group ${notification.isRead ? 'hover:bg-gray-50' : 'bg-blue-50 hover:bg-blue-100'}`} >
-                         {/* Use ConditionalLink helper */}
-                         <ConditionalLink href={notification.link} className="block px-4 py-3" onClick={() => handleMarkAsRead(notification._id, notification.isRead)}>
-                          <div className="flex items-start">
-                             <div className="flex-shrink-0 mt-0.5">{getNotificationIcon(notification.type)}</div>
-                             <div className="ml-3 flex-1">
-                               <p className="text-sm text-gray-800 leading-snug">{notification.message}</p>
-                               <p className="text-xs text-gray-500 mt-1">{formatNotificationDate(notification.createdAt)}</p>
-                             </div>
-                          </div>
-                        </ConditionalLink>
-                         <button type="button" className="absolute top-2 right-2 p-1 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-100 opacity-0 focus-within:opacity-100 group-hover:opacity-100 transition-opacity" onClick={(e) => { e.stopPropagation(); handleDeleteNotification(notification._id); }} title="Delete notification" > <span className="sr-only">Dismiss notification</span> <XMarkIcon className="h-4 w-4" /> </button>
-                         {!notification.isRead && ( <span className="absolute left-1 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-blue-500"></span> )}
-                      </li>
-                    ))}
-                 </ul>
-             )}
-           </div>
+              <ul role="list" className="divide-y divide-emerald-100/70">
+                {notifications.map((notification) => (
+                  <li
+                    key={notification._id}
+                    className={`relative transition-all duration-200 group ${
+                      notification.isRead 
+                        ? 'hover:bg-emerald-50/80' 
+                        : 'bg-emerald-50/90 hover:bg-emerald-100/90'
+                    }`}
+                  >
+                    {/* Notification container with conditional link */}
+                    <ConditionalLink 
+                      href={notification.link} 
+                      className="block px-4 py-3 focus:outline-none focus:bg-emerald-50/90 relative" 
+                      onClick={() => handleMarkAsRead(notification._id, notification.isRead)}
+                    >
+                      <div className="flex items-start gap-3">
+                        {/* Icon with appropriate styling */}
+                        <div className="flex-shrink-0 mt-0.5">
+                          {getNotificationIcon(notification.type)}
+                        </div>
+                        
+                        {/* Content */}
+                        <div className="flex-1 min-w-0 pr-6"> {/* Added right padding for delete button */}
+                          <p className={`text-sm leading-5 ${notification.isRead ? 'text-gray-800' : 'text-emerald-900 font-medium'}`}>
+                            {notification.message}
+                          </p>
+                          <p className="text-xs text-emerald-600/80 mt-1 flex items-center">
+                            <span className="inline-block w-3 h-3">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clipRule="evenodd" />
+                              </svg>
+                            </span>
+                            <span className="ml-1">{formatNotificationDate(notification.createdAt)}</span>
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Delete button (moved inside the link for mobile) */}
+                      <button 
+                        type="button" 
+                        className="absolute top-2 right-2 p-1.5 rounded-full text-emerald-400 hover:text-red-500 hover:bg-red-50/80 transition-all duration-200 z-10" 
+                        onClick={(e) => handleDeleteNotification(notification._id, e)}
+                        title="Delete notification"
+                      >
+                        <span className="sr-only">Dismiss notification</span>
+                        <XMarkIcon className="h-4 w-4" />
+                      </button>
+                    </ConditionalLink>
+                    
+                    {/* Unread indicator */}
+                    {!notification.isRead && (
+                      <span className="absolute left-1.5 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20 animate-pulse-slow"></span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-           {/* Footer */}
-           {notifications.length > 0 && (
-             <div className="p-2 bg-gray-50 border-t border-gray-200 text-center sticky bottom-0 z-10">
-                <Link href="/notifications" className="text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline"> View all </Link>
-             </div>
-           )}
-         </div>
-       </Transition>
+          {/* Footer */}
+          {notifications.length > 0 && (
+            <div className="p-2 bg-gradient-to-r from-emerald-50/80 to-emerald-100/80 border-t border-emerald-200/50 text-center sticky bottom-0 z-10">
+              <Link 
+                href="/notifications" 
+                className="text-sm font-medium text-emerald-600 hover:text-emerald-800 inline-flex items-center py-1 px-3 rounded-lg hover:bg-emerald-200/30 transition-all duration-200"
+                onClick={() => setIsOpen(false)}
+              >
+                View all
+                <svg className="ml-1 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+            </div>
+          )}
+        </div>
+      </Transition>
+      
+      {/* Custom animations */}
+      <style jsx>{`
+        @keyframes ping-slow {
+          0% { transform: scale(1); opacity: 0.8; }
+          50% { transform: scale(1.5); opacity: 0; }
+          100% { transform: scale(1); opacity: 0; }
+        }
+        .animate-ping-slow {
+          animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.6; }
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+      `}</style>
     </div>
   );
 }
 
-
 // Helper component for conditional linking
 const ConditionalLink = ({ href, children, ...props }: any) => {
-    // If no href is provided, render a div instead of a link
-    // This prevents link-related behaviors (like hover effects/navigation) when not applicable
-    return href ? (
-        <Link href={href} {...props}>{children}</Link>
-    ) : (
-        <div {...props}>{children}</div>
-    );
+  // If no href is provided, render a div instead of a link
+  return href ? (
+    <Link href={href} {...props}>{children}</Link>
+  ) : (
+    <div {...props}>{children}</div>
+  );
 };

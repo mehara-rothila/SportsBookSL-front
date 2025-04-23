@@ -1,12 +1,10 @@
-// src/app/(auth)/login/page.tsx
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation'; // Import useRouter
-import * as authService from '@/services/authService'; // Use correct path: '../../services/authService' or alias
+import { useRouter } from 'next/navigation';
+import * as authService from '@/services/authService';
 
 // --- Social Icons ---
 const GoogleIcon = () => (
@@ -60,7 +58,7 @@ export default function LoginPage() {
     addParticles();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
@@ -93,7 +91,7 @@ export default function LoginPage() {
           setError('Login failed. Please try again.');
       }
 
-    } catch (err: any) {
+    } catch (err) {
       // Handle errors thrown by authService.login
       console.error('Login failed on frontend:', err);
       setError(err.message || 'Invalid email or password. Please try again.');
@@ -107,60 +105,178 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
-      {/* Blueprint Background */}
-      <div className="absolute inset-0 z-0 overflow-hidden border-l border-b border-gray-100">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-sky-50"></div>
-        <div className="absolute inset-0" style={{ backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.2) 1px, transparent 1px), linear-gradient(to right, rgba(59, 130, 246, 0.2) 1px, transparent 1px)`, backgroundSize: '20px 20px' }}></div>
-        <div className="absolute inset-0" style={{ backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.3) 1px, transparent 1px), linear-gradient(to right, rgba(59, 130, 246, 0.3) 1px, transparent 1px)`, backgroundSize: '100px 100px' }}></div>
-        {/* Other blueprint elements */}
+    <div className="relative min-h-screen flex items-center justify-center pt-36 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      {/* Soccer Stadium Background */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        {/* Field base */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-800 via-green-800 to-emerald-900"></div>
+        
+        {/* Soccer field */}
+        <div className="absolute top-[10%] left-[5%] right-[5%] bottom-[10%] bg-green-700/70 border-2 border-white/20 rounded-lg overflow-hidden">
+          {/* Center circle */}
+          <div className="absolute top-1/2 left-1/2 w-48 h-48 border-2 border-white/30 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+          
+          {/* Center line */}
+          <div className="absolute top-0 bottom-0 left-1/2 w-1 bg-white/30 transform -translate-x-1/2"></div>
+          
+          {/* Center spot */}
+          <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-white/50 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+          
+          {/* Goals */}
+          <div className="absolute top-1/2 left-0 w-12 h-32 border-2 border-white/30 transform -translate-y-1/2"></div>
+          <div className="absolute top-1/2 right-0 w-12 h-32 border-2 border-white/30 transform -translate-y-1/2"></div>
+          
+          {/* Goal posts left */}
+          <div className="absolute top-[calc(50%-64px)] left-0 w-2 h-5 bg-white/80"></div>
+          <div className="absolute top-[calc(50%+60px)] left-0 w-2 h-5 bg-white/80"></div>
+          <div className="absolute top-[calc(50%-66px)] left-0 w-1 h-132 bg-white/80"></div>
+          
+          {/* Goal posts right */}
+          <div className="absolute top-[calc(50%-64px)] right-0 w-2 h-5 bg-white/80"></div>
+          <div className="absolute top-[calc(50%+60px)] right-0 w-2 h-5 bg-white/80"></div>
+          <div className="absolute top-[calc(50%-66px)] right-0 w-1 h-132 bg-white/80"></div>
+          
+          {/* Penalty boxes */}
+          <div className="absolute top-1/2 left-0 w-48 h-80 border-2 border-white/30 transform -translate-y-1/2"></div>
+          <div className="absolute top-1/2 right-0 w-48 h-80 border-2 border-white/30 transform -translate-y-1/2"></div>
+          
+          {/* Goal area */}
+          <div className="absolute top-1/2 left-0 w-24 h-48 border-2 border-white/30 transform -translate-y-1/2"></div>
+          <div className="absolute top-1/2 right-0 w-24 h-48 border-2 border-white/30 transform -translate-y-1/2"></div>
+          
+          {/* Penalty spot left */}
+          <div className="absolute top-1/2 left-36 w-2 h-2 bg-white/50 rounded-full transform -translate-y-1/2"></div>
+          
+          {/* Penalty spot right */}
+          <div className="absolute top-1/2 right-36 w-2 h-2 bg-white/50 rounded-full transform -translate-y-1/2"></div>
+          
+          {/* Corner arcs */}
+          <div className="absolute top-0 left-0 w-10 h-10 border-r-2 border-white/30 rounded-br-full"></div>
+          <div className="absolute top-0 right-0 w-10 h-10 border-l-2 border-white/30 rounded-bl-full"></div>
+          <div className="absolute bottom-0 left-0 w-10 h-10 border-r-2 border-white/30 rounded-tr-full"></div>
+          <div className="absolute bottom-0 right-0 w-10 h-10 border-l-2 border-white/30 rounded-tl-full"></div>
+        </div>
+        
+        {/* Animated soccer players */}
+        {/* Player 1 - Running */}
+        <div className="absolute w-6 h-10 top-[30%] left-[10%] animate-player-run">
+          <div className="relative w-full h-full">
+            <div className="absolute top-0 left-1.5 w-3 h-3 rounded-full bg-blue-500/90"></div>
+            <div className="absolute top-3 left-1 w-4 h-5 bg-blue-600/80"></div>
+            <div className="absolute bottom-0 left-1 w-1.5 h-2 rounded-full bg-blue-800/80 animate-player-legs"></div>
+            <div className="absolute bottom-0 left-3.5 w-1.5 h-2 rounded-full bg-blue-800/80 animate-player-legs animation-delay-100"></div>
+          </div>
+        </div>
+        
+        {/* Player 2 - Defending */}
+        <div className="absolute w-6 h-10 top-[40%] right-[25%] animate-player-defend">
+          <div className="relative w-full h-full">
+            <div className="absolute top-0 left-1.5 w-3 h-3 rounded-full bg-blue-500/90"></div>
+            <div className="absolute top-3 left-1 w-4 h-5 bg-blue-600/80"></div>
+            <div className="absolute bottom-0 left-0 w-1.5 h-2 rounded-full bg-blue-800/80 animate-player-defend-legs"></div>
+            <div className="absolute bottom-0 left-4.5 w-1.5 h-2 rounded-full bg-blue-800/80 animate-player-defend-legs animation-delay-100"></div>
+          </div>
+        </div>
+        
+        {/* Player 3 - Red team dribbling */}
+        <div className="absolute w-6 h-10 bottom-[35%] left-[40%] animate-player-dribble">
+          <div className="relative w-full h-full">
+            <div className="absolute top-0 left-1.5 w-3 h-3 rounded-full bg-red-500/90"></div>
+            <div className="absolute top-3 left-1 w-4 h-5 bg-red-600/80"></div>
+            <div className="absolute bottom-0 left-1 w-1.5 h-2 rounded-full bg-red-800/80 animate-player-dribble-legs"></div>
+            <div className="absolute bottom-0 left-3.5 w-1.5 h-2 rounded-full bg-red-800/80 animate-player-dribble-legs animation-delay-200"></div>
+          </div>
+        </div>
+        
+        {/* Player 4 - Goalkeeper */}
+        <div className="absolute w-6 h-10 top-[50%] right-[5%] animate-goalkeeper">
+          <div className="relative w-full h-full">
+            <div className="absolute top-0 left-1.5 w-3 h-3 rounded-full bg-yellow-500/90"></div>
+            <div className="absolute top-3 left-1 w-4 h-5 bg-yellow-600/80"></div>
+            <div className="absolute bottom-0 left-0 w-1.5 h-2 rounded-full bg-yellow-800/80"></div>
+            <div className="absolute bottom-0 left-4.5 w-1.5 h-2 rounded-full bg-yellow-800/80"></div>
+            <div className="absolute top-4 right-0 h-4 w-0.5 bg-yellow-500/90 animate-goalkeeper-arms"></div>
+            <div className="absolute top-4 left-0 h-4 w-0.5 bg-yellow-500/90 animate-goalkeeper-arms animation-delay-100"></div>
+          </div>
+        </div>
+        
+        {/* Player 5 - Passing */}
+        <div className="absolute w-6 h-10 top-[60%] left-[20%] animate-player-pass">
+          <div className="relative w-full h-full">
+            <div className="absolute top-0 left-1.5 w-3 h-3 rounded-full bg-blue-500/90"></div>
+            <div className="absolute top-3 left-1 w-4 h-5 bg-blue-600/80"></div>
+            <div className="absolute bottom-0 left-1 w-1.5 h-2 rounded-full bg-blue-800/80 animate-player-pass-legs"></div>
+            <div className="absolute bottom-0 left-3.5 w-1.5 h-2 rounded-full bg-blue-800/80 animate-player-pass-legs animation-delay-100"></div>
+          </div>
+        </div>
+        
+        {/* Player 6 - Red team running */}
+        <div className="absolute w-6 h-10 bottom-[40%] right-[30%] animate-player-run animation-delay-700">
+          <div className="relative w-full h-full">
+            <div className="absolute top-0 left-1.5 w-3 h-3 rounded-full bg-red-500/90"></div>
+            <div className="absolute top-3 left-1 w-4 h-5 bg-red-600/80"></div>
+            <div className="absolute bottom-0 left-1 w-1.5 h-2 rounded-full bg-red-800/80 animate-player-legs"></div>
+            <div className="absolute bottom-0 left-3.5 w-1.5 h-2 rounded-full bg-red-800/80 animate-player-legs animation-delay-300"></div>
+          </div>
+        </div>
+        
+        {/* Soccer Ball */}
+        <div className="absolute w-4 h-4 top-[45%] left-[35%] animate-ball">
+          <div className="w-full h-full rounded-full bg-white/90 shadow-md"></div>
+        </div>
+        
+        {/* Stadium elements */}
+        <div className="absolute top-0 left-0 w-full h-[5%] bg-gradient-to-b from-white/10 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 w-full h-[5%] bg-gradient-to-t from-white/10 to-transparent"></div>
+        <div className="absolute top-0 left-0 h-full w-[5%] bg-gradient-to-r from-white/10 to-transparent"></div>
+        <div className="absolute top-0 right-0 h-full w-[5%] bg-gradient-to-l from-white/10 to-transparent"></div>
       </div>
 
       {/* Particles container */}
       <div id="particles-container" className="absolute inset-0 z-10 pointer-events-none"></div>
 
       {/* Radial light effect */}
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl"></div>
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"></div>
 
       {/* Decorative elements */}
-      <div className="absolute top-20 left-10 w-64 h-64 rounded-full bg-accent-500/5 blur-3xl animate-pulse-slow"></div>
-      <div className="absolute bottom-10 right-10 w-40 h-40 rounded-full bg-primary-500/10 blur-3xl animate-pulse-slow animation-delay-700"></div>
+      <div className="absolute top-20 left-10 w-64 h-64 rounded-full bg-emerald-500/5 blur-3xl animate-pulse-slow"></div>
+      <div className="absolute bottom-10 right-10 w-40 h-40 rounded-full bg-emerald-500/10 blur-3xl animate-pulse-slow animation-delay-700"></div>
 
       {/* Form container */}
       <div
         id="login-form"
-        className={`relative z-20 max-w-md w-full backdrop-blur-md bg-white/90 p-8 md:p-10 rounded-2xl shadow-2xl border border-white/30 transition-all duration-700 ease-out ${
+        className={`relative z-20 max-w-md w-full backdrop-blur-md bg-white/20 p-8 md:p-10 rounded-2xl shadow-2xl border border-white/30 transition-all duration-700 ease-out ${
           mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
         }`}
       >
         {/* Light effect and prism */}
         <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
-          <div className="absolute -inset-[1px] bg-gradient-to-tr from-primary-200/20 via-transparent to-accent-200/20 z-[-1] rounded-2xl"></div>
+          <div className="absolute -inset-[1px] bg-gradient-to-tr from-emerald-200/20 via-transparent to-emerald-200/20 z-[-1] rounded-2xl"></div>
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 blur-2xl rounded-full transform rotate-12 translate-x-10 -translate-y-10"></div>
-          <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-primary-200/20 blur-2xl rounded-full"></div>
+          <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-emerald-200/20 blur-2xl rounded-full"></div>
         </div>
 
         <div className="space-y-6 relative">
           {/* Logo */}
           <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-6 relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary-600 to-primary-700 rounded-full shadow-xl"></div>
-            <div className="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full shadow-lg transform -translate-y-1"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-full shadow-xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full shadow-lg transform -translate-y-1"></div>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white relative z-10 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-            <div className="absolute -inset-1 bg-primary-400/20 blur-xl rounded-full animate-pulse-slow"></div>
+            <div className="absolute -inset-1 bg-emerald-400/20 blur-xl rounded-full animate-pulse-slow"></div>
           </div>
 
           {/* Welcome Text */}
           <div className="text-center">
-            <h2 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-primary-700 to-primary-500 pb-1">Welcome Back!</h2>
-            <p className="mt-2 text-sm text-gray-600">Sign in to continue to <span className="font-semibold text-primary-600 relative inline-block">SportsBookSL<span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-200"></span></span></p>
+            <h2 className="text-3xl font-extrabold text-white pb-1">Welcome Back!</h2>
+            <p className="mt-2 text-sm text-white/80">Sign in to continue to <span className="font-semibold text-white relative inline-block">SportsBookSL<span className="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-200"></span></span></p>
           </div>
 
           {/* Error message display */}
           {error && (
-            <div className="rounded-lg bg-red-50 p-4 border-l-4 border-red-400 animate-fade-in">
+            <div className="rounded-lg bg-red-500/30 backdrop-blur-sm p-4 border-l-4 border-red-400 animate-fade-in">
               <div className="flex">
-                <div className="flex-shrink-0"><svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.707-4.293a1 1 0 001.414 0L12 12.414l1.293 1.293a1 1 0 101.414-1.414L13.414 11l1.293-1.293a1 1 0 10-1.414-1.414L12 9.586l-1.293-1.293a1 1 0 00-1.414 1.414L10.586 11l-1.293 1.293a1 1 0 000 1.414z" clipRule="evenodd" /></svg></div>
-                <div className="ml-3"><p className="text-sm font-medium text-red-800">{error}</p></div>
+                <div className="flex-shrink-0"><svg className="h-5 w-5 text-red-200" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.707-4.293a1 1 0 001.414 0L12 12.414l1.293 1.293a1 1 0 101.414-1.414L13.414 11l1.293-1.293a1 1 0 10-1.414-1.414L12 9.586l-1.293-1.293a1 1 0 00-1.414 1.414L10.586 11l-1.293 1.293a1 1 0 000 1.414z" clipRule="evenodd" /></svg></div>
+                <div className="ml-3"><p className="text-sm font-medium text-white">{error}</p></div>
               </div>
             </div>
           )}
@@ -170,15 +286,15 @@ export default function LoginPage() {
             <div className="space-y-5">
               {/* Email */}
               <div className="group relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary-500 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" /></svg></div>
-                <input id="email-address" name="email" type="email" autoComplete="email" required className="peer appearance-none block w-full pl-10 pr-4 py-3.5 border border-gray-300 rounded-xl shadow-sm placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent sm:text-sm transition-all duration-200" placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)}/>
-                <label htmlFor="email-address" className="absolute left-10 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-primary-600 peer-focus:text-sm">Email address</label>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-white/60 group-focus-within:text-emerald-300 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" /></svg></div>
+                <input id="email-address" name="email" type="email" autoComplete="email" required className="peer appearance-none block w-full pl-10 pr-4 py-3.5 bg-white/10 backdrop-blur-sm border border-white/30 rounded-xl shadow-sm placeholder-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white sm:text-sm transition-all duration-200" placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)}/>
+                <label htmlFor="email-address" className="absolute left-10 -top-2.5 bg-emerald-800/80 px-1 text-sm text-white/80 transition-all peer-placeholder-shown:text-white/60 peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-emerald-300 peer-focus:text-sm">Email address</label>
               </div>
               {/* Password */}
               <div className="group relative">
-                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary-500 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg></div>
-                <input id="password" name="password" type="password" autoComplete="current-password" required className="peer appearance-none block w-full pl-10 pr-4 py-3.5 border border-gray-300 rounded-xl shadow-sm placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent sm:text-sm transition-all duration-200" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}/>
-                <label htmlFor="password" className="absolute left-10 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-primary-600 peer-focus:text-sm">Password</label>
+                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-white/60 group-focus-within:text-emerald-300 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg></div>
+                <input id="password" name="password" type="password" autoComplete="current-password" required className="peer appearance-none block w-full pl-10 pr-4 py-3.5 bg-white/10 backdrop-blur-sm border border-white/30 rounded-xl shadow-sm placeholder-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-white sm:text-sm transition-all duration-200" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}/>
+                <label htmlFor="password" className="absolute left-10 -top-2.5 bg-emerald-800/80 px-1 text-sm text-white/80 transition-all peer-placeholder-shown:text-white/60 peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-focus:-top-2.5 peer-focus:text-emerald-300 peer-focus:text-sm">Password</label>
               </div>
             </div>
 
@@ -187,24 +303,22 @@ export default function LoginPage() {
               <div className="flex items-center">
                 <div className="relative inline-block">
                   <input id="remember-me" name="remember-me" type="checkbox" className="sr-only peer" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)}/>
-                  <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-500"></div>
+                  <div className="w-10 h-5 bg-white/20 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
                 </div>
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">Remember me</label>
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-white/80">Remember me</label>
               </div>
-              {/* --- MODIFIED: Used Next.js Link --- */}
               <div className="text-sm">
-                  <Link href="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500 transition-colors duration-150 ease-in-out relative group">
+                  <Link href="/forgot-password" className="font-medium text-emerald-300 hover:text-emerald-200 transition-colors duration-150 ease-in-out relative group">
                     Forgot password?
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-500/50 group-hover:w-full transition-all duration-200"></span>
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500/50 group-hover:w-full transition-all duration-200"></span>
                   </Link>
               </div>
-              {/* --- END MODIFIED --- */}
             </div>
 
             {/* Submit Button */}
             <div>
-              <button type="submit" className={`w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-sm font-medium text-white bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-150 ease-in-out relative overflow-hidden ${isLoading ? 'opacity-90 cursor-not-allowed' : ''}`} disabled={isLoading}>
-                <span className="absolute inset-0 overflow-hidden"><span className="absolute inset-0 rounded-xl bg-primary-400/20 shine-effect"></span></span>
+              <button type="submit" className={`w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-sm font-medium text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-150 ease-in-out relative overflow-hidden ${isLoading ? 'opacity-90 cursor-not-allowed' : ''}`} disabled={isLoading}>
+                <span className="absolute inset-0 overflow-hidden"><span className="absolute inset-0 rounded-xl bg-emerald-400/20 shine-effect"></span></span>
                 <span className="relative flex items-center justify-center">
                   {isLoading ? ( <><svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span className="text-white/80">Processing...</span></> ) : ( <span className="flex items-center"><span>Sign in</span><svg className="w-5 h-5 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span> )}
                 </span>
@@ -212,25 +326,180 @@ export default function LoginPage() {
             </div>
           </form>
 
-          {/* Divider */}
-          <div className="mt-6"><div className="relative"><div className="absolute inset-0 flex items-center" aria-hidden="true"><div className="w-full border-t border-gray-300" /></div><div className="relative flex justify-center text-sm"><span className="px-4 py-1 bg-white text-gray-500 rounded-full shadow-md border border-gray-100">Or sign in with</span></div></div>
-            {/* Social Login Buttons */}
-            <div className="mt-6 grid grid-cols-2 gap-4">
-              <button type="button" className="group w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-xl shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 ease-in-out relative overflow-hidden"><span className="absolute inset-0 bg-gradient-to-r from-red-50 to-red-100 opacity-0 group-hover:opacity-80 transition-opacity duration-300"></span><span className="relative flex items-center"><span className="bg-white p-1.5 rounded-full mr-2 shadow-sm border border-gray-100 group-hover:shadow-md transition-all duration-200"><GoogleIcon /></span><span className="font-medium group-hover:translate-x-0.5 transition-transform">Google</span></span></button>
-              <button type="button" className="group w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-xl shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 ease-in-out relative overflow-hidden"><span className="absolute inset-0 bg-gradient-to-r from-gray-50 to-gray-100 opacity-0 group-hover:opacity-80 transition-opacity duration-300"></span><span className="relative flex items-center"><span className="bg-white p-1.5 rounded-full mr-2 shadow-sm border border-gray-100 group-hover:shadow-md transition-all duration-200"><GithubIcon /></span><span className="font-medium group-hover:translate-x-0.5 transition-transform">GitHub</span></span></button>
-            </div>
-          </div>
+          {/* No social login section */}
 
           {/* Register Link */}
           <div className="mt-8 text-center">
-            <p className="text-sm text-gray-600 mb-3">Don't have an account?</p>
-            <Link href="/register" className="inline-flex items-center justify-center px-6 py-2.5 border border-primary-300 text-sm font-medium rounded-xl text-primary-700 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 ease-in-out group">
+            <p className="text-sm text-white/80 mb-3">Don't have an account?</p>
+            <Link href="/register" className="inline-flex items-center justify-center px-6 py-2.5 border border-emerald-300/20 text-sm font-medium rounded-xl text-emerald-100 bg-emerald-700/30 hover:bg-emerald-700/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-200 ease-in-out group">
               <span className="group-hover:translate-x-0.5 transition-transform">Register now</span>
               <svg className="ml-2 h-4 w-4 group-hover:translate-x-0.5 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
             </Link>
           </div>
         </div>
       </div>
+
+      {/* CSS Animations */}
+      <style jsx>{`
+        @keyframes shine-effect {
+          0% {
+            transform: translateX(-100%) rotate(20deg);
+          }
+          20%, 100% {
+            transform: translateX(100%) rotate(20deg);
+          }
+        }
+        .shine-effect {
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.4),
+            transparent
+          );
+          animation: shine-effect 4s infinite;
+        }
+        
+        @keyframes player-run {
+          0% { transform: translate(0, 0); }
+          25% { transform: translate(50px, -20px); }
+          50% { transform: translate(100px, 0); }
+          75% { transform: translate(50px, 20px); }
+          100% { transform: translate(0, 0); }
+        }
+        .animate-player-run {
+          animation: player-run 10s infinite;
+        }
+        
+        @keyframes player-legs {
+          0%, 100% { transform: translateX(-1px); }
+          50% { transform: translateX(1px); }
+        }
+        .animate-player-legs {
+          animation: player-legs 0.3s infinite;
+        }
+        
+        @keyframes player-defend {
+          0% { transform: translateX(0); }
+          25% { transform: translateX(-10px); }
+          50% { transform: translateX(0); }
+          75% { transform: translateX(10px); }
+          100% { transform: translateX(0); }
+        }
+        .animate-player-defend {
+          animation: player-defend 3s infinite;
+        }
+        
+        @keyframes player-defend-legs {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-2px); }
+        }
+        .animate-player-defend-legs {
+          animation: player-defend-legs 0.5s infinite;
+        }
+        
+        @keyframes player-dribble {
+          0% { transform: translate(0, 0); }
+          25% { transform: translate(80px, 30px); }
+          50% { transform: translate(160px, 0); }
+          75% { transform: translate(80px, -30px); }
+          100% { transform: translate(0, 0); }
+        }
+        .animate-player-dribble {
+          animation: player-dribble 15s infinite;
+        }
+        
+        @keyframes player-dribble-legs {
+          0%, 100% { transform: translateX(-2px); }
+          50% { transform: translateX(2px); }
+        }
+        .animate-player-dribble-legs {
+          animation: player-dribble-legs 0.2s infinite;
+        }
+        
+        @keyframes goalkeeper {
+          0%, 40%, 60%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-15px); }
+        }
+        .animate-goalkeeper {
+          animation: goalkeeper 5s infinite;
+        }
+        
+        @keyframes goalkeeper-arms {
+          0%, 40%, 60%, 100% { transform: rotate(0deg); }
+          50% { transform: rotate(45deg); }
+        }
+        .animate-goalkeeper-arms {
+          animation: goalkeeper-arms 5s infinite;
+        }
+        
+        @keyframes player-pass {
+          0%, 20%, 80%, 100% { transform: rotate(0deg); }
+          50% { transform: rotate(10deg); }
+        }
+        .animate-player-pass {
+          animation: player-pass 4s infinite;
+        }
+        
+        @keyframes player-pass-legs {
+          0%, 40%, 60%, 100% { transform: translateX(0); }
+          50% { transform: translateX(5px); }
+        }
+        .animate-player-pass-legs {
+          animation: player-pass-legs 4s infinite;
+        }
+        
+        @keyframes ball {
+          0% { transform: translate(0, 0); }
+          20% { transform: translate(60px, -30px); }
+          40% { transform: translate(120px, 0); }
+          60% { transform: translate(180px, -20px); }
+          80% { transform: translate(240px, 0); }
+          100% { transform: translate(0, 0); }
+        }
+        .animate-ball {
+          animation: ball 15s infinite;
+        }
+        
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-15px); }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 4s ease-in-out infinite;
+        }
+        
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.4s ease-out forwards;
+        }
+        
+        .animation-delay-100 {
+          animation-delay: 0.1s;
+        }
+        .animation-delay-200 {
+          animation-delay: 0.2s;
+        }
+        .animation-delay-300 {
+          animation-delay: 0.3s;
+        }
+        .animation-delay-500 {
+          animation-delay: 0.5s;
+        }
+        .animation-delay-700 {
+          animation-delay: 0.7s;
+        }
+      `}</style>
     </div>
   );
 }

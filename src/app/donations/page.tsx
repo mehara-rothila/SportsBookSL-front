@@ -50,6 +50,13 @@ interface AthletesApiResponse {
 const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
 const FALLBACK_ATHLETE_IMAGE = '/images/default-athlete.png';
 
+// Helper function to get proper image URL
+const getImageUrl = (path: string | null | undefined): string => {
+  if (!path) return FALLBACK_ATHLETE_IMAGE;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  return `${BACKEND_BASE_URL}${path}`;
+};
+
 export default function DonationsPage() {
   // --- State for Main Athlete List ---
   const [athletes, setAthletes] = useState<Athlete[]>([]);
@@ -459,7 +466,6 @@ export default function DonationsPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-        // CORRECTED CODE
                 {athletes.map((athlete) => (
                   <DonationCard
                     key={athlete._id}
@@ -469,11 +475,10 @@ export default function DonationsPage() {
                     sport={athlete.sport}
                     goal={athlete.goalAmount}
                     raised={athlete.raisedAmount}
-                    image={`${BACKEND_BASE_URL}${athlete.image}`}
+                    image={getImageUrl(athlete.image)}
                     achievements={athlete.achievements}
                     story={athlete.story}
                     location={athlete.location}
-                    // imageOpacity prop removed
                   />
                 ))}
               </div>
@@ -560,7 +565,7 @@ export default function DonationsPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {successStories.slice(0, 3).map((story) => {
-                const storyImageUrl = story.image ? `${BACKEND_BASE_URL}${story.image}` : FALLBACK_ATHLETE_IMAGE;
+                const storyImageUrl = getImageUrl(story.image);
                 const achievementTag = story.achievements && story.achievements.length > 0 ? story.achievements[0] : 'Funded';
                 const storySnippet = story.story ? story.story.substring(0, 80) + (story.story.length > 80 ? '...' : '') : 'Supported through SportsBookSL donations.';
 

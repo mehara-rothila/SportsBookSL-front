@@ -20,7 +20,6 @@ export default function Home() {
 
   // State for category hover effects
   const [categoryHoveredId, setCategoryHoveredId] = useState(null);
-
   // State for featured facilities filters and hover effects
   const [activeFilter, setActiveFilter] = useState('all');
   const [facilityHoveredId, setFacilityHoveredId] = useState(null);
@@ -312,14 +311,19 @@ export default function Home() {
         <div className="absolute -bottom-20 left-0 w-72 h-72 bg-emerald-50 opacity-50 rounded-full translate-x-1/4 blur-3xl"></div>
         
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-          {/* Enhanced Header and Filters */}
+          {/* Enhanced Header and Filters - MODIFIED with semi-transparent background */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-12">
-            <div className="mb-8 md:mb-0">
+            {/* Semi-transparent background for heading - ADDED */}
+            <div className="mb-8 md:mb-0 bg-white/40 backdrop-blur-sm px-8 py-8 rounded-xl max-w-2xl">
               <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 inline-block mb-4">TOP RATED</span>
-              <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-                Featured Facilities
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600">Facilities</span>
               </h2>
-              <div className="mt-4 w-24 h-1.5 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full"></div>
+              <div className="mt-4 flex items-center justify-start">
+                <div className="w-16 h-1 bg-gray-200"></div>
+                <div className="w-16 h-1 bg-emerald-400"></div>
+                <div className="w-16 h-1 bg-emerald-600"></div>
+              </div>
               <p className="mt-4 text-lg text-gray-600 max-w-2xl">
                 Discover top-rated sports facilities across Sri Lanka
               </p>
@@ -804,7 +808,6 @@ export default function Home() {
       <section className="py-24 relative overflow-hidden z-10">
         {/* Semi-transparent overlay for readability */}
         <div className="absolute inset-0 bg-emerald-900/75 backdrop-blur-sm"></div>
-
         <div className="container mx-auto px-4 relative z-10">
           {/* Enhanced header with animation */}
           <div className="text-center mb-16">
@@ -914,7 +917,6 @@ export default function Home() {
                       75% Suitable
                     </div>
                   </div>
-
                   <div className="flex items-center mt-6 relative z-10">
                     <div className="w-16 h-16 mr-4">
                       <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
@@ -930,7 +932,6 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-
                 {/* Weather details */}
                 <div className="p-6 bg-gradient-to-b from-emerald-900/30 to-transparent">
                   {/* Weather metrics grid */}
@@ -1006,7 +1007,6 @@ export default function Home() {
                           </svg>
                         </div>
                       </div>
-
                       <div className="flex items-center justify-between bg-white/10 p-3 rounded-lg shadow-sm border border-white/10 hover:bg-white/20 transition-all duration-300 cursor-pointer transform transition hover:scale-[1.01]">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10 rounded-md bg-emerald-700/50 flex items-center justify-center mr-3">
@@ -1064,7 +1064,6 @@ export default function Home() {
               <br />
               <span className="text-white">your sports experience?</span>
             </h2>
-
             <p className="text-xl text-emerald-100/90 mb-12 max-w-3xl mx-auto animate-fade-in-up animation-delay-300">
               Join SportsBookSL today and connect with the best sports facilities across Sri Lanka. Book facilities, coordinate transportation, find equipment, and support talented athletes all on one platform.
             </p>
@@ -1137,7 +1136,6 @@ export default function Home() {
           <div className="absolute inset-0 bg-pattern-noise opacity-5"></div>
           <div className="absolute top-0 left-0 w-full h-[8%] bg-gradient-to-b from-black/30 to-transparent"></div>
           <div className="absolute bottom-0 left-0 w-full h-[8%] bg-gradient-to-t from-black/30 to-transparent"></div>
-
           {/* Enhanced diamond field with more realistic texture */}
           <div className="absolute top-1/2 left-1/2 w-[750px] h-[750px] -translate-x-1/2 -translate-y-1/2 bg-green-700 rounded-lg transform rotate-45 border-4 border-white/30 overflow-hidden shadow-2xl">
             {/* Improved mowed grass pattern */}
@@ -1200,7 +1198,7 @@ export default function Home() {
             {/* Pitcher's plate with 3D effect */}
             <div className="absolute top-1/2 left-1/2 w-[24px] h-[6px] -translate-x-1/2 -translate-y-1/2 bg-white shadow-md"></div>
           </div>
-
+  
           {/* Enhanced home plate with 3D effect */}
           <div className="absolute top-[calc(50%+243px)] left-1/2 -translate-x-1/2 -translate-y-1/2">
             <div className="w-[24px] h-[24px] bg-white rotate-45 transform origin-bottom-right shadow-lg">
@@ -1209,23 +1207,22 @@ export default function Home() {
             {/* Subtle shadow under home plate */}
             <div className="absolute -bottom-1 -right-1 w-[24px] h-[24px] bg-black/20 rotate-45 blur-[2px] -z-10"></div>
           </div>
-
+  
           {/* Enhanced bases with 3D effects and shadows */}
           <div className="absolute top-1/2 left-[calc(50%+243px)] -translate-y-1/2 -translate-x-1/2">
             <div className="w-[18px] h-[18px] bg-white border border-gray-300 transform rotate-45 shadow-lg"></div>
             <div className="absolute -bottom-1 -right-1 w-[18px] h-[18px] bg-black/20 rotate-45 blur-[2px] -z-10"></div>
           </div>
-
           <div className="absolute top-[calc(50%-243px)] left-1/2 -translate-y-1/2 -translate-x-1/2">
             <div className="w-[18px] h-[18px] bg-white border border-gray-300 transform rotate-45 shadow-lg"></div>
             <div className="absolute -bottom-1 -right-1 w-[18px] h-[18px] bg-black/20 rotate-45 blur-[2px] -z-10"></div>
           </div>
-
+  
           <div className="absolute top-1/2 left-[calc(50%-243px)] -translate-y-1/2 -translate-x-1/2">
             <div className="w-[18px] h-[18px] bg-white border border-gray-300 transform rotate-45 shadow-lg"></div>
             <div className="absolute -bottom-1 -right-1 w-[18px] h-[18px] bg-black/20 rotate-45 blur-[2px] -z-10"></div>
           </div>
-
+  
           {/* FIELDERS WITH RANDOM MOVEMENT PATTERNS */}
           {/* Left field */}
           <div className="absolute w-10 h-14 top-[30%] left-[30%] animate-fielder-move-1">
@@ -1235,7 +1232,7 @@ export default function Home() {
               <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
             </div>
           </div>
-
+  
           {/* Right field */}
           <div className="absolute w-10 h-14 top-[65%] right-[25%] animate-fielder-move-2 animation-delay-500">
             <div className="relative w-full h-full">
@@ -1244,7 +1241,7 @@ export default function Home() {
               <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
             </div>
           </div>
-
+  
           {/* Center field */}
           <div className="absolute w-10 h-14 top-[20%] left-[50%] animate-fielder-move-3 animation-delay-800">
             <div className="relative w-full h-full">
@@ -1252,7 +1249,9 @@ export default function Home() {
               <div className="absolute top-6 left-2 w-5 h-7 bg-blue-600/80 shadow-md"></div>
               <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
             </div>
-          </div>{/* Shortstop */}
+          </div>
+  
+          {/* Shortstop */}
           <div className="absolute w-10 h-14 top-[40%] left-[40%] animate-fielder-move-7 animation-delay-700">
             <div className="relative w-full h-full">
               <div className="absolute top-0 left-1.5 w-6 h-6 rounded-full bg-blue-500/90 shadow-md"></div>
@@ -1260,7 +1259,7 @@ export default function Home() {
               <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
             </div>
           </div>
-
+  
           {/* Second baseman */}
           <div className="absolute w-10 h-14 top-[40%] right-[40%] animate-fielder-move-8 animation-delay-200">
             <div className="relative w-full h-full">
@@ -1269,7 +1268,7 @@ export default function Home() {
               <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
             </div>
           </div>
-
+  
           {/* First base runner */}
           <div className="absolute w-10 h-14 top-1/2 left-[calc(50%+230px)] -translate-y-1/2 -translate-x-1/2 animate-baserunner-1">
             <div className="relative w-full h-full">
@@ -1278,7 +1277,7 @@ export default function Home() {
               <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
             </div>
           </div>
-
+  
           {/* Animated baseball with trail effect */}
           <div className="baseball-container absolute top-[calc(50%-20px)] left-[calc(50%)] -translate-x-1/2 -translate-y-1/2">
             <div className="baseball w-4 h-4 bg-white rounded-full border border-red-500/60 shadow-md animate-baseball-throw"></div>
@@ -1286,42 +1285,42 @@ export default function Home() {
             <div className="baseball-trail absolute w-1 h-1 rounded-full bg-white/30 blur-[1px] translate-y-[80px]"></div>
             <div className="baseball-trail absolute w-0.5 h-0.5 rounded-full bg-white/20 blur-[1px] translate-y-[120px]"></div>
           </div>
-
+  
           {/* Stadium lights effects */}
           <div className="absolute top-0 left-[20%] w-1 h-40 bg-gradient-to-b from-white/30 to-transparent rotate-12 blur-[2px]"></div>
           <div className="absolute top-0 right-[20%] w-1 h-40 bg-gradient-to-b from-white/30 to-transparent -rotate-12 blur-[2px]"></div>
         </div>
       </div>
-
+  
       {/* Hero Section */}
       <div className="relative z-10">
         <Hero />
       </div>
-
+  
       {/* Background Wrapper div that spans multiple sections */}
       <div className="relative overflow-hidden z-10">
         {/* --- Integrated Sport Categories Section --- */}
         <div className="relative">
           {renderSportCategoriesSection()}
         </div>
-
+  
         {/* --- Integrated Featured Facilities Section --- */}
         <div className="relative">
           {renderFeaturedFacilitiesSection()}
         </div>
       </div>
-
+  
       {/* Weather Integration Highlight Section */}
       {renderWeatherSection()}
-
+  
       {/* --- Integrated Testimonials Section --- */}
       <div className="relative z-10">
         {renderTestimonialsSection()}
       </div>
-
+  
       {/* Enhanced Call to Action */}
       {renderCallToActionSection()}
-
+  
       {/* Display error notification if there's an error */}
       {error && (
         <div className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50">
@@ -1334,26 +1333,26 @@ export default function Home() {
           </button>
         </div>
       )}
-
+  
       {/* CSS animations */}
       <style jsx>{`
         .text-shadow-lg {
           text-shadow: 0 2px 8px rgba(0,0,0,0.5);
         }
-
+  
         .shadow-glow {
           box-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
         }
-
+  
         .bg-pattern-noise {
           background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.5'/%3E%3C/svg%3E");
           background-size: 200px 200px;
         }
-
+  
         .bg-radial-gradient {
           background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
         }
-
+  
         /* Multiple fielder movement patterns */
         @keyframes fielder-move-1 {
           0% { transform: translate(0, 0); }
@@ -1366,7 +1365,7 @@ export default function Home() {
         .animate-fielder-move-1 {
           animation: fielder-move-1 17s ease-in-out infinite;
         }
-
+  
         @keyframes fielder-move-2 {
           0% { transform: translate(0, 0); }
           25% { transform: translate(-35px, 15px); }
@@ -1377,7 +1376,7 @@ export default function Home() {
         .animate-fielder-move-2 {
           animation: fielder-move-2 13s ease-in-out infinite;
         }
-
+  
         @keyframes fielder-move-3 {
           0% { transform: translate(0, 0); }
           20% { transform: translate(-25px, 35px); }
@@ -1389,7 +1388,7 @@ export default function Home() {
         .animate-fielder-move-3 {
           animation: fielder-move-3 19s ease-in-out infinite;
         }
-
+  
         @keyframes fielder-move-7 {
           0% { transform: translate(0, 0); }
           25% { transform: translate(-20px, -25px); }
@@ -1400,7 +1399,7 @@ export default function Home() {
         .animate-fielder-move-7 {
           animation: fielder-move-7 15s ease-in-out infinite;
         }
-
+  
         @keyframes fielder-move-8 {
           0% { transform: translate(0, 0); }
           33% { transform: translate(20px, 20px); }
@@ -1410,7 +1409,7 @@ export default function Home() {
         .animate-fielder-move-8 {
           animation: fielder-move-8 18s ease-in-out infinite;
         }
-
+  
         /* Base runner animations with shorter patrol areas */
         @keyframes baserunner-1 {
           0% { transform: translate(0, 0); }
@@ -1422,7 +1421,7 @@ export default function Home() {
         .animate-baserunner-1 {
           animation: baserunner-1 8s ease-in-out infinite;
         }
-
+  
         @keyframes baseball-throw {
           0% { transform: translate(0, 0) scale(1); opacity: 1; }
           50% { transform: translate(0, 220px) scale(1); opacity: 1; }
@@ -1432,23 +1431,23 @@ export default function Home() {
         .animate-baseball-throw {
           animation: baseball-throw 4s ease-in-out infinite;
         }
-
+  
         .animation-delay-200 {
           animation-delay: 0.2s;
         }
-
+  
         .animation-delay-500 {
           animation-delay: 0.5s;
         }
-
+  
         .animation-delay-700 {
           animation-delay: 0.7s;
         }
-
+  
         .animation-delay-800 {
           animation-delay: 0.8s;
         }
-
+  
         /* Added Ken Burns and Float animations for Testimonials */
         @keyframes ken-burns {
           0% {
@@ -1461,7 +1460,7 @@ export default function Home() {
         .animate-ken-burns {
           animation: ken-burns 15s ease-in-out infinite alternate;
         }
-
+  
         @keyframes float {
           0% { transform: translateY(0px); }
           50% { transform: translateY(-10px); }
@@ -1476,7 +1475,7 @@ export default function Home() {
         .animation-delay-2000 {
           animation-delay: 2s;
         }
-
+  
         /* Added shine effect for category cards */
         .shine-effect {
           position: relative;
@@ -1506,7 +1505,7 @@ export default function Home() {
           left: -30%; /* Adjust end position for desired effect */
           transition: opacity 0.7s ease-in-out, left 0.7s ease-in-out; /* Smoother transition */
         }
-
+  
         /* Added pulse slow animation */
         @keyframes pulse-slow {
           50% {
@@ -1516,7 +1515,7 @@ export default function Home() {
         .animate-pulse-slow {
           animation: pulse-slow 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
-
+  
         /* Added fade-in animations */
         @keyframes fade-in-down {
           from { opacity: 0; transform: translateY(-20px); }
@@ -1525,7 +1524,7 @@ export default function Home() {
         .animate-fade-in-down {
           animation: fade-in-down 0.8s ease-out forwards;
         }
-
+  
         @keyframes fade-in-up {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
@@ -1542,7 +1541,9 @@ export default function Home() {
         .animation-delay-700 {
           animation-delay: 0.7s;
         }
-      `}</style>
-    </div>
-  );
+     `}</style>
+  </div>
+);
 }
+
+  
