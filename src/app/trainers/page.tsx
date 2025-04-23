@@ -472,8 +472,13 @@ export default function TrainersPage() {
               </div>
             </div>
             {/* Mobile Filters */}
-            <Transition show={isFilterOpen} enter="transition duration-300 ease-out" enterFrom="transform scale-95 opacity-0" enterTo="transform scale-100 opacity-100" leave="transition duration-200 ease-in" leaveFrom="transform scale-100 opacity-100" leaveTo="transform scale-95 opacity-0" className="md:hidden">
-              <div className="mt-6 border-t border-white/20 pt-6">
+<div className="md:hidden">
+  <Transition show={isFilterOpen} enter="transition duration-300 ease-out" enterFrom="transform scale-95 opacity-0" enterTo="transform scale-100 opacity-100" leave="transition duration-200 ease-in" leaveFrom="transform scale-100 opacity-100" leaveTo="transform scale-95 opacity-0">
+    <div className="mt-6 border-t border-white/20 pt-6">
+      {/* content */}
+    </div>
+  </Transition>
+</div>              <div className="mt-6 border-t border-white/20 pt-6">
                 <h3 className="text-lg font-bold text-white flex items-center">Filters</h3>
                 <div className="mt-6 grid grid-cols-1 gap-y-6 bg-emerald-900/30 backdrop-blur-sm p-5 rounded-xl shadow-inner border border-white/10">
                   {/* Mobile filters content - updated for transparent theme */}
