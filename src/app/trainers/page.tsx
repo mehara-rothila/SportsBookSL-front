@@ -475,98 +475,93 @@ export default function TrainersPage() {
 <div className="md:hidden">
   <Transition show={isFilterOpen} enter="transition duration-300 ease-out" enterFrom="transform scale-95 opacity-0" enterTo="transform scale-100 opacity-100" leave="transition duration-200 ease-in" leaveFrom="transform scale-100 opacity-100" leaveTo="transform scale-95 opacity-0">
     <div className="mt-6 border-t border-white/20 pt-6">
-      {/* content */}
+      <h3 className="text-lg font-bold text-white flex items-center">Filters</h3>
+      <div className="mt-6 grid grid-cols-1 gap-y-6 bg-emerald-900/30 backdrop-blur-sm p-5 rounded-xl shadow-inner border border-white/10">
+        {/* Mobile filters content - updated for transparent theme */}
+        {/* Sport */}
+        <div className="relative group">
+          <label htmlFor="mobile-sport" className="block text-sm font-medium text-white mb-1">Sport</label>
+          <select id="mobile-sport" name="mobile-sport" className="mt-1 block w-full rounded-lg border-white/20 bg-white/10 backdrop-blur-sm py-2.5 pl-3 pr-10 text-white focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 sm:text-sm shadow-sm" value={filters.sport} onChange={(e) => handleFilterChange('sport', e.target.value)}>
+            {sportOptions.map((option) => (
+              <option key={option.id} value={option.id}>{option.name}</option>
+            ))}
+          </select>
+        </div>
+        {/* Location */}
+        <div className="relative group">
+          <label htmlFor="mobile-location" className="block text-sm font-medium text-white mb-1">Location</label>
+          <select id="mobile-location" name="mobile-location" className="mt-1 block w-full rounded-lg border-white/20 bg-white/10 backdrop-blur-sm py-2.5 pl-3 pr-10 text-white focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 sm:text-sm shadow-sm" value={filters.location} onChange={(e) => handleFilterChange('location', e.target.value)}>
+            {locationOptions.map((option) => (
+              <option key={option.id} value={option.id}>{option.name}</option>
+            ))}
+          </select>
+        </div>
+        {/* Rating */}
+        <div className="relative group">
+          <label htmlFor="mobile-rating" className="block text-sm font-medium text-white mb-1">Rating</label>
+          <select id="mobile-rating" name="mobile-rating" className="mt-1 block w-full rounded-lg border-white/20 bg-white/10 backdrop-blur-sm py-2.5 pl-3 pr-10 text-white focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 sm:text-sm shadow-sm" value={filters.rating} onChange={(e) => handleFilterChange('rating', e.target.value)}>
+            {ratingOptions.map((option) => (
+              <option key={option.id} value={option.id}>{option.name}</option>
+            ))}
+          </select>
+        </div>
+        {/* Price */}
+        <div className="relative group">
+          <label htmlFor="mobile-price" className="block text-sm font-medium text-white mb-1">Price Range</label>
+          <select id="mobile-price" name="mobile-price" className="mt-1 block w-full rounded-lg border-white/20 bg-white/10 backdrop-blur-sm py-2.5 pl-3 pr-10 text-white focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 sm:text-sm shadow-sm" value={filters.priceRange} onChange={(e) => handleFilterChange('priceRange', e.target.value)}>
+            {priceRangeOptions.map((option) => (
+              <option key={option.id} value={option.id}>{option.name}</option>
+            ))}
+          </select>
+        </div>
+        {/* Availability */}
+        <div>
+          <Disclosure>
+            {({ open }) => (
+              <>
+                <Disclosure.Button className="flex w-full justify-between rounded-lg bg-white/10 backdrop-blur-sm px-4 py-3 text-left text-sm font-medium text-white hover:bg-white/20 border border-white/20 focus:outline-none focus-visible:ring focus-visible:ring-emerald-500 focus-visible:ring-opacity-75 shadow-sm">
+                  <span className="flex items-center text-white">Availability</span>
+                  {open ? (
+                    <ChevronUpIcon className="h-5 w-5 text-emerald-300" />
+                  ) : (
+                    <ChevronDownIcon className="h-5 w-5 text-emerald-300" />
+                  )}
+                </Disclosure.Button>
+                <Disclosure.Panel className="px-4 pt-4 pb-2 bg-white/5 backdrop-blur-sm mt-2 rounded-lg border border-white/10 shadow-sm">
+                  <div className="grid grid-cols-2 gap-2">
+                    {daysOfWeek.map((day) => (
+                      <div key={`mobile-day-${day}`} className="flex items-start">
+                        <div className="flex h-5 items-center">
+                          <input
+                            id={`mobile-day-${day}`}
+                            name={`mobile-day-${day}`}
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                            checked={filters.availability.includes(day)}
+                            onChange={() => toggleDaySelection(day)} 
+                          />
+                        </div>
+                        <div className="ml-3 text-sm">
+                          <label htmlFor={`mobile-day-${day}`} className="font-medium text-white hover:text-emerald-300 cursor-pointer">
+                            {day}
+                          </label>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Disclosure.Panel>
+              </>
+            )}
+          </Disclosure>
+        </div>
+      </div>
+      <div className="mt-6 flex items-center justify-between">
+        <button type="button" className="flex items-center text-sm font-medium text-emerald-300 hover:text-emerald-400 group" onClick={resetFilters}>Reset</button>
+        <button type="button" className="inline-flex items-center rounded-lg border border-transparent bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transform hover:scale-105 transition-all duration-300" onClick={() => setIsFilterOpen(false)}>Apply</button>
+      </div>
     </div>
   </Transition>
-</div>              <div className="mt-6 border-t border-white/20 pt-6">
-                <h3 className="text-lg font-bold text-white flex items-center">Filters</h3>
-                <div className="mt-6 grid grid-cols-1 gap-y-6 bg-emerald-900/30 backdrop-blur-sm p-5 rounded-xl shadow-inner border border-white/10">
-                  {/* Mobile filters content - updated for transparent theme */}
-                  {/* Sport */}
-                  <div className="relative group">
-                    <label htmlFor="mobile-sport" className="block text-sm font-medium text-white mb-1">Sport</label>
-                    <select id="mobile-sport" name="mobile-sport" className="mt-1 block w-full rounded-lg border-white/20 bg-white/10 backdrop-blur-sm py-2.5 pl-3 pr-10 text-white focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 sm:text-sm shadow-sm" value={filters.sport} onChange={(e) => handleFilterChange('sport', e.target.value)}>
-                      {sportOptions.map((option) => (
-                        <option key={option.id} value={option.id}>{option.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {/* Location */}
-                  <div className="relative group">
-                    <label htmlFor="mobile-location" className="block text-sm font-medium text-white mb-1">Location</label>
-                    <select id="mobile-location" name="mobile-location" className="mt-1 block w-full rounded-lg border-white/20 bg-white/10 backdrop-blur-sm py-2.5 pl-3 pr-10 text-white focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 sm:text-sm shadow-sm" value={filters.location} onChange={(e) => handleFilterChange('location', e.target.value)}>
-                      {locationOptions.map((option) => (
-                        <option key={option.id} value={option.id}>{option.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {/* Rating */}
-                  <div className="relative group">
-                    <label htmlFor="mobile-rating" className="block text-sm font-medium text-white mb-1">Rating</label>
-                    <select id="mobile-rating" name="mobile-rating" className="mt-1 block w-full rounded-lg border-white/20 bg-white/10 backdrop-blur-sm py-2.5 pl-3 pr-10 text-white focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 sm:text-sm shadow-sm" value={filters.rating} onChange={(e) => handleFilterChange('rating', e.target.value)}>
-                      {ratingOptions.map((option) => (
-                        <option key={option.id} value={option.id}>{option.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {/* Price */}
-                  <div className="relative group">
-                    <label htmlFor="mobile-price" className="block text-sm font-medium text-white mb-1">Price Range</label>
-                    <select id="mobile-price" name="mobile-price" className="mt-1 block w-full rounded-lg border-white/20 bg-white/10 backdrop-blur-sm py-2.5 pl-3 pr-10 text-white focus:border-emerald-500 focus:outline-none focus:ring-emerald-500 sm:text-sm shadow-sm" value={filters.priceRange} onChange={(e) => handleFilterChange('priceRange', e.target.value)}>
-                      {priceRangeOptions.map((option) => (
-                        <option key={option.id} value={option.id}>{option.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {/* Availability */}
-                  <div>
-                    <Disclosure>
-                      {({ open }) => (
-                        <>
-                          <Disclosure.Button className="flex w-full justify-between rounded-lg bg-white/10 backdrop-blur-sm px-4 py-3 text-left text-sm font-medium text-white hover:bg-white/20 border border-white/20 focus:outline-none focus-visible:ring focus-visible:ring-emerald-500 focus-visible:ring-opacity-75 shadow-sm">
-                            <span className="flex items-center text-white">Availability</span>
-                            {open ? (
-                              <ChevronUpIcon className="h-5 w-5 text-emerald-300" />
-                            ) : (
-                              <ChevronDownIcon className="h-5 w-5 text-emerald-300" />
-                            )}
-                          </Disclosure.Button>
-                          <Disclosure.Panel className="px-4 pt-4 pb-2 bg-white/5 backdrop-blur-sm mt-2 rounded-lg border border-white/10 shadow-sm">
-                            <div className="grid grid-cols-2 gap-2">
-                              {daysOfWeek.map((day) => (
-                                <div key={`mobile-day-${day}`} className="flex items-start">
-                                  <div className="flex h-5 items-center">
-                                    <input
-                                      id={`mobile-day-${day}`}
-                                      name={`mobile-day-${day}`}
-                                      type="checkbox"
-                                      className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-                                      checked={filters.availability.includes(day)}
-                                      onChange={() => toggleDaySelection(day)} // Use toggleDaySelection directly
-                                    />
-                                  </div>
-                                  <div className="ml-3 text-sm">
-                                    <label htmlFor={`mobile-day-${day}`} className="font-medium text-white hover:text-emerald-300 cursor-pointer">
-                                      {day}
-                                    </label>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </Disclosure.Panel>
-                        </>
-                      )}
-                    </Disclosure>
-                  </div>
-                </div>
-                <div className="mt-6 flex items-center justify-between">
-                  <button type="button" className="flex items-center text-sm font-medium text-emerald-300 hover:text-emerald-400 group" onClick={resetFilters}>Reset</button>
-                  <button type="button" className="inline-flex items-center rounded-lg border border-transparent bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transform hover:scale-105 transition-all duration-300" onClick={() => setIsFilterOpen(false)}>Apply</button>
-                </div>
-              </div>
-            </Transition>
-          </div>
-
+</div>
           {/* Main Content Area */}
           <div className="flex flex-col lg:flex-row">
             {/* Desktop Filters */}
