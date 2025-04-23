@@ -15,13 +15,21 @@ interface EditTrainerModalProps {
 const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
 const FALLBACK_IMAGE = '/images/default-trainer.png';
 
-// Helper function to get proper image URL - FIXED to match pattern in page.tsx
+// FIXED helper function to handle all image URL formats properly
 const getImageUrl = (path: string | null | undefined): string => {
   if (!path) return FALLBACK_IMAGE;
-  if (path.startsWith('http://') || path.startsWith('https://')) return path;
-  if (path.startsWith('/uploads/')) return `${BACKEND_BASE_URL}${path}`;
-  // Default to fallback image for unexpected paths
-  console.warn(`Unexpected trainer image path: "${path}"`);
+  
+  // If it's already a full URL, return it as is
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  
+  // If it's a relative path from the backend, add the base URL
+  if (path.startsWith('/uploads/')) {
+    return `${BACKEND_BASE_URL}${path}`;
+  }
+  
+  // For any other case, return the fallback image
   return FALLBACK_IMAGE;
 };
 
@@ -39,15 +47,16 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
             setFormData({
                 name: trainerToEdit.name,
                 specialization: trainerToEdit.specialization,
-                sports: trainerToEdit.sports?.join(', ') || '', // Join array for input
+                sports: Array.isArray(trainerToEdit.sports) ? trainerToEdit.sports.join(', ') : trainerToEdit.sports,
                 location: trainerToEdit.location,
                 hourlyRate: trainerToEdit.hourlyRate,
                 experienceYears: trainerToEdit.experienceYears,
                 bio: trainerToEdit.bio,
-                languages: trainerToEdit.languages?.join(', ') || '', // Join array
-                availability: trainerToEdit.availability?.join(', ') || '', // Join array
+                languages: Array.isArray(trainerToEdit.languages) ? trainerToEdit.languages.join(', ') : (trainerToEdit.languages || ''),
+                availability: Array.isArray(trainerToEdit.availability) ? trainerToEdit.availability.join(', ') : (trainerToEdit.availability || ''),
                 isActive: trainerToEdit.isActive ?? true,
             });
+            
             // Use helper function for image URL
             setImagePreview(getImageUrl(trainerToEdit.profileImage));
             setImageFile(null); // Reset file input
@@ -85,7 +94,7 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
                 return;
             }
             
-            // Optional: Check file size (e.g., max 5MB)
+            // Check file size (max 5MB)
             const maxSize = 5 * 1024 * 1024; // 5MB
             if (file.size > maxSize) {
                 setError('Image is too large. Maximum size is 5MB.');
@@ -103,7 +112,7 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
         } else {
             // Use helper function for original image
             setImageFile(null);
-            setImagePreview(getImageUrl(trainerToEdit?.profileImage));
+            setImagePreview(trainerToEdit?.profileImage ? getImageUrl(trainerToEdit.profileImage) : null);
         }
     };
 
@@ -122,8 +131,8 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
                 experienceYears: formData.experienceYears !== undefined ? Number(formData.experienceYears) || 0 : undefined,
             };
             
-            // Keep strings as-is - the service will handle conversion to arrays
-            // Type checking shows that the API expects these to remain as strings
+            // NOTE: We keep the comma-separated strings as-is
+            // The backend API will handle parsing these into arrays
             
             console.log('Submitting trainer update with image:', imageFile ? imageFile.name : 'No image');
             await trainerService.updateTrainerByAdmin(trainerToEdit._id, dataToSend, imageFile);
@@ -375,12 +384,14 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
                                             <div className="mt-3">
                                                 <p className="text-xs text-emerald-200/60 mb-2">Current/Preview Image:</p>
                                                 <div className="h-24 w-24 rounded-md overflow-hidden border border-white/20">
-                                                    <Image 
+                                                    {/* Use regular img tag instead of Next.js Image component to avoid optimization issues */}
+                                                    <img 
                                                         src={imagePreview} 
                                                         alt="Image Preview" 
-                                                        width={100} 
-                                                        height={100} 
                                                         className="h-full w-full object-cover" 
+                                                        onError={(e) => { 
+                                                            (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
+                                                        }}
                                                     />
                                                 </div>
                                             </div>

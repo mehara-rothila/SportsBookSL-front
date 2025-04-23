@@ -152,15 +152,22 @@ export default function AdminTrainersPage() {
         fetchTrainers(true);
     };
 
-    // Image URL Helper
-    const getFullImageUrl = (relativePath?: string): string => {
-        if (!relativePath || relativePath === '/images/default-trainer.png') {
+    // Image URL Helper - FIXED to handle both relative and absolute URLs
+    const getFullImageUrl = (path?: string): string => {
+        if (!path || path === '/images/default-trainer.png') {
             return DEFAULT_TRAINER_IMAGE;
         }
-        if (relativePath.startsWith('/uploads/')) {
-            return `${BACKEND_BASE_URL}${relativePath}`;
+        
+        // Already a full URL
+        if (path.startsWith('http://') || path.startsWith('https://')) {
+            return path;
         }
-        console.warn(`Unexpected trainer image path: "${relativePath}"`);
+        
+        // Relative path from backend
+        if (path.startsWith('/uploads/')) {
+            return `${BACKEND_BASE_URL}${path}`;
+        }
+        
         return DEFAULT_TRAINER_IMAGE;
     };
 
@@ -251,6 +258,7 @@ export default function AdminTrainersPage() {
                                             <tr key={trainer._id} className="hover:bg-emerald-800/10 transition-colors">
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="h-10 w-10 rounded-full overflow-hidden bg-white/10 border border-emerald-500/20 shadow-md">
+                                                        {/* Use regular img tag instead of Next.js Image to avoid optimization issues */}
                                                         <img 
                                                             src={imageUrl} 
                                                             alt={trainer.name} 

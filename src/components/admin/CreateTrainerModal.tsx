@@ -1,7 +1,6 @@
 // src/components/admin/CreateTrainerModal.tsx
 import { useState, Fragment, ChangeEvent, FormEvent, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import Image from 'next/image';
 import * as trainerService from '@/services/trainerService';
 import { XMarkIcon, PaperClipIcon } from '@heroicons/react/24/outline';
 
@@ -55,7 +54,7 @@ export default function CreateTrainerModal({ isOpen, onClose, onSuccess }: Creat
                 return;
             }
             
-            // Optional: Check file size (e.g., max 5MB)
+            // Check file size (max 5MB)
             const maxSize = 5 * 1024 * 1024; // 5MB
             if (file.size > maxSize) {
                 setError('Image is too large. Maximum size is 5MB.');
@@ -96,8 +95,8 @@ export default function CreateTrainerModal({ isOpen, onClose, onSuccess }: Creat
                 experienceYears: Number(formData.experienceYears) || 0,
             };
             
-            // Keep strings as-is - the service will handle conversion to arrays
-            // Type checking shows that the API expects these to remain as strings
+            // NOTE: We keep the comma-separated strings as-is
+            // The backend API will handle parsing these into arrays
             
             console.log('Creating trainer with image:', imageFile ? imageFile.name : 'No image');
             await trainerService.createTrainer(dataToSend, imageFile);
@@ -346,11 +345,10 @@ export default function CreateTrainerModal({ isOpen, onClose, onSuccess }: Creat
                                             <div className="mt-3">
                                                 <p className="text-xs text-emerald-200/60 mb-2">Preview:</p>
                                                 <div className="h-24 w-24 rounded-md overflow-hidden border border-white/20">
-                                                    <Image 
+                                                    {/* Use regular img tag instead of Next.js Image component */}
+                                                    <img 
                                                         src={imagePreview} 
                                                         alt="Image Preview" 
-                                                        width={100} 
-                                                        height={100} 
                                                         className="h-full w-full object-cover" 
                                                     />
                                                 </div>
