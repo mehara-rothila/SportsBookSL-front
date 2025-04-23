@@ -80,7 +80,9 @@ export default function NotificationCenter() {
       const originalNotifications = [...notifications];
       const originalUnreadCount = unreadCount;
       setNotifications(prev => prev.filter(n => n._id !== notificationId));
-      setUnreadCount(prev => Math.max(0, prev - 1)); // Optimistic decrease
+      // --- FIXED LINE BELOW ---
+      // Calculate the new count using the current state value and pass the number directly
+      setUnreadCount(Math.max(0, unreadCount - 1)); // Optimistic decrease
       try {
           const data = await notificationService.deleteNotification(notificationId);
           setUnreadCount(data.unreadCount); // Sync with API response
@@ -96,6 +98,7 @@ export default function NotificationCenter() {
   useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
           const target = event.target as HTMLElement;
+          // Check if the click target or its ancestor has the class 'notification-center' or 'notification-bell-button'
           if (isOpen && !target.closest('.notification-center') && !target.closest('.notification-bell-button')) {
               setIsOpen(false);
           }
@@ -104,39 +107,48 @@ export default function NotificationCenter() {
       return () => { document.removeEventListener('mousedown', handleClickOutside); };
   }, [isOpen]);
 
-  // --- Icon logic (keep the same) ---
-  const getNotificationIcon = (type: string) => { /* ... same as before ... */
-    switch (type) {
-      case 'booking_created': case 'booking_status_update': case 'booking_reminder':
+
+  // --- Icon logic ---
+  const getNotificationIcon = (type: string) => {
+    switch (type?.toLowerCase()) { // Add null check and lowercase for robustness
+      case 'booking_created':
+      case 'booking_status_update':
+      case 'booking_reminder':
         return <CalendarIcon className="h-6 w-6 text-blue-500" />;
-      case 'transportation_update': // Example type
+      case 'transportation_update':
         return <TruckIcon className="h-6 w-6 text-green-500" />;
       case 'weather_alert':
         return <CloudIcon className="h-6 w-6 text-purple-500" />;
-      case 'donation_received': case 'donation_thankyou':
+      case 'donation_received':
+      case 'donation_thankyou':
         return <CurrencyDollarIcon className="h-6 w-6 text-amber-500" />;
       case 'financial_aid_update':
-         return <LifebuoyIcon className="h-6 w-6 text-indigo-500" />; // Example for Aid
+      case 'financial_aid_approved': // Example specific types
+      case 'financial_aid_rejected':
+      case 'financial_aid_needs_info':
+         return <LifebuoyIcon className="h-6 w-6 text-indigo-500" />;
       case 'system_announcement':
         return <ExclamationTriangleIcon className="h-6 w-6 text-red-500" />;
       default:
-        return <CheckCircleIcon className="h-6 w-6 text-gray-500" />;
+        // Provide a generic fallback icon
+        return <BellIcon className="h-6 w-6 text-gray-500" />;
     }
   };
 
-   // --- Format Date (keep the same) ---
-    const formatNotificationDate = (dateStr: string): string => { /* ... same as before ... */
+   // --- Format Date ---
+    const formatNotificationDate = (dateStr: string | undefined): string => {
+        if (!dateStr) return ''; // Handle undefined case
         try {
-             // Implement more user-friendly relative time later (e.g., using date-fns formatDistanceToNow)
+            // Consider using formatDistanceToNow for relative time eventually
             return format(parseISO(dateStr), 'MMM d, h:mm a');
         } catch { return 'Invalid Date'; }
     };
 
   return (
-    <div className="notification-center relative">
+    <div className="notification-center relative"> {/* Added class for outside click detection */}
       <button
         type="button"
-        className="notification-bell-button relative p-1 rounded-full text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
+        className="notification-bell-button relative p-1 rounded-full text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500" // Added class
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className="sr-only">View notifications</span>
@@ -160,7 +172,7 @@ export default function NotificationCenter() {
          leaveFrom="transform opacity-100 scale-100"
          leaveTo="transform opacity-0 scale-95"
        >
-        {/* Keep the rest of the Transition content (panel, header, body, list, footer) exactly the same as before */}
+        {/* Added notification-panel class for outside click detection */}
         <div className="notification-panel absolute right-0 mt-2 w-80 sm:w-96 origin-top-right bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden z-50 max-h-[70vh] flex flex-col">
           {/* Header */}
           <div className="p-3 px-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center sticky top-0 z-10">
@@ -181,6 +193,7 @@ export default function NotificationCenter() {
                  <ul role="list" className="divide-y divide-gray-100">
                     {notifications.map((notification) => (
                       <li key={notification._id} className={`relative transition-colors duration-150 group ${notification.isRead ? 'hover:bg-gray-50' : 'bg-blue-50 hover:bg-blue-100'}`} >
+                         {/* Use ConditionalLink helper */}
                          <ConditionalLink href={notification.link} className="block px-4 py-3" onClick={() => handleMarkAsRead(notification._id, notification.isRead)}>
                           <div className="flex items-start">
                              <div className="flex-shrink-0 mt-0.5">{getNotificationIcon(notification.type)}</div>
@@ -211,7 +224,13 @@ export default function NotificationCenter() {
 }
 
 
-// Helper component (keep the same)
+// Helper component for conditional linking
 const ConditionalLink = ({ href, children, ...props }: any) => {
-    return href ? ( <Link href={href} {...props}>{children}</Link> ) : ( <div {...props}>{children}</div> );
+    // If no href is provided, render a div instead of a link
+    // This prevents link-related behaviors (like hover effects/navigation) when not applicable
+    return href ? (
+        <Link href={href} {...props}>{children}</Link>
+    ) : (
+        <div {...props}>{children}</div>
+    );
 };
