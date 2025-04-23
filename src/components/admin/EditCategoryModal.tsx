@@ -24,8 +24,14 @@ interface EditCategoryModalProps {
   onSave: (updatedCategory: Category) => void; // Function to call after successful save
 }
 
-// Define possible roles if needed for other forms, remove if not used here
-// const userRoles: User['role'][] = ['user', 'admin', 'trainer', 'facilityOwner'];
+const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
+
+// Helper function to get proper image URL
+const getImageUrl = (path: string | null | undefined): string => {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  return `${BACKEND_BASE_URL}${path}`;
+};
 
 export default function EditCategoryModal({ isOpen, onClose, category, onSave }: EditCategoryModalProps) {
   const [name, setName] = useState('');
@@ -45,7 +51,8 @@ export default function EditCategoryModal({ isOpen, onClose, category, onSave }:
       setSlug(category.slug || '');
       setDescription(category.description || '');
       setIconSvg(category.iconSvg || '');
-      setImagePreview(category.imageSrc ? `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001'}${category.imageSrc}` : null);
+      // Use helper function for image URL
+      setImagePreview(category.imageSrc ? getImageUrl(category.imageSrc) : null);
       setImageFile(null);
       setError(null);
     } else {
@@ -62,7 +69,8 @@ export default function EditCategoryModal({ isOpen, onClose, category, onSave }:
       reader.onloadend = () => { setImagePreview(reader.result as string); };
       reader.readAsDataURL(file);
     } else {
-      setImagePreview(category?.imageSrc ? `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001'}${category.imageSrc}` : null);
+      // Use helper function for original image
+      setImagePreview(category?.imageSrc ? getImageUrl(category.imageSrc) : null);
       setImageFile(null);
     }
   };

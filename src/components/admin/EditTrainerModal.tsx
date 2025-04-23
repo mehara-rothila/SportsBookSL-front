@@ -12,6 +12,16 @@ interface EditTrainerModalProps {
     trainerToEdit: trainerService.Trainer | null;
 }
 
+const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
+const FALLBACK_IMAGE = '/images/default-trainer.png';
+
+// Helper function to get proper image URL
+const getImageUrl = (path: string | null | undefined): string => {
+  if (!path) return FALLBACK_IMAGE;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  return `${BACKEND_BASE_URL}${path}`;
+};
+
 export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerToEdit }: EditTrainerModalProps) {
     const [formData, setFormData] = useState<Partial<trainerService.TrainerFormData>>({});
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -35,7 +45,8 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
                 availability: trainerToEdit.availability?.join(', ') || '', // Join array
                 isActive: trainerToEdit.isActive ?? true,
             });
-            setImagePreview(trainerToEdit.profileImage || null); // Set existing image preview
+            // Use helper function for image URL
+            setImagePreview(getImageUrl(trainerToEdit.profileImage));
             setImageFile(null); // Reset file input
             setError(null);
         } else {
@@ -64,9 +75,9 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
             };
             reader.readAsDataURL(file);
         } else {
-            // If user cancels file selection, revert preview to original image or null
+            // Use helper function for original image
             setImageFile(null);
-            setImagePreview(trainerToEdit?.profileImage || null);
+            setImagePreview(getImageUrl(trainerToEdit?.profileImage));
         }
     };
 

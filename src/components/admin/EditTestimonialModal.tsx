@@ -10,6 +10,13 @@ import * as testimonialService from '@/services/testimonialService';
 const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
 const FALLBACK_IMAGE = '/images/default-avatar.png';
 
+// Helper function to get proper image URL
+const getImageUrl = (path: string | null | undefined): string => {
+  if (!path) return FALLBACK_IMAGE;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  return `${BACKEND_BASE_URL}${path}`;
+};
+
 interface EditTestimonialModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -33,9 +40,8 @@ export default function EditTestimonialModal({ isOpen, onClose, testimonial, onS
         role: testimonial.role || '',
         isActive: testimonial.isActive === undefined ? true : testimonial.isActive,
       });
-      // Construct URL for existing image
-      const currentImageUrl = testimonial.imageUrl ? `${BACKEND_BASE_URL}${testimonial.imageUrl}` : FALLBACK_IMAGE;
-      setImagePreview(currentImageUrl);
+      // Use helper function for image URL
+      setImagePreview(getImageUrl(testimonial.imageUrl));
       setImageFile(null); // Clear any previously selected file
       setError(null);
       if(fileInputRef.current) fileInputRef.current.value = "";
@@ -72,9 +78,8 @@ export default function EditTestimonialModal({ isOpen, onClose, testimonial, onS
       };
       reader.readAsDataURL(file);
     } else {
-      // Revert to original image if file selection is cancelled
-      const originalImageUrl = testimonial?.imageUrl ? `${BACKEND_BASE_URL}${testimonial.imageUrl}` : FALLBACK_IMAGE;
-      setImagePreview(originalImageUrl);
+      // Use helper function for original image
+      setImagePreview(getImageUrl(testimonial?.imageUrl));
       setImageFile(null);
     }
   };

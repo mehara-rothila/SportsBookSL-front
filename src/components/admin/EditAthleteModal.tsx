@@ -18,6 +18,13 @@ interface EditAthleteModalProps {
 const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
 const FALLBACK_IMAGE = '/images/default-athlete.png';
 
+// Helper function to get proper image URL
+const getImageUrl = (path: string | null | undefined): string => {
+  if (!path) return FALLBACK_IMAGE;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  return `${BACKEND_BASE_URL}${path}`;
+};
+
 export default function EditAthleteModal({ isOpen, onClose, onSuccess, athleteToEdit }: EditAthleteModalProps) {
   const [formData, setFormData] = useState<Partial<athleteService.AthleteFormData>>({});
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -40,8 +47,8 @@ export default function EditAthleteModal({ isOpen, onClose, onSuccess, athleteTo
         isActive: athleteToEdit.isActive ?? true,
         isFeatured: athleteToEdit.isFeatured ?? false,
       });
-      const currentImageUrl = athleteToEdit.image ? `${BACKEND_BASE_URL}${athleteToEdit.image}` : FALLBACK_IMAGE;
-      setImagePreview(currentImageUrl);
+      // Use the helper function instead of direct concatenation
+      setImagePreview(getImageUrl(athleteToEdit.image));
       setImageFile(null);
       setError(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -83,8 +90,7 @@ export default function EditAthleteModal({ isOpen, onClose, onSuccess, athleteTo
       reader.readAsDataURL(file);
     } else {
       // If selection cancelled, revert preview to original/current image
-      const currentImageUrl = athleteToEdit?.image ? `${BACKEND_BASE_URL}${athleteToEdit.image}` : FALLBACK_IMAGE;
-      setImagePreview(currentImageUrl);
+      setImagePreview(getImageUrl(athleteToEdit?.image));
       setImageFile(null);
     }
   };
