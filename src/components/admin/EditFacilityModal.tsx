@@ -256,9 +256,8 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
 
         // Compare as strings for simplicity, ensures types like number/undefined are compared correctly
         if (String(formCompValue) !== String(originalCompValue)) {
-             // --- FIXED LINE BELOW ---
-             // Use type assertion 'as any' because TypeScript struggles with the dynamic key/value types here
-             dataToUpdate[key] = formValue as any;
+             // Use type assertion on dataToUpdate for this dynamic assignment
+             (dataToUpdate as any)[key] = formValue; // <-- REVISED FIX HERE
         }
     });
 
