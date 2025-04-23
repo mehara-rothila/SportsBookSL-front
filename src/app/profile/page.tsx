@@ -36,33 +36,42 @@ const CANCELLATION_HOURS_LIMIT = 24;
 
 
 // --- Interfaces ---
+// FIX: Updated role type to match expected literal union type by userService.updateUserProfile
 interface UserProfile {
-    _id: string; name: string; email: string; phone?: string; address?: string; avatar?: string; createdAt?: string; sportPreferences?: string[]; role?: string;
+    _id: string;
+    name: string;
+    email: string;
+    phone?: string;
+    address?: string;
+    avatar?: string;
+    createdAt?: string;
+    sportPreferences?: string[];
+    role?: "user" | "trainer" | "admin" | "facilityOwner"; // Changed from 'string'
 }
 
 // Updated Booking interface to match API response
 interface Booking {
-    _id: string; 
-    bookingId?: string; 
-    date: string; 
-    timeSlot: string; 
-    status: string; 
-    bookingType?: 'facility' | 'trainer'; 
-    facility?: string | { 
-        _id: string; 
-        name?: string; 
+    _id: string;
+    bookingId?: string;
+    date: string;
+    timeSlot: string;
+    status: string;
+    bookingType?: 'facility' | 'trainer';
+    facility?: string | {
+        _id: string;
+        name?: string;
         address?: string;
         images?: string[];
         location?: string;
         pricePerHourValue?: number;
-    }; 
-    trainer?: string | { 
-        _id: string; 
-        name?: string; 
+    };
+    trainer?: string | {
+        _id: string;
+        name?: string;
         specialization?: string;
-    }; 
-    durationHours?: number; 
-    participants?: number; 
+    };
+    durationHours?: number;
+    participants?: number;
     totalCost?: number;
     createdAt?: string;
     updatedAt?: string;
@@ -173,23 +182,23 @@ function ProfilePageContent() {
 
     // Updated to use type casting for TypeScript compatibility
     const fetchBookingsData = useCallback(async () => {
-        if (bookingsFetched || loadingBookings) return; 
-        setLoadingBookings(true); 
-        setBookingsError(null); 
-        try { 
+        if (bookingsFetched || loadingBookings) return;
+        setLoadingBookings(true);
+        setBookingsError(null);
+        try {
             const data = await bookingService.getUserBookings();
             // Use type casting to ensure compatibility
             const processedBookings = data.map(b => ({
-                ...b, 
+                ...b,
                 bookingType: b.trainer ? 'trainer' : 'facility'
             })) as Booking[];
-            
+
             setBookings(processedBookings);
-            setBookingsFetched(true); 
-        } catch (err: any) { 
-            setBookingsError(err?.message || 'Failed to load bookings'); 
-        } finally { 
-            setLoadingBookings(false); 
+            setBookingsFetched(true);
+        } catch (err: any) {
+            setBookingsError(err?.message || 'Failed to load bookings');
+        } finally {
+            setLoadingBookings(false);
         }
     }, [bookingsFetched, loadingBookings]);
 
@@ -257,7 +266,7 @@ function ProfilePageContent() {
         setLoadingProfile(true);
         setProfileError(null);
         try {
-            const dataToUpdate: Partial<UserProfile> = {};
+            const dataToUpdate: Partial<UserProfile> = {}; // This object will only contain fields that are changed and are allowed to be updated by the user
 
             if (editedProfileData.name !== profile.name) dataToUpdate.name = editedProfileData.name;
             if (editedProfileData.email !== profile.email) dataToUpdate.email = editedProfileData.email;
@@ -265,6 +274,10 @@ function ProfilePageContent() {
             if (editedProfileData.address !== (profile.address || '')) dataToUpdate.address = editedProfileData.address;
 
             if (Object.keys(dataToUpdate).length > 0) {
+                // Because dataToUpdate is constructed only with name, email, phone, address,
+                // and the local UserProfile type definition now correctly reflects the possible
+                // literal values for 'role' if it were included (which it isn't in this update),
+                // the type check passes as 'dataToUpdate' is a valid Partial<UserProfile>.
                 const updatedData = await userService.updateUserProfile(dataToUpdate);
                 setProfile(updatedData);
 
