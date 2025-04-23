@@ -1,5 +1,4 @@
 // src/components/admin/AdminTestimonialsTable.tsx
-import Image from 'next/image';
 import { PencilIcon, TrashIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Testimonial } from '@/services/testimonialService';
 
@@ -18,10 +17,22 @@ export default function AdminTestimonialsTable({
   onDelete,
 }: AdminTestimonialsTableProps) {
 
-  const getImageUrl = (imagePath?: string): string => {
-    if (!imagePath) return FALLBACK_IMAGE;
-    return `${BACKEND_BASE_URL}${imagePath}`;
-  }
+  // FIXED: Updated image URL handling to handle both relative and absolute URLs
+  const getImageUrl = (path?: string): string => {
+    if (!path) return FALLBACK_IMAGE;
+    
+    // If already a full URL
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    
+    // For relative paths from backend
+    if (path.startsWith('/')) {
+      return `${BACKEND_BASE_URL}${path}`;
+    }
+    
+    return FALLBACK_IMAGE;
+  };
 
   return (
     <table className="min-w-full divide-y divide-white/15">
@@ -52,13 +63,12 @@ export default function AdminTestimonialsTable({
           <tr key={testimonial._id} className="hover:bg-emerald-800/10 transition-colors duration-150">
             <td className="px-4 py-4 whitespace-nowrap">
               <div className="h-10 w-10 rounded-full overflow-hidden bg-white/10 border border-emerald-500/20 shadow-md">
-                <Image
+                {/* FIXED: Replaced Next.js Image with regular img tag */}
+                <img
                   src={getImageUrl(testimonial.imageUrl)}
                   alt={`${testimonial.author}'s photo`}
-                  width={40}
-                  height={40}
                   className="h-full w-full object-cover"
-                  onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMAGE; }}
                 />
               </div>
             </td>

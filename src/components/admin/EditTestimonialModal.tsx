@@ -4,17 +4,26 @@
 import { useState, useEffect, Fragment, useRef, ChangeEvent, FormEvent } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
-import Image from 'next/image';
 import * as testimonialService from '@/services/testimonialService';
 
 const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
 const FALLBACK_IMAGE = '/images/default-avatar.png';
 
-// Helper function to get proper image URL
+// FIXED: Improved image URL handling to handle both relative and absolute URLs
 const getImageUrl = (path: string | null | undefined): string => {
   if (!path) return FALLBACK_IMAGE;
-  if (path.startsWith('http://') || path.startsWith('https://')) return path;
-  return `${BACKEND_BASE_URL}${path}`;
+  
+  // If it's already a full URL, return it as is
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  
+  // If it's a relative path from the backend, add the base URL
+  if (path.startsWith('/')) {
+    return `${BACKEND_BASE_URL}${path}`;
+  }
+  
+  return FALLBACK_IMAGE;
 };
 
 interface EditTestimonialModalProps {
@@ -44,6 +53,8 @@ export default function EditTestimonialModal({ isOpen, onClose, testimonial, onS
       setImagePreview(getImageUrl(testimonial.imageUrl));
       setImageFile(null); // Clear any previously selected file
       setError(null);
+      
+      // Reset file input value when testimonial changes
       if(fileInputRef.current) fileInputRef.current.value = "";
     } else {
       setFormData({});
@@ -66,11 +77,25 @@ export default function EditTestimonialModal({ isOpen, onClose, testimonial, onS
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     setError(null);
+    
     if (file) {
-      if (!file.type.startsWith('image/')) {
-        setError('Please select an image file.');
+      // Enhanced validation for file type
+      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg'];
+      if (!validImageTypes.includes(file.type)) {
+        setError('Please select a valid image file (JPEG, PNG, GIF, WEBP)');
+        // Reset file input
+        if (fileInputRef.current) fileInputRef.current.value = '';
         return;
       }
+      
+      // Check file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        setError('Image is too large. Maximum size is 5MB.');
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
+      
       setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -87,17 +112,21 @@ export default function EditTestimonialModal({ isOpen, onClose, testimonial, onS
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!testimonial) return;
+    
     setError(null);
     if (!formData.content || !formData.author) {
       setError("Content and Author are required.");
       return;
     }
+    
     setIsLoading(true);
     try {
+      console.log('Submitting testimonial update with image:', imageFile ? imageFile.name : 'No image');
       const updatedTestimonial = await testimonialService.updateAdminTestimonial(testimonial._id, formData, imageFile);
       onSave(updatedTestimonial);
       onClose();
     } catch (err: any) {
+      console.error("Update Testimonial Error:", err);
       setError(err.message || "Failed to update testimonial.");
     } finally {
       setIsLoading(false);
@@ -133,25 +162,27 @@ export default function EditTestimonialModal({ isOpen, onClose, testimonial, onS
               leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-lg bg-emerald-900/20 backdrop-blur-md border border-white/10 p-6 text-left align-middle shadow-xl transition-all">
-                <div className="absolute top-0 right-0 pt-4 pr-4">
-                  <button
-                    type="button"
-                    className="rounded-md text-white/70 hover:text-white/90 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
-                    onClick={onClose}
-                  >
-                    <span className="sr-only">Close</span>
-                    <XMarkIcon className="h-6 w-6" aria-hidden="true" />
-                  </button>
-                </div>
-                
                 <Dialog.Title
                   as="h3"
-                  className="text-xl font-semibold leading-6 text-white border-b border-white/10 pb-3 mb-4"
+                  className="text-xl font-semibold leading-6 text-white border-b border-white/10 pb-4 flex justify-between items-center"
                 >
                   Edit Testimonial
+                  <button
+                    type="button"
+                    className="text-white/70 hover:text-white/90 transition-colors"
+                    onClick={onClose}
+                  >
+                    <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                  </button>
                 </Dialog.Title>
                 
-                <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+                <form onSubmit={handleSubmit} className="mt-6 space-y-6 max-h-[70vh] overflow-y-auto pr-3 custom-scrollbar">
+                  {error && (
+                    <div className="text-sm text-red-200 bg-red-900/30 p-3 rounded-md border border-red-500/30">
+                      {error}
+                    </div>
+                  )}
+                  
                   <div>
                     <label htmlFor="edit-test-content" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                       Content <span className="text-red-400">*</span>
@@ -199,17 +230,16 @@ export default function EditTestimonialModal({ isOpen, onClose, testimonial, onS
                   
                   <div>
                     <label htmlFor="edit-test-image" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
-                      Author Image (Optional: Upload new to replace)
+                      Author Image (Upload new to replace)
                     </label>
                     <div className="mt-1 flex items-center space-x-4">
                       <div className="h-16 w-16 rounded-full overflow-hidden bg-white/10 border border-emerald-500/20 shadow-md">
-                        <Image
+                        {/* FIXED: Using regular img tag instead of Next.js Image */}
+                        <img
                           src={imagePreview || FALLBACK_IMAGE}
                           alt="Current/Preview"
-                          width={64}
-                          height={64}
                           className="h-full w-full object-cover"
-                          onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
+                          onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMAGE; }}
                         />
                       </div>
                       
@@ -219,7 +249,7 @@ export default function EditTestimonialModal({ isOpen, onClose, testimonial, onS
                           id="edit-test-image"
                           ref={fileInputRef}
                           onChange={handleImageChange}
-                          accept="image/*"
+                          accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
                           className="sr-only"
                         />
                         <label
@@ -247,13 +277,7 @@ export default function EditTestimonialModal({ isOpen, onClose, testimonial, onS
                     </label>
                   </div>
                   
-                  {error && (
-                    <div className="text-sm text-red-200 bg-red-900/30 p-3 rounded-md border border-red-500/30">
-                      {error}
-                    </div>
-                  )}
-                  
-                  <div className="mt-6 flex justify-end space-x-3 border-t border-white/10 pt-4">
+                  <div className="mt-8 flex justify-end space-x-3 border-t border-white/10 pt-5">
                     <button
                       type="button"
                       className="inline-flex justify-center rounded-md border border-white/20 bg-white/5 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 transition-all duration-200"
@@ -267,7 +291,15 @@ export default function EditTestimonialModal({ isOpen, onClose, testimonial, onS
                       className="inline-flex justify-center rounded-md border border-transparent bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 transition-all duration-200"
                       disabled={isLoading}
                     >
-                      {isLoading ? 'Saving...' : 'Save Changes'}
+                      {isLoading ? (
+                        <div className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Saving...
+                        </div>
+                      ) : 'Save Changes'}
                     </button>
                   </div>
                 </form>
