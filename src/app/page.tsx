@@ -675,8 +675,8 @@ const renderSportCategoriesSection = () => {
                               src={imageUrl}
                               alt={testimonial.author || 'Author'}
                               className="h-full w-full object-cover"
-                              onError={(e) => { e.target.onerror = null; e.target.src=FALLBACK_TESTIMONIAL_IMAGE }} // Fallback
-                            />
+                              onError={(e) => { (e.target as HTMLImageElement).onerror = null; (e.target as HTMLImageElement).src=FALLBACK_TESTIMONIAL_IMAGE }}
+                                                          />
                           </div>
                         </div>
 
@@ -689,8 +689,7 @@ const renderSportCategoriesSection = () => {
                                 src={imageUrl}
                                 alt={testimonial.author || 'Author'}
                                 className="h-full w-full object-cover"
-                                onError={(e) => { e.target.onerror = null; e.target.src=FALLBACK_TESTIMONIAL_IMAGE }} // Fallback
-                              />
+                                onError={(e) => { (e.target as HTMLImageElement).onerror = null; (e.target as HTMLImageElement).src=FALLBACK_TESTIMONIAL_IMAGE }}                              />
                             </div>
                           </div>
                           {/* Author Name & Role */}
