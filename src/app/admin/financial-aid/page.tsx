@@ -9,7 +9,8 @@ import ReviewAidApplicationModal from '@/components/admin/ReviewAidApplicationMo
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 // Types for the list and details
-type AdminAidApplicationListItem = financialAidService.AdminAidApplicationListItem;
+// Line 12 - Corrected type name using the exported interface
+type AdminAidApplicationListItem = financialAidService.FinancialAidApplicationSummary;
 type FinancialAidApplicationDetails = financialAidService.FinancialAidApplicationDetails;
 
 export default function AdminFinancialAidPage() {
