@@ -14,7 +14,7 @@ export interface Athlete {
     achievements?: string[];
     story: string;
     location: string;
-    isActive?: boolean;
+    isActive?: boolean; // Still optional in the base Athlete type
     isFeatured?: boolean;
     createdAt?: string;
     updatedAt?: string;
@@ -36,8 +36,20 @@ export interface AthleteFormData {
     // 'image' field is handled by the File object parameter
 }
 
-// Interface for Admin list (could be simpler than full Athlete)
-export type AdminAthleteListItem = Pick<Athlete, '_id' | 'name' | 'sport' | 'location' | 'goalAmount' | 'raisedAmount' | 'progress' | 'isActive' | 'image'>;
+// Interface for Admin list (explicit definition)
+// !! FIX APPLIED HERE: isActive is now required !!
+export interface AdminAthleteListItem {
+    _id: string;
+    name: string;
+    sport?: string;
+    location?: string;
+    goalAmount?: number;
+    raisedAmount?: number;
+    progress?: number;
+    isActive: boolean; // <-- Required here
+    image?: string;
+    isFeatured?: boolean; // Keep optional unless table requires it
+}
 
 
 // --- ADMIN FUNCTIONS ---
@@ -49,9 +61,10 @@ export type AdminAthleteListItem = Pick<Athlete, '_id' | 'name' | 'sport' | 'loc
 export const getAllAdminAthletes = async (): Promise<AdminAthleteListItem[]> => {
     try {
         console.log("Service: Getting all admin athletes");
-        // ASSUMPTION: Endpoint returns an array of athletes directly
+        // The endpoint returns data that should match the NEW AdminAthleteListItem interface
         const response = await api.get<AdminAthleteListItem[]>('/admin/athletes');
         console.log("Service: Get all admin athletes response count:", response.data?.length);
+        // No mapping needed here if backend guarantees 'isActive' is present
         return response.data || [];
     } catch (error: any) {
         console.error("Get All Admin Athletes Service Error:", error.response?.data || error.message);
