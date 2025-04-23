@@ -30,8 +30,8 @@ import { CalendarDaysIcon, CreditCardIcon, UserIcon, BuildingStorefrontIcon, Bri
 // --- Constants ---
 const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
 // No fallback avatar anymore - we won't use a placeholder
-const DEFAULT_AVATAR = '/images/default-avatar.png';
-const FALLBACK_FACILITY_IMAGE = '/images/facility-placeholder.jpg';
+const DEFAULT_AVATAR = '/images/default-avatar.png'; // This seems unused now, keep or remove based on need
+const FALLBACK_FACILITY_IMAGE = '/images/facility-placeholder.jpg'; // Also potentially unused if BuildingStorefrontIcon is default
 const CANCELLATION_HOURS_LIMIT = 24;
 
 
@@ -48,6 +48,8 @@ interface Favorite {
 interface FinAidAppSummary {
     _id: string; submittedDate?: string; status: string; sportsInfo?: { primarySport?: string; };
 }
+// This assumes FinancialAidApplicationDetails is exported from the service
+// If the error persists, double-check the export in financialAidService
 interface FinAidAppDetails extends financialAidService.FinancialAidApplicationDetails {}
 interface UserDonation {
     _id: string; athlete?: { _id: string; name: string; }; amount: number; donationDate: string; paymentStatus: string; isAnonymous: boolean;
@@ -116,29 +118,29 @@ function ProfilePageContent() {
 
     // --- Fetch Functions (Memoized) ---
     const fetchProfile = useCallback(async () => {
-        setLoadingProfile(true); 
-        setProfileError(null); 
-        try { 
-            const data = await userService.getUserProfile(); 
-            setProfile(data); 
-            setEditedProfileData({ 
-                name: data?.name || '', 
-                email: data?.email || '', 
-                phone: data?.phone || '', 
-                address: data?.address || '' 
-            }); 
-            
+        setLoadingProfile(true);
+        setProfileError(null);
+        try {
+            const data = await userService.getUserProfile();
+            setProfile(data);
+            setEditedProfileData({
+                name: data?.name || '',
+                email: data?.email || '',
+                phone: data?.phone || '',
+                address: data?.address || ''
+            });
+
             // Set avatar preview directly without fallback
             if (data?.avatar) {
                 setAvatarPreview(`${BACKEND_BASE_URL}${data.avatar}`);
             } else {
                 setAvatarPreview(null);
             }
-        } catch (err: any) { 
-            console.error("Fetch Profile Error:", err); 
-            setProfileError(err?.message || 'Failed to load profile.'); 
-        } finally { 
-            setLoadingProfile(false); 
+        } catch (err: any) {
+            console.error("Fetch Profile Error:", err);
+            setProfileError(err?.message || 'Failed to load profile.');
+        } finally {
+            setLoadingProfile(false);
         }
     }, []);
 
@@ -155,25 +157,26 @@ function ProfilePageContent() {
      }, [donationsFetched, loadingDonations]);
 
     const fetchAidData = useCallback(async () => {
+        // Assume 'getUserFinancialAidApps' is correct function name in userService based on context
         if (aidFetched || loadingAid) return; setLoadingAid(true); setAidError(null); try { const data = await userService.getUserFinancialAidApps(); setFinancialAidApps(data); setAidFetched(true); } catch (err:any) { setAidError(err?.message || 'Failed to load applications'); } finally { setLoadingAid(false); }
      }, [aidFetched, loadingAid]);
 
      // --- Initial Auth Check & Profile Load ---
-     useEffect(() => { 
-        const checkAuthAndLoad = async () => { 
-            try { 
-                const isAuthed = authService.isAuthenticated(); 
-                if (!isAuthed) { 
-                    router.push('/login?redirect=/profile'); 
-                    return; 
-                } 
-                await fetchProfile(); 
-            } catch (err) { 
-                console.error("Auth/Profile Load Error:", err); 
-                setProfileError('Authentication failed. Please login again.'); 
-            } 
-        }; 
-        checkAuthAndLoad(); 
+     useEffect(() => {
+        const checkAuthAndLoad = async () => {
+            try {
+                const isAuthed = authService.isAuthenticated();
+                if (!isAuthed) {
+                    router.push('/login?redirect=/profile');
+                    return;
+                }
+                await fetchProfile();
+            } catch (err) {
+                console.error("Auth/Profile Load Error:", err);
+                setProfileError('Authentication failed. Please login again.');
+            }
+        };
+        checkAuthAndLoad();
     }, [router, fetchProfile]);
 
     // --- Fetch Tab Data Effect ---
@@ -203,30 +206,30 @@ function ProfilePageContent() {
     const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setEditedProfileData(prev => ({...prev, [e.target.name]: e.target.value}));
     };
-    
-    const handleSaveProfile = async () => { 
-        if (!profile) return; 
-        setLoadingProfile(true); 
-        setProfileError(null); 
-        try { 
+
+    const handleSaveProfile = async () => {
+        if (!profile) return;
+        setLoadingProfile(true);
+        setProfileError(null);
+        try {
             const dataToUpdate: Partial<UserProfile> = {};
-            
+
             if (editedProfileData.name !== profile.name) dataToUpdate.name = editedProfileData.name;
             if (editedProfileData.email !== profile.email) dataToUpdate.email = editedProfileData.email;
             if (editedProfileData.phone !== (profile.phone || '')) dataToUpdate.phone = editedProfileData.phone;
             if (editedProfileData.address !== (profile.address || '')) dataToUpdate.address = editedProfileData.address;
-            
+
             if (Object.keys(dataToUpdate).length > 0) {
                 const updatedData = await userService.updateUserProfile(dataToUpdate);
                 setProfile(updatedData);
-                
+
                 // Update avatar preview
                 if (updatedData.avatar) {
                     setAvatarPreview(`${BACKEND_BASE_URL}${updatedData.avatar}`);
                 } else {
                     setAvatarPreview(null);
                 }
-                
+
                 try {
                     if (authService.updateLocalUserInfo) {
                         authService.updateLocalUserInfo(updatedData);
@@ -235,12 +238,12 @@ function ProfilePageContent() {
                 } catch (lsErr) {
                     console.error("LS update error:", lsErr);
                 }
-                
+
                 toast.success("Profile updated!");
             } else {
                 toast.info("No changes made.");
             }
-            
+
             setIsEditingProfile(false);
         } catch (err: any) {
             const msg = err?.message || 'Failed to save profile';
@@ -250,7 +253,7 @@ function ProfilePageContent() {
             setLoadingProfile(false);
         }
     };
-    
+
     const handleCancelEdit = () => {
         if (profile) {
             setEditedProfileData({
@@ -263,23 +266,23 @@ function ProfilePageContent() {
         setIsEditingProfile(false);
         setProfileError(null);
     };
-    
+
     const handleAvatarFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            if (file.size > 2*1024*1024) {
+            if (file.size > 2*1024*1024) { // 2MB limit
                 toast.error("File too large (max 2MB)");
                 return;
             }
-            
+
             if (!file.type.startsWith('image/')) {
                 toast.error("Invalid file type");
                 return;
             }
-            
+
             setSelectedAvatarFile(file);
             setAvatarError(null);
-            
+
             // Create local preview
             const reader = new FileReader();
             reader.onloadend = () => setAvatarPreview(reader.result as string);
@@ -290,33 +293,33 @@ function ProfilePageContent() {
             setAvatarPreview(profile?.avatar ? `${BACKEND_BASE_URL}${profile.avatar}` : null);
         }
     };
-    
+
     const handleAvatarUpload = async () => {
         if (!selectedAvatarFile) {
             toast.error("No file selected");
             return;
         }
-        
+
         setLoadingAvatar(true);
         setAvatarError(null);
         const uploadToast = toast.loading("Uploading avatar...");
-        
+
         try {
             const updatedProfile = await userService.uploadUserAvatar(selectedAvatarFile);
             toast.dismiss(uploadToast);
             toast.success("Avatar updated!");
-            
+
             setProfile(updatedProfile);
-            
+
             // Set avatar preview directly without fallback
             if (updatedProfile.avatar) {
                 setAvatarPreview(`${BACKEND_BASE_URL}${updatedProfile.avatar}`);
             } else {
                 setAvatarPreview(null);
             }
-            
+
             setSelectedAvatarFile(null);
-            
+
             try {
                 if(authService.updateLocalUserInfo) {
                     authService.updateLocalUserInfo({ avatar: updatedProfile.avatar });
@@ -333,22 +336,22 @@ function ProfilePageContent() {
             setLoadingAvatar(false);
         }
     };
-    
+
     // New function to remove avatar
     const handleRemoveAvatar = async () => {
         setIsRemovingAvatar(true);
         const removeToast = toast.loading("Removing avatar...");
-        
+
         try {
             // Call a service to remove the avatar
-            // We need to implement this function
+            // Ensure `removeUserAvatar` is implemented in userService
             const updatedProfile = await userService.removeUserAvatar();
             toast.dismiss(removeToast);
             toast.success("Avatar removed!");
-            
+
             setProfile(updatedProfile);
             setAvatarPreview(null);
-            
+
             try {
                 if(authService.updateLocalUserInfo) {
                     authService.updateLocalUserInfo({ avatar: undefined });
@@ -356,7 +359,7 @@ function ProfilePageContent() {
             } catch (lsErr) {
                 console.error("LS update error:", lsErr);
             }
-            
+
             setConfirmAvatarRemoveModalOpen(false);
         } catch (err: any) {
             toast.dismiss(removeToast);
@@ -367,7 +370,7 @@ function ProfilePageContent() {
             setIsRemovingAvatar(false);
         }
     };
-    
+
     const handleRemoveFavorite = async (facilityId: string) => { if (!facilityId) return; const removeToast = toast.loading("Removing favorite..."); setLoadingFavorites(true); setFavoritesError(null); try { const updatedFavorites = await userService.removeFavorite(facilityId); setFavorites(updatedFavorites); toast.dismiss(removeToast); toast.success("Favorite removed"); } catch (err:any) { toast.dismiss(removeToast); const msg = err?.message || 'Failed to remove favorite'; setFavoritesError(msg); toast.error(msg); } finally { setLoadingFavorites(false); }};
 
     // -- Booking Cancel Handlers --
@@ -376,24 +379,34 @@ function ProfilePageContent() {
     const confirmBookingCancel = async () => { if (!bookingToCancelId) return; setIsCancellingBooking(true); const cancelToast = toast.loading("Cancelling booking..."); try { await bookingService.cancelBooking(bookingToCancelId); toast.dismiss(cancelToast); toast.success("Booking cancelled!"); setBookings(prev => prev.map(b => b._id === bookingToCancelId ? {...b, status: 'cancelled'} : b)); } catch (err: any) { toast.dismiss(cancelToast); toast.error(`Cancellation failed: ${err.message}`); } finally { setIsCancellingBooking(false); closeCancelModal(); } };
 
     // -- Financial Aid Detail Handlers --
-    const openAidDetailModal = async (appId: string) => { 
-        setIsFetchingAidDetails(true); 
-        setSelectedAidApp(null); 
-        setAidDetailModalOpen(true); 
-        try { 
-            const details = await financialAidService.getUserApplicationDetails(appId); 
-            setSelectedAidApp(details); 
-        } catch (err: any) { 
-            toast.error(`Error loading details: ${err.message}`); 
-            setAidDetailModalOpen(false); 
-        } finally { 
-            setIsFetchingAidDetails(false); 
+    const openAidDetailModal = async (appId: string) => {
+        setIsFetchingAidDetails(true);
+        setSelectedAidApp(null);
+        setAidDetailModalOpen(true);
+        try {
+            // !!--- BUILD ERROR FIX ---!!
+            // This line caused the first build error.
+            // Verify the correct function name in financialAidService.
+            // Replace 'getUserApplicationDetails' with the actual exported function name.
+            // Example: If the function is exported as 'getFinancialAidDetails'
+            // const details = await financialAidService.getFinancialAidDetails(appId);
+
+            // If the function is indeed called 'getUserApplicationDetails' in your service file,
+            // ensure it's properly exported: `export function getUserApplicationDetails(...) { ... }`
+             const details = await financialAidService.getUserApplicationDetails(appId);
+
+            setSelectedAidApp(details);
+        } catch (err: any) {
+            toast.error(`Error loading details: ${err.message}`);
+            setAidDetailModalOpen(false); // Close modal on error
+        } finally {
+            setIsFetchingAidDetails(false);
         }
     };
-    
-    const closeAidDetailModal = () => { 
-        setAidDetailModalOpen(false); 
-        setSelectedAidApp(null); 
+
+    const closeAidDetailModal = () => {
+        setAidDetailModalOpen(false);
+        setSelectedAidApp(null);
     };
 
     // --- Loading / Error / Main Render ---
@@ -410,35 +423,35 @@ function ProfilePageContent() {
                         {/* Avatar */}
                         <div className="relative group rounded-full overflow-hidden h-24 w-24 md:h-32 md:w-32 border-4 border-white/50 shadow-xl mb-4 md:mb-0 md:mr-8 flex-shrink-0 bg-gray-200 flex items-center justify-center">
                             {avatarPreview ? (
-                                <img 
-                                    src={avatarPreview} 
-                                    alt={profile.name || 'User'} 
+                                <img
+                                    src={avatarPreview}
+                                    alt={profile.name || 'User'}
                                     className="h-full w-full object-cover"
                                 />
                             ) : (
                                 <UserIcon className="h-16 w-16 text-gray-400" />
                             )}
-                            <button 
-                                onClick={() => fileInputRef.current?.click()} 
-                                className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer rounded-full" 
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer rounded-full"
                                 aria-label="Change profile picture"
                             >
                                 <CameraIcon className="h-8 w-8 text-white/90" />
                             </button>
-                            <input 
-                                type="file" 
-                                ref={fileInputRef} 
-                                onChange={handleAvatarFileSelect} 
-                                accept="image/*" 
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleAvatarFileSelect}
+                                accept="image/*"
                                 className="hidden"
                             />
                         </div>
-                        
+
                         {/* User Info */}
                         <div className="text-center md:text-left flex-grow">
                             <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 drop-shadow-md">{profile.name || 'User'}</h1>
                             <p className="text-emerald-100 text-sm mb-1 flex items-center justify-center md:justify-start">
-                                <UserIcon className="h-4 w-4 mr-1.5 text-emerald-300/80"/> 
+                                <UserIcon className="h-4 w-4 mr-1.5 text-emerald-300/80"/>
                                 {profile.email || 'No email'}
                             </p>
                             {profile.phone && (
@@ -464,14 +477,14 @@ function ProfilePageContent() {
                                 </p>
                             )}
                         </div>
-                        
+
                         {/* Avatar Action Controls */}
                         <div className="mt-4 md:mt-0 md:ml-6 flex flex-col sm:flex-row items-center gap-2">
                             {selectedAvatarFile && (
                                 <>
-                                    <button 
-                                        onClick={handleAvatarUpload} 
-                                        disabled={loadingAvatar} 
+                                    <button
+                                        onClick={handleAvatarUpload}
+                                        disabled={loadingAvatar}
                                         className="btn-primary bg-white text-emerald-700 hover:bg-gray-100 text-sm py-1.5 px-3"
                                     >
                                         {loadingAvatar ? 'Uploading...' : (
@@ -481,24 +494,27 @@ function ProfilePageContent() {
                                             </>
                                         )}
                                     </button>
-                                    <button 
-                                        onClick={() => { 
-                                            setSelectedAvatarFile(null); 
-                                            setAvatarPreview(profile?.avatar ? `${BACKEND_BASE_URL}${profile.avatar}` : null); 
-                                            setAvatarError(null); 
-                                        }} 
-                                        disabled={loadingAvatar} 
+                                    <button
+                                        onClick={() => {
+                                            setSelectedAvatarFile(null);
+                                            setAvatarPreview(profile?.avatar ? `${BACKEND_BASE_URL}${profile.avatar}` : null);
+                                            setAvatarError(null);
+                                            if (fileInputRef.current) { // Reset file input
+                                                fileInputRef.current.value = "";
+                                            }
+                                        }}
+                                        disabled={loadingAvatar}
                                         className="text-sm text-white/80 hover:text-white underline disabled:opacity-50"
                                     >
                                         Cancel
                                     </button>
                                 </>
                             )}
-                            
+
                             {!selectedAvatarFile && profile.avatar && (
-                                <button 
-                                    onClick={() => setConfirmAvatarRemoveModalOpen(true)} 
-                                    disabled={isRemovingAvatar} 
+                                <button
+                                    onClick={() => setConfirmAvatarRemoveModalOpen(true)}
+                                    disabled={isRemovingAvatar}
                                     className="btn-secondary bg-red-500/90 text-white hover:bg-red-600 text-sm py-1.5 px-3"
                                 >
                                     {isRemovingAvatar ? 'Removing...' : (
@@ -510,9 +526,9 @@ function ProfilePageContent() {
                                 </button>
                             )}
                         </div>
-                        
+
                         {avatarError && (
-                            <p className="text-red-200 text-xs mt-2 text-center md:text-right w-full md:w-auto">
+                            <p className="text-red-200 text-xs mt-2 text-center md:text-right w-full md:w-auto absolute bottom-2 right-8"> {/* Positioned example */}
                                 {avatarError}
                             </p>
                         )}
@@ -527,30 +543,30 @@ function ProfilePageContent() {
                         <Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
                             <Tab.List className="flex flex-wrap p-1 space-x-1 bg-emerald-100/50 rounded-lg mb-6 sm:mb-8 shadow-inner border border-emerald-200/50">
                                 {/* Tab titles */}
-                                {[ 
-                                    { name: "My Bookings", icon: CalendarDaysIcon }, 
-                                    { name: "Favorites", icon: StarIcon }, 
-                                    { name: "My Donations", icon: GiftIcon }, 
-                                    { name: "Financial Aid", icon: CreditCardIcon }, 
+                                {[
+                                    { name: "My Bookings", icon: CalendarDaysIcon },
+                                    { name: "Favorites", icon: StarIcon },
+                                    { name: "My Donations", icon: GiftIcon },
+                                    { name: "Financial Aid", icon: CreditCardIcon },
                                     { name: "Account Settings", icon: UserIcon }
-                                ].map((category, idx) => ( 
-                                    <Tab 
-                                        key={category.name} 
+                                ].map((category, idx) => (
+                                    <Tab
+                                        key={category.name}
                                         className={({ selected }) => classNames(
                                             'flex-grow text-center px-3 py-2.5 text-xs sm:text-sm font-medium rounded-md transition-all duration-200',
                                             'focus:outline-none focus:ring-2 ring-offset-1 ring-offset-emerald-50 ring-emerald-500',
                                             'flex items-center justify-center whitespace-nowrap',
-                                            selected 
-                                                ? 'bg-emerald-600 shadow-md text-white' 
+                                            selected
+                                                ? 'bg-emerald-600 shadow-md text-white'
                                                 : 'text-emerald-700 hover:bg-emerald-200/60 hover:text-emerald-900'
                                         )}
-                                    > 
-                                        <category.icon className="h-4 w-4 mr-1.5" /> 
-                                        {category.name} 
-                                    </Tab> 
+                                    >
+                                        <category.icon className="h-4 w-4 mr-1.5" />
+                                        {category.name}
+                                    </Tab>
                                 ))}
                             </Tab.List>
-                            
+
                             <Tab.Panels className="mt-2 min-h-[300px]">
                                 {/* Bookings Panel */}
                                 <Tab.Panel className="focus:outline-none">
@@ -559,13 +575,13 @@ function ProfilePageContent() {
                                             {bookings.map((booking) => {
                                                 const isCancellable = booking.status === 'upcoming' && canCancelBooking(booking.date);
                                                 return (
-                                                    <div 
-                                                        key={booking._id} 
+                                                    <div
+                                                        key={booking._id}
                                                         className={`p-4 rounded-lg border ${
-                                                            booking.status === 'upcoming' 
-                                                                ? 'bg-green-50 border-green-200' 
-                                                                : booking.status === 'cancelled' 
-                                                                    ? 'bg-red-50 border-red-200' 
+                                                            booking.status === 'upcoming'
+                                                                ? 'bg-green-50 border-green-200'
+                                                                : booking.status === 'cancelled'
+                                                                    ? 'bg-red-50 border-red-200'
                                                                     : 'bg-gray-50 border-gray-200'
                                                         } shadow-sm flex flex-wrap md:flex-nowrap items-start gap-4`}
                                                     >
@@ -575,12 +591,12 @@ function ProfilePageContent() {
                                                             </p>
                                                             <p className="text-xs text-gray-500">{booking.timeSlot}</p>
                                                             <span className={`mt-1.5 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                                                                booking.status === 'upcoming' 
-                                                                    ? 'bg-green-100 text-green-800' 
-                                                                    : booking.status === 'completed' 
-                                                                        ? 'bg-blue-100 text-blue-800' 
-                                                                        : booking.status === 'cancelled' 
-                                                                            ? 'bg-red-100 text-red-800' 
+                                                                booking.status === 'upcoming'
+                                                                    ? 'bg-green-100 text-green-800'
+                                                                    : booking.status === 'completed'
+                                                                        ? 'bg-blue-100 text-blue-800'
+                                                                        : booking.status === 'cancelled'
+                                                                            ? 'bg-red-100 text-red-800'
                                                                             : 'bg-gray-100 text-gray-800'
                                                             }`}>
                                                                 {booking.status}
@@ -588,8 +604,8 @@ function ProfilePageContent() {
                                                         </div>
                                                         <div className="flex-grow">
                                                             <h3 className="font-medium text-gray-900 text-sm mb-1">
-                                                                {booking.bookingType === 'trainer' 
-                                                                    ? `Training: ${booking.trainer?.name || 'N/A'}` 
+                                                                {booking.bookingType === 'trainer'
+                                                                    ? `Training: ${booking.trainer?.name || 'N/A'}`
                                                                     : `Facility: ${booking.facility?.name || 'N/A'}`}
                                                             </h3>
                                                             <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-600">
@@ -609,9 +625,9 @@ function ProfilePageContent() {
                                                         </div>
                                                         <div className="flex-shrink-0 mt-2 md:mt-0">
                                                             {isCancellable && (
-                                                                <button 
-                                                                    onClick={() => openCancelModal(booking._id)} 
-                                                                    disabled={isCancellingBooking && bookingToCancelId === booking._id} 
+                                                                <button
+                                                                    onClick={() => openCancelModal(booking._id)}
+                                                                    disabled={isCancellingBooking && bookingToCancelId === booking._id}
                                                                     className="btn-secondary-outline border-red-300 text-red-600 hover:bg-red-50 text-xs px-2 py-1 disabled:opacity-50"
                                                                 >
                                                                     Cancel
@@ -635,10 +651,10 @@ function ProfilePageContent() {
                                                         <Link href={`/facilities/${facility._id}`} className="block">
                                                             <div className="h-32 w-full bg-gray-200">
                                                                 {facility.images?.length ? (
-                                                                    <img 
-                                                                        src={`${BACKEND_BASE_URL}${facility.images[0]}`} 
-                                                                        alt={facility.name} 
-                                                                        className="h-full w-full object-cover" 
+                                                                    <img
+                                                                        src={`${BACKEND_BASE_URL}${facility.images[0]}`}
+                                                                        alt={facility.name}
+                                                                        className="h-full w-full object-cover"
                                                                     />
                                                                 ) : (
                                                                     <div className="h-full w-full flex items-center justify-center">
@@ -647,14 +663,17 @@ function ProfilePageContent() {
                                                                 )}
                                                             </div>
                                                         </Link>
-                                                        <button 
-                                                            onClick={() => handleRemoveFavorite(facility._id)} 
+                                                        <button
+                                                            onClick={() => handleRemoveFavorite(facility._id)}
                                                             className="absolute top-2 right-2 p-1.5 bg-white/80 hover:bg-white rounded-full text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 z-10"
+                                                            aria-label={`Remove ${facility.name} from favorites`}
                                                         >
                                                             <XMarkIcon className="h-5 w-5" />
                                                         </button>
                                                         <div className="p-3">
-                                                            <h3 className="font-medium text-gray-900 text-sm mb-1 truncate">{facility.name}</h3>
+                                                            <Link href={`/facilities/${facility._id}`} className="block hover:underline">
+                                                                <h3 className="font-medium text-gray-900 text-sm mb-1 truncate">{facility.name}</h3>
+                                                            </Link>
                                                             <p className="text-xs text-gray-500 flex items-center mb-2">
                                                                 <MapPinIcon className="h-3 w-3 mr-1 text-gray-400"/>
                                                                 {facility.location}
@@ -698,10 +717,10 @@ function ProfilePageContent() {
                                                                 <td className="td-profile font-medium">{formatCurrency(donation.amount)}</td>
                                                                 <td className="td-profile">
                                                                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                                                                        donation.paymentStatus === 'succeeded' 
-                                                                            ? 'bg-green-100 text-green-800' 
-                                                                            : donation.paymentStatus === 'pending' 
-                                                                                ? 'bg-yellow-100 text-yellow-800' 
+                                                                        donation.paymentStatus === 'succeeded'
+                                                                            ? 'bg-green-100 text-green-800'
+                                                                            : donation.paymentStatus === 'pending'
+                                                                                ? 'bg-yellow-100 text-yellow-800'
                                                                                 : 'bg-red-100 text-red-800'
                                                                     }`}>
                                                                         {donation.paymentStatus}
@@ -738,21 +757,21 @@ function ProfilePageContent() {
                                                                 <td className="td-profile">{formatDate(app.submittedDate)}</td>
                                                                 <td className="td-profile">{app.sportsInfo?.primarySport || 'N/A'}</td>
                                                                 <td className="td-profile">
-                                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                                                                        app.status === 'approved' 
-                                                                            ? 'bg-green-100 text-green-800' 
-                                                                            : app.status === 'pending' 
-                                                                                ? 'bg-yellow-100 text-yellow-800' 
-                                                                                : app.status === 'rejected' 
-                                                                                    ? 'bg-red-100 text-red-800' 
-                                                                                    : 'bg-blue-100 text-blue-800'
+                                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize ${
+                                                                        app.status === 'approved'
+                                                                            ? 'bg-green-100 text-green-800'
+                                                                            : app.status === 'pending'
+                                                                                ? 'bg-yellow-100 text-yellow-800'
+                                                                                : app.status === 'rejected'
+                                                                                    ? 'bg-red-100 text-red-800'
+                                                                                    : 'bg-blue-100 text-blue-800' // Default/Other status styling
                                                                     }`}>
                                                                         {app.status.replace('_',' ')}
                                                                     </span>
                                                                 </td>
                                                                 <td className="td-profile">
-                                                                    <button 
-                                                                        onClick={() => openAidDetailModal(app._id)} 
+                                                                    <button
+                                                                        onClick={() => openAidDetailModal(app._id)}
                                                                         className="font-medium text-emerald-600 hover:text-emerald-900 hover:underline"
                                                                     >
                                                                         View Details
@@ -775,8 +794,8 @@ function ProfilePageContent() {
                                             <h3 className="text-lg font-medium text-emerald-800">Account Settings</h3>
                                             {/* Edit/Save/Cancel Buttons */}
                                             {!isEditingProfile ? (
-                                                <button 
-                                                    onClick={() => setIsEditingProfile(true)} 
+                                                <button
+                                                    onClick={() => setIsEditingProfile(true)}
                                                     className="btn-secondary-outline text-sm"
                                                 >
                                                     <PencilIcon className="h-4 w-4 mr-1.5" />
@@ -784,15 +803,15 @@ function ProfilePageContent() {
                                                 </button>
                                             ) : (
                                                 <div className="flex items-center gap-2">
-                                                    <button 
-                                                        onClick={handleCancelEdit} 
+                                                    <button
+                                                        onClick={handleCancelEdit}
                                                         className="btn-secondary-outline text-sm"
                                                     >
                                                         Cancel
                                                     </button>
-                                                    <button 
-                                                        onClick={handleSaveProfile} 
-                                                        disabled={loadingProfile} 
+                                                    <button
+                                                        onClick={handleSaveProfile}
+                                                        disabled={loadingProfile}
                                                         className="btn-primary text-sm disabled:opacity-50"
                                                     >
                                                         {loadingProfile ? 'Saving...' : 'Save Changes'}
@@ -808,12 +827,13 @@ function ProfilePageContent() {
                                                         <dt className="text-sm font-medium text-gray-500">Full Name</dt>
                                                         <dd className="mt-1 text-sm text-gray-900">
                                                             {isEditingProfile ? (
-                                                                <input 
-                                                                    type="text" 
-                                                                    name="name" 
-                                                                    value={editedProfileData.name} 
-                                                                    onChange={handleProfileChange} 
+                                                                <input
+                                                                    type="text"
+                                                                    name="name"
+                                                                    value={editedProfileData.name}
+                                                                    onChange={handleProfileChange}
                                                                     className="input-field"
+                                                                    aria-label="Full Name Input"
                                                                 />
                                                             ) : profile.name || '-'}
                                                         </dd>
@@ -822,12 +842,13 @@ function ProfilePageContent() {
                                                         <dt className="text-sm font-medium text-gray-500">Email</dt>
                                                         <dd className="mt-1 text-sm text-gray-900">
                                                             {isEditingProfile ? (
-                                                                <input 
-                                                                    type="email" 
-                                                                    name="email" 
-                                                                    value={editedProfileData.email} 
-                                                                    onChange={handleProfileChange} 
+                                                                <input
+                                                                    type="email"
+                                                                    name="email"
+                                                                    value={editedProfileData.email}
+                                                                    onChange={handleProfileChange}
                                                                     className="input-field"
+                                                                    aria-label="Email Input"
                                                                 />
                                                             ) : profile.email || '-'}
                                                         </dd>
@@ -836,12 +857,13 @@ function ProfilePageContent() {
                                                         <dt className="text-sm font-medium text-gray-500">Phone</dt>
                                                         <dd className="mt-1 text-sm text-gray-900">
                                                             {isEditingProfile ? (
-                                                                <input 
-                                                                    type="tel" 
-                                                                    name="phone" 
-                                                                    value={editedProfileData.phone || ''} 
-                                                                    onChange={handleProfileChange} 
+                                                                <input
+                                                                    type="tel"
+                                                                    name="phone"
+                                                                    value={editedProfileData.phone || ''}
+                                                                    onChange={handleProfileChange}
                                                                     className="input-field"
+                                                                    aria-label="Phone Input"
                                                                 />
                                                             ) : profile.phone || '-'}
                                                         </dd>
@@ -850,12 +872,13 @@ function ProfilePageContent() {
                                                         <dt className="text-sm font-medium text-gray-500">Address</dt>
                                                         <dd className="mt-1 text-sm text-gray-900">
                                                             {isEditingProfile ? (
-                                                                <input 
-                                                                    type="text" 
-                                                                    name="address" 
-                                                                    value={editedProfileData.address || ''} 
-                                                                    onChange={handleProfileChange} 
+                                                                <input
+                                                                    type="text"
+                                                                    name="address"
+                                                                    value={editedProfileData.address || ''}
+                                                                    onChange={handleProfileChange}
                                                                     className="input-field"
+                                                                    aria-label="Address Input"
                                                                 />
                                                             ) : profile.address || '-'}
                                                         </dd>
@@ -876,47 +899,73 @@ function ProfilePageContent() {
             </div>
 
             {/* Modals */}
-            <FinancialAidDetailModal 
-                isOpen={aidDetailModalOpen} 
-                onClose={closeAidDetailModal} 
-                application={selectedAidApp} 
-                isLoading={isFetchingAidDetails} 
-            />
-            
-            <ConfirmDeleteModal 
-                isOpen={cancelBookingModalOpen} 
-                onClose={closeCancelModal} 
-                onConfirm={confirmBookingCancel} 
-                title="Confirm Cancellation" 
-                message={`Are you sure you want to cancel this booking? This action might be irreversible based on the cancellation policy (${CANCELLATION_HOURS_LIMIT} hours notice usually required).`} 
-                confirmButtonText="Yes, Cancel Booking" 
-                isDeleting={isCancellingBooking} 
-            />
-            
-            <ConfirmDeleteModal 
-                isOpen={confirmAvatarRemoveModalOpen} 
-                onClose={() => setConfirmAvatarRemoveModalOpen(false)} 
-                onConfirm={handleRemoveAvatar} 
-                title="Remove Profile Picture" 
-                message="Are you sure you want to remove your profile picture? This action cannot be undone." 
-                confirmButtonText="Yes, Remove Picture" 
-                isDeleting={isRemovingAvatar} 
+            <FinancialAidDetailModal
+                isOpen={aidDetailModalOpen}
+                onClose={closeAidDetailModal}
+                application={selectedAidApp}
+                isLoading={isFetchingAidDetails}
             />
 
-            {/* Global CSS Styles */}
+            <ConfirmDeleteModal
+                isOpen={cancelBookingModalOpen}
+                onClose={closeCancelModal}
+                onConfirm={confirmBookingCancel}
+                title="Confirm Cancellation"
+                message={`Are you sure you want to cancel this booking? This action might be irreversible based on the cancellation policy (${CANCELLATION_HOURS_LIMIT} hours notice usually required).`}
+                confirmButtonText="Yes, Cancel Booking"
+                isDeleting={isCancellingBooking}
+            />
+
+            <ConfirmDeleteModal
+                isOpen={confirmAvatarRemoveModalOpen}
+                onClose={() => setConfirmAvatarRemoveModalOpen(false)}
+                onConfirm={handleRemoveAvatar}
+                title="Remove Profile Picture"
+                message="Are you sure you want to remove your profile picture? This action cannot be undone."
+                confirmButtonText="Yes, Remove Picture"
+                isDeleting={isRemovingAvatar}
+            />
+
+            {/* Global CSS Styles - Ensure Tailwind utility classes are defined in global styles or via setup */}
             <style jsx global>{`
+                /* Ensure Tailwind utility classes are applied globally or via setup */
                 /* Table Cell Padding */
-                .th-profile, .td-profile { @apply px-3 py-3 text-sm; }
-                .th-profile { @apply text-left font-medium text-gray-500 uppercase tracking-wider; }
-                .td-profile { @apply text-gray-700; }
-                
+                .th-profile, .td-profile { padding: 0.75rem; font-size: 0.875rem; /* text-sm */ }
+                .th-profile { text-align: left; font-weight: 500; color: #6b7280; /* text-gray-500 */ text-transform: uppercase; letter-spacing: 0.05em; }
+                .td-profile { color: #374151; /* text-gray-700 */ }
+
                 /* Input Field */
-                .input-field { @apply shadow-sm focus:ring-emerald-500 focus:border-emerald-500 block w-full sm:text-sm border-gray-300 rounded-md; }
-                
-                /* Button Styles */
-                .btn-primary { @apply inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500; }
-                .btn-secondary { @apply inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500; }
-                .btn-secondary-outline { @apply inline-flex items-center px-3 py-2 border border-emerald-300 rounded-md text-sm font-medium text-emerald-700 bg-white hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500; }
+                .input-field {
+                    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+                    appearance: none;
+                    border-width: 1px;
+                    border-color: #d1d5db; /* border-gray-300 */
+                    border-radius: 0.375rem; /* rounded-md */
+                    padding: 0.5rem 0.75rem;
+                    font-size: 0.875rem; /* sm:text-sm */
+                    line-height: 1.25rem;
+                    width: 100%;
+                    display: block;
+                }
+                .input-field:focus {
+                     outline: 2px solid transparent;
+                     outline-offset: 2px;
+                     --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+                     --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+                     box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+                     border-color: #059669; /* focus:border-emerald-500 */
+                     --tw-ring-color: #059669; /* focus:ring-emerald-500 */
+                }
+
+                /* Button Styles (simplified for example, use Tailwind classes directly in JSX if possible) */
+                .btn-primary { display: inline-flex; align-items: center; padding: 0.5rem 1rem; border-width: 1px; border-color: transparent; border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem; font-weight: 500; color: #ffffff; background-color: #059669; /* bg-emerald-600 */ }
+                .btn-primary:hover { background-color: #047857; /* hover:bg-emerald-700 */ }
+                .btn-primary:focus { outline: 2px solid transparent; outline-offset: 2px; --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 2px #ffffff; --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + 2px) #059669; box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); --tw-ring-color: #059669; }
+                .btn-secondary { display: inline-flex; align-items: center; padding: 0.5rem 1rem; border-width: 1px; border-color: #d1d5db; /* border-gray-300 */ border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem; font-weight: 500; background-color: #ffffff; /* Implicit bg-white */ }
+                .btn-secondary:focus { outline: 2px solid transparent; outline-offset: 2px; --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 2px #ffffff; --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + 2px) #059669; box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); --tw-ring-color: #059669; }
+                .btn-secondary-outline { display: inline-flex; align-items: center; padding: 0.5rem 0.75rem; /* px-3 py-2 */ border-width: 1px; border-color: #6ee7b7; /* border-emerald-300 */ border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; color: #047857; /* text-emerald-700 */ background-color: #ffffff; }
+                .btn-secondary-outline:hover { background-color: #f0fdf4; /* hover:bg-emerald-50 */ }
+                .btn-secondary-outline:focus { outline: 2px solid transparent; outline-offset: 2px; --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 2px #ffffff; --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + 2px) #059669; box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); --tw-ring-color: #059669; }
             `}</style>
         </div>
     );
