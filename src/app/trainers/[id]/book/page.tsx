@@ -86,10 +86,29 @@ export default function BookingPage() {
       setError(null);
       try {
         const data = await trainerService.getTrainerById(trainerId);
+        
+        // Fix for type error: ensure associatedFacilities is properly typed
+        const processedFacilities = Array.isArray(data.associatedFacilities) 
+          ? data.associatedFacilities.map(facility => {
+              if (typeof facility === 'string') {
+                return { _id: facility, name: 'Unknown', location: 'Unknown' };
+              }
+              return {
+                _id: facility._id || '',
+                name: facility.name || 'Unknown',
+                location: facility.location || 'Unknown'
+              };
+            })
+          : undefined;
+        
         setTrainer({
-          _id: data._id, name: data.name, location: data.location,
-          specialization: data.specialization, hourlyRate: data.hourlyRate,
-          profileImage: data.profileImage, associatedFacilities: data.associatedFacilities
+          _id: data._id, 
+          name: data.name, 
+          location: data.location,
+          specialization: data.specialization, 
+          hourlyRate: data.hourlyRate,
+          profileImage: data.profileImage, 
+          associatedFacilities: processedFacilities
         });
       } catch (err: any) {
         console.error('Error fetching trainer info:', err);
