@@ -139,8 +139,18 @@ export default function TrainerDetailPage() {
             setTrainer(prevTrainer => {
                 if (!prevTrainer) return null;
                 const newReviewCount = (prevTrainer.reviewCount || 0) + 1;
-                trainerService.getTrainerById(id).then(setTrainer).catch(console.error);
-                return { ...prevTrainer, reviewCount: newReviewCount };
+                trainerService.getTrainerById(id)
+                .then(trainerData => {
+                  setTrainer({
+                    ...trainerData,
+                    profileImage: trainerData.profileImage || FALLBACK_IMAGE,
+                    rating: trainerData.rating || 0,
+                    reviewCount: trainerData.reviewCount || 0, 
+                    availability: trainerData.availability || [],
+                    certifications: trainerData.certifications || []
+                  } as Trainer);
+                })
+                .catch(console.error);                return { ...prevTrainer, reviewCount: newReviewCount };
             });
         }
     };
