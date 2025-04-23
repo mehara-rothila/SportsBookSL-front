@@ -176,10 +176,24 @@ export default function FinancialAidApplicationPage() {
     const { name, value } = e.target;
     const path = name.split('.');
     if (path.length === 2) {
-      setFormData(prev => ({
-        ...prev,
-        [path[0]]: { ...prev[path[0] as keyof FormData], [path[1]]: value }
-      }));
+      setFormData(prev => {
+        // Get the section object (personalInfo, sportsInfo, etc.)
+        const section = prev[path[0] as keyof FormData];
+        
+        // Check if section is an object before spreading
+        if (section && typeof section === 'object' && !Array.isArray(section)) {
+          return {
+            ...prev,
+            [path[0]]: {
+              ...(section as object),
+              [path[1]]: value
+            }
+          };
+        }
+        
+        // Fallback if section is not an object
+        return prev;
+      });
     }
   };
 
