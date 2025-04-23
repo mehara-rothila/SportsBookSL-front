@@ -821,16 +821,12 @@ export default function TrainerDetailPage() {
                                         <button onClick={() => setIsReviewModalOpen(false)} className="text-white/60 hover:text-white"><XMarkIcon className="w-6 h-6" /></button>
                                     </Dialog.Title>
                                     <ReviewForm
-                                        entityId={trainer._id}
-                                        entityType="Trainer"
-                                        onReviewSubmitSuccess={handleReviewSubmitSuccess}
-                                        onCancel={() => setIsReviewModalOpen(false)}
-                                        // Pass themed classes if ReviewForm accepts them
-                                        // e.g., inputClassName="w-full rounded-lg bg-white/10 border-white/30 text-white placeholder-white/50 focus:ring-emerald-500 focus:border-emerald-500"
-                                        // buttonClassName="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
-                                        // cancelButtonClassName="px-4 py-2 rounded-lg border border-white/30 text-white hover:bg-white/10"
-                                        ratingStarClass="text-yellow-400" // Example for star color
-                                        ratingEmptyStarClass="text-gray-300/40" // Example for empty star color
+                                        targetId={trainer._id} // <-- Corrected prop name
+                                        targetType="trainer" // <-- Corrected prop name and value case
+                                        onSubmitSuccess={handleReviewSubmitSuccess} // Callback for success
+                                        onCancel={() => setIsReviewModalOpen(false)} // Callback for closing modal
+                                        // cricketTheme prop is optional and defaults to true, which fits the style here
+                                        // No need to pass ratingStarClass or ratingEmptyStarClass
                                     />
                                 </Dialog.Panel>
                             </Transition.Child>
