@@ -65,12 +65,12 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
         amenities: facility.amenities?.join(', ') || '',
         pricePerHour: facility.pricePerHour || '',
         pricePerHourValue: facility.pricePerHourValue || 0,
-        pricePerDay: facility.pricePerDay ?? '',
+        pricePerDay: facility.pricePerDay ?? undefined, // Ensure it defaults to undefined if null/missing
         contactPhone: facility.contactInfo?.phone || '',
         contactEmail: facility.contactInfo?.email || '',
         contactWebsite: facility.contactInfo?.website || '',
-        mapLat: facility.mapLocation?.lat ?? '',
-        mapLng: facility.mapLocation?.lng ?? '',
+        mapLat: facility.mapLocation?.lat ?? undefined, // Ensure it defaults to undefined if null/missing
+        mapLng: facility.mapLocation?.lng ?? undefined, // Ensure it defaults to undefined if null/missing
         isNew: facility.isNew || false,
         isPremium: facility.isPremium || false,
         isFeatured: facility.isFeatured || false,
@@ -90,7 +90,7 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
               day: day,
               open: existing?.open || '',
               close: existing?.close || '',
-              isClosed: !existing // Assume closed if no entry exists
+              isClosed: !existing // Assume closed if no entry exists or if entry exists but has no time
           };
       });
       setHoursData(initialHours);
@@ -152,7 +152,7 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
         if (selectedFiles.length > 5) {
             setError("Max 5 images allowed.");
             setNewImageFiles([]);
-            setImagePreviews(existingImagePaths.map(p => `${BACKEND_BASE_URL}${p}`));
+            setImagePreviews(existingImagePaths.map(p => p.startsWith('http') ? p : `${BACKEND_BASE_URL}${p}`)); // Revert preview
             if(fileInputRef.current) fileInputRef.current.value = "";
             return;
         }
@@ -171,7 +171,9 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
         const newPreviewsArray: string[] = [];
         let filesRead = 0;
         if (validFiles.length === 0) {
-            setImagePreviews(existingImagePaths.map(p => `${BACKEND_BASE_URL}${p}`));
+            // If selection cleared, revert to existing images preview
+            setImagePreviews(existingImagePaths.map(p => p.startsWith('http') ? p : `${BACKEND_BASE_URL}${p}`));
+            setClearExistingImages(false); // Not clearing if no new files selected
             return;
         }
 
@@ -181,14 +183,15 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
                 newPreviewsArray.push(reader.result as string);
                 filesRead++;
                 if (filesRead === validFiles.length) {
-                    setImagePreviews(newPreviewsArray);
+                    setImagePreviews(newPreviewsArray); // Show only new previews
                 }
             };
             reader.readAsDataURL(file);
         });
     } else {
+        // If file input is cleared completely
         setNewImageFiles([]);
-        setImagePreviews(existingImagePaths.map(p => `${BACKEND_BASE_URL}${p}`));
+        setImagePreviews(existingImagePaths.map(p => p.startsWith('http') ? p : `${BACKEND_BASE_URL}${p}`)); // Revert preview
         setClearExistingImages(false);
     }
   };
@@ -199,14 +202,11 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
       setNewImageFiles(updatedFiles);
       setImagePreviews(updatedPreviews);
 
-      if (updatedFiles.length === 0 && fileInputRef.current) {
-          fileInputRef.current.value = "";
-      }
-
-      // If all new previews removed, revert to showing existing images
+      // If all new previews removed, clear the file input and revert to showing existing images
       if (updatedFiles.length === 0) {
-           setImagePreviews(existingImagePaths.map(p => `${BACKEND_BASE_URL}${p}`));
-           setClearExistingImages(false);
+           if (fileInputRef.current) fileInputRef.current.value = "";
+           setImagePreviews(existingImagePaths.map(p => p.startsWith('http') ? p : `${BACKEND_BASE_URL}${p}`));
+           setClearExistingImages(false); // Since no new files are staged, don't clear existing
       }
   };
 
@@ -214,14 +214,15 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
     if (!facility) return;
     setError(null);
 
+    // Basic required field check
     if (!formData.name || !formData.location || !formData.address || !formData.description || !formData.sportTypes || !formData.pricePerHour || formData.pricePerHourValue === undefined || formData.pricePerHourValue < 0) {
       setError("Please fill in all required fields (*).");
       return;
     }
 
     // If replacing images, ensure new files are selected
-    if (clearExistingImages && newImageFiles.length === 0) {
-        setError("Please select new images if you intend to replace the existing ones, or uncheck 'Clear Images'.");
+    if (clearExistingImages && newImageFiles.length === 0 && existingImagePaths.length > 0) { // Also check if there were existing images to clear
+        setError("Please select new images if you intend to replace the existing ones, or revert image changes.");
         return;
     }
 
@@ -231,6 +232,7 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
     const dataToUpdate: Partial<facilityService.FacilityFormData> = {};
     (Object.keys(formData) as Array<keyof facilityService.FacilityFormData>).forEach(key => {
         let originalValue: any;
+        // Extract original value based on potentially nested structure
         if (key === 'contactPhone') originalValue = facility.contactInfo?.phone;
         else if (key === 'contactEmail') originalValue = facility.contactInfo?.email;
         else if (key === 'contactWebsite') originalValue = facility.contactInfo?.website;
@@ -238,27 +240,39 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
         else if (key === 'mapLng') originalValue = facility.mapLocation?.lng;
         else if (key === 'sportTypes') originalValue = facility.sportTypes?.join(', ');
         else if (key === 'amenities') originalValue = facility.amenities?.join(', ');
+        else if (key === 'isActive' && facility[key] === undefined) originalValue = true; // Default original isActive to true if undefined
         else originalValue = facility[key as keyof FacilityData];
 
         // Handle comparison carefully for different types
         const formValue = formData[key];
-        const originalCompValue = originalValue ?? (typeof formValue === 'number' ? undefined : '');
+        // Define default value for comparison based on type
+        let defaultValue: string | number | boolean | undefined;
+        if (typeof formValue === 'boolean') defaultValue = false;
+        else if (typeof formValue === 'number') defaultValue = undefined; // Or 0 if that makes more sense
+        else defaultValue = '';
 
-        if (String(formValue ?? '') !== String(originalCompValue)) {
-             dataToUpdate[key] = formValue;
+        const originalCompValue = originalValue ?? defaultValue;
+        const formCompValue = formValue ?? defaultValue;
+
+        // Compare as strings for simplicity, ensures types like number/undefined are compared correctly
+        if (String(formCompValue) !== String(originalCompValue)) {
+             // --- FIXED LINE BELOW ---
+             // Use type assertion 'as any' because TypeScript struggles with the dynamic key/value types here
+             dataToUpdate[key] = formValue as any;
         }
     });
 
-    // Prepare operating hours data
+    // Prepare operating hours data for comparison and potential sending
      const operatingHoursToSave = hoursData
-        .filter(h => !h.isClosed && h.open && h.close)
+        .filter(h => !h.isClosed && h.open && h.close) // Only include valid, open hours
         .map(h => ({ day: h.day, open: h.open, close: h.close }));
-     const operatingHoursString = JSON.stringify(operatingHoursToSave);
 
-    // Check if operating hours actually changed
-    const originalHoursString = JSON.stringify(facility.operatingHours || []);
-    const hoursChanged = operatingHoursString !== originalHoursString;
+    // Compare current state hours with original hours stringified for change detection
+    const currentHoursString = JSON.stringify(operatingHoursToSave.sort((a, b) => daysOfWeek.indexOf(a.day) - daysOfWeek.indexOf(b.day))); // Sort for consistent comparison
+    const originalHours = (facility.operatingHours || []).map(({ day, open, close }) => ({ day, open, close })); // Ensure same structure
+    const originalHoursString = JSON.stringify(originalHours.sort((a, b) => daysOfWeek.indexOf(a.day) - daysOfWeek.indexOf(b.day))); // Sort for consistent comparison
 
+    const hoursChanged = currentHoursString !== originalHoursString;
 
     // Only call API if text data changed OR new images were selected/cleared OR hours changed
     if (Object.keys(dataToUpdate).length === 0 && newImageFiles.length === 0 && !clearExistingImages && !hoursChanged) {
@@ -268,33 +282,45 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
     }
 
     try {
-      // Add operating hours string to the data sent to the service
+      // Add operating hours string to the data sent to the service ONLY IF they changed
       const finalDataToSend = {
           ...dataToUpdate,
-          operatingHours: hoursChanged ? operatingHoursString : undefined // Only send if changed
+          // Send the stringified JSON only if hours actually changed
+          ...(hoursChanged && { operatingHours: currentHoursString }),
       };
+
+      // Debug log before sending
+      // console.log("Data being sent to updateFacilityByAdmin:", { facilityId: facility._id, data: finalDataToSend, images: newImageFiles, clearExisting: clearExistingImages });
 
       const updatedFacility = await facilityService.updateFacilityByAdmin(
           facility._id,
-          finalDataToSend,
+          finalDataToSend, // Send the prepared data object
           newImageFiles,
-          clearExistingImages
+          clearExistingImages // This flag tells the backend whether to wipe old images
       );
       onSave(updatedFacility);
       onClose();
     } catch (err: any) {
       console.error("Error updating facility:", err);
-      setError(err.message || "Failed to update facility. There might be a validation error with the data.");
+      // Attempt to parse backend validation errors if possible
+       let errorMessage = "Failed to update facility.";
+       if (err.response?.data?.message) {
+           errorMessage = err.response.data.message;
+       } else if (err.message) {
+           errorMessage = err.message;
+       }
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Render null if modal is closed or no facility data (shouldn't happen if logic is correct)
   if (!isOpen || !facility) return null;
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
+      <Dialog as="div" className="relative z-50" onClose={() => !isLoading && onClose()}> {/* Prevent closing while loading */}
         {/* Backdrop */}
         <Transition.Child
           as={Fragment}
@@ -323,9 +349,18 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
               <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-lg bg-emerald-900/20 backdrop-blur-md border border-white/10 p-6 text-left align-middle shadow-xl transition-all">
                 <Dialog.Title
                   as="h3"
-                  className="text-xl font-semibold leading-6 text-white border-b border-white/10 pb-4 mb-6"
+                  className="text-xl font-semibold leading-6 text-white border-b border-white/10 pb-4 mb-6 flex justify-between items-center"
                 >
-                  Edit Facility: <span className="font-bold text-emerald-300">{facility.name}</span>
+                  <span>Edit Facility: <span className="font-bold text-emerald-300">{facility.name}</span></span>
+                   <button
+                       type="button"
+                       className="rounded-md p-1 text-emerald-400 hover:text-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
+                       onClick={onClose}
+                       disabled={isLoading}
+                   >
+                       <span className="sr-only">Close</span>
+                       <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                   </button>
                 </Dialog.Title>
 
                 <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
@@ -435,7 +470,7 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
                                         <div key={previewUrl + index} className="relative group aspect-square">
                                             <img src={previewUrl} alt={`Preview ${index + 1}`} className="h-full w-full object-cover rounded-md border border-white/20"/>
                                             {/* Only show remove button for newly selected previews */}
-                                            {newImageFiles.length > 0 && imagePreviews.length === newImageFiles.length && (
+                                            {clearExistingImages && newImageFiles.length > 0 && (
                                                 <button type="button" onClick={() => removeNewImagePreview(index)} className="absolute top-0 right-0 m-1 p-0.5 bg-red-600/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-500"> <XMarkIcon className="h-3 w-3"/> </button>
                                             )}
                                         </div>
@@ -445,8 +480,8 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
                              {/* Option to clear images (only relevant if NOT uploading new ones) */}
                              {newImageFiles.length === 0 && existingImagePaths.length > 0 && (
                                  <div className="mt-4 flex items-center">
-                                     <input type="checkbox" id="clearImages" name="clearImages" checked={clearExistingImages} onChange={(e) => setClearExistingImages(e.target.checked)} className="h-4 w-4 rounded border-white/30 bg-white/5 text-emerald-600 focus:ring-emerald-500"/>
-                                     <label htmlFor="clearImages" className="ml-2 text-sm text-red-300">Clear all existing images on save?</label>
+                                     <input type="checkbox" id="clearImages_edit" name="clearImages" checked={clearExistingImages} onChange={(e) => setClearExistingImages(e.target.checked)} className="h-4 w-4 rounded border-white/30 bg-white/5 text-emerald-600 focus:ring-emerald-500"/>
+                                     <label htmlFor="clearImages_edit" className="ml-2 text-sm text-red-300">Clear all existing images on save?</label>
                                  </div>
                              )}
                         </div>
@@ -471,5 +506,14 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
   );
 }
 
-
-
+// Example CSS classes (adjust as needed, maybe put in global CSS or use Tailwind directly)
+/*
+.form-label-admin { @apply block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1; }
+.input-field-admin { @apply mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500; }
+.input-help-text-admin { @apply mt-1 text-xs text-emerald-200/60; }
+.checkbox-label-admin { @apply inline-flex items-center; }
+.checkbox-admin { @apply rounded border-white/30 bg-white/5 text-emerald-600 shadow-sm focus:ring-emerald-500; }
+.btn-primary-admin { @apply inline-flex justify-center rounded-md border border-transparent bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-emerald-900 disabled:opacity-50 transition-all duration-200; }
+.btn-secondary-admin { @apply inline-flex justify-center rounded-md border border-white/20 bg-white/5 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-emerald-900 disabled:opacity-50 transition-all duration-200; }
+.custom-scrollbar { @apply scrollbar-thin scrollbar-thumb-emerald-700 scrollbar-track-emerald-900/50; }
+*/
