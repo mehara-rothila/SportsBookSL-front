@@ -47,6 +47,24 @@ interface FilterOption {
 const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
 const FALLBACK_IMAGE = '/images/default-trainer.png';
 
+// --- Helper function for handling image URLs correctly ---
+const getImageUrl = (path: string | null | undefined): string => {
+  if (!path) return FALLBACK_IMAGE;
+  
+  // If it's already a full URL, return it as is
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  
+  // If it's a relative path from the backend, add the base URL
+  if (path.startsWith('/uploads/')) {
+    return `${BACKEND_BASE_URL}${path}`;
+  }
+  
+  // For any other case, return the fallback image
+  return FALLBACK_IMAGE;
+};
+
 export default function TrainersPage() {
   // --- State ---
   const [sportOptions, setSportOptions] = useState<FilterOption[]>([{ id: 'all', name: 'All Sports' }]);
@@ -762,7 +780,8 @@ export default function TrainersPage() {
               {!loading && !error && displayedTrainers.length > 0 && (
                 <div role="list" className="space-y-6">
                   {displayedTrainers.map((trainer) => {
-                    const trainerImageUrl = trainer.profileImage ? `${BACKEND_BASE_URL}${trainer.profileImage}` : FALLBACK_IMAGE;
+                    // FIXED: Use the getImageUrl helper function instead of direct concatenation
+                    const trainerImageUrl = getImageUrl(trainer.profileImage);
                     return (
                       <div
                         key={trainer._id}
