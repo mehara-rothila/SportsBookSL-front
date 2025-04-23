@@ -30,6 +30,7 @@ interface FacilitiesApiResponsePublic {
 // Interface for single facility details (used also as return type for create/update)
 // Exporting for use in modal/page
 export interface FacilityDetails extends FacilityListItemPublic {
+    description: string; // <-- FIX APPLIED HERE
     longDescription?: string;
     amenities?: string[];
     pricePerDay?: number;
