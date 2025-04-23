@@ -193,8 +193,25 @@ export default function TrainerDetailPage() {
         );
     }
 
-    const trainerImageUrl = trainer.profileImage ? `${BACKEND_BASE_URL}${trainer.profileImage}` : FALLBACK_IMAGE;
-
+    const getImageUrl = (path: string | null | undefined): string => {
+        if (!path) return FALLBACK_IMAGE;
+        
+        // If it's already a full URL, return it as is
+        if (path.startsWith('http://') || path.startsWith('https://')) {
+          return path;
+        }
+        
+        // If it's a relative path from the backend, add the base URL
+        if (path.startsWith('/uploads/')) {
+          return `${BACKEND_BASE_URL}${path}`;
+        }
+        
+        // For any other case, return the fallback image
+        return FALLBACK_IMAGE;
+      };
+      
+      const trainerImageUrl = getImageUrl(trainer.profileImage);
+      
     return (
         <div className="bg-gradient-to-br from-emerald-800 via-green-800 to-emerald-900 min-h-screen pb-16 relative overflow-hidden">
             {/* Cricket Stadium Background */}
