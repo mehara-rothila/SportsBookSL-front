@@ -39,9 +39,36 @@ const CANCELLATION_HOURS_LIMIT = 24;
 interface UserProfile {
     _id: string; name: string; email: string; phone?: string; address?: string; avatar?: string; createdAt?: string; sportPreferences?: string[]; role?: string;
 }
+
+// Updated Booking interface to match API response
 interface Booking {
-    _id: string; bookingId?: string; date: string; timeSlot: string; status: string; bookingType?: 'facility' | 'trainer'; facility?: { _id: string; name?: string; location?: string }; trainer?: { _id: string; name?: string; specialization?: string; }; durationHours?: number; participants?: number; totalCost?: number;
+    _id: string; 
+    bookingId?: string; 
+    date: string; 
+    timeSlot: string; 
+    status: string; 
+    bookingType?: 'facility' | 'trainer'; 
+    facility?: string | { 
+        _id: string; 
+        name?: string; 
+        address?: string;
+        images?: string[];
+        location?: string;
+        pricePerHourValue?: number;
+    }; 
+    trainer?: string | { 
+        _id: string; 
+        name?: string; 
+        specialization?: string;
+    }; 
+    durationHours?: number; 
+    participants?: number; 
+    totalCost?: number;
+    createdAt?: string;
+    updatedAt?: string;
+    user?: string | { _id: string; name: string; email: string; };
 }
+
 interface Favorite {
     _id: string; images?: string[]; name: string; location: string; rating?: number; pricePerHour?: string;
 }
@@ -144,8 +171,26 @@ function ProfilePageContent() {
         }
     }, []);
 
+    // Updated to use type casting for TypeScript compatibility
     const fetchBookingsData = useCallback(async () => {
-         if (bookingsFetched || loadingBookings) return; setLoadingBookings(true); setBookingsError(null); try { const data = await bookingService.getUserBookings(); setBookings(data.map(b => ({...b, bookingType: b.trainer ? 'trainer' : 'facility'}))); setBookingsFetched(true); } catch (err:any) { setBookingsError(err?.message || 'Failed to load bookings'); } finally { setLoadingBookings(false); }
+        if (bookingsFetched || loadingBookings) return; 
+        setLoadingBookings(true); 
+        setBookingsError(null); 
+        try { 
+            const data = await bookingService.getUserBookings();
+            // Use type casting to ensure compatibility
+            const processedBookings = data.map(b => ({
+                ...b, 
+                bookingType: b.trainer ? 'trainer' : 'facility'
+            })) as Booking[];
+            
+            setBookings(processedBookings);
+            setBookingsFetched(true); 
+        } catch (err: any) { 
+            setBookingsError(err?.message || 'Failed to load bookings'); 
+        } finally { 
+            setLoadingBookings(false); 
+        }
     }, [bookingsFetched, loadingBookings]);
 
     const fetchFavoritesData = useCallback(async () => {
@@ -384,17 +429,8 @@ function ProfilePageContent() {
         setSelectedAidApp(null);
         setAidDetailModalOpen(true);
         try {
-            // !!--- BUILD ERROR FIX ---!!
-            // This line caused the first build error.
-            // Verify the correct function name in financialAidService.
-            // Replace 'getUserApplicationDetails' with the actual exported function name.
-            // Example: If the function is exported as 'getFinancialAidDetails'
-            // const details = await financialAidService.getFinancialAidDetails(appId);
-
-            // If the function is indeed called 'getUserApplicationDetails' in your service file,
-            // ensure it's properly exported: `export function getUserApplicationDetails(...) { ... }`
-// Corrected line using the exported function
-const details = await financialAidService.getAdminApplicationById(appId);
+            // Use the proper function from financialAidService
+            const details = await financialAidService.getAdminApplicationById(appId);
             setSelectedAidApp(details);
         } catch (err: any) {
             toast.error(`Error loading details: ${err.message}`);
@@ -528,7 +564,7 @@ const details = await financialAidService.getAdminApplicationById(appId);
                         </div>
 
                         {avatarError && (
-                            <p className="text-red-200 text-xs mt-2 text-center md:text-right w-full md:w-auto absolute bottom-2 right-8"> {/* Positioned example */}
+                            <p className="text-red-200 text-xs mt-2 text-center md:text-right w-full md:w-auto absolute bottom-2 right-8">
                                 {avatarError}
                             </p>
                         )}
@@ -605,8 +641,8 @@ const details = await financialAidService.getAdminApplicationById(appId);
                                                         <div className="flex-grow">
                                                             <h3 className="font-medium text-gray-900 text-sm mb-1">
                                                                 {booking.bookingType === 'trainer'
-                                                                    ? `Training: ${booking.trainer?.name || 'N/A'}`
-                                                                    : `Facility: ${booking.facility?.name || 'N/A'}`}
+                                                                    ? `Training: ${typeof booking.trainer === 'object' ? booking.trainer?.name || 'N/A' : 'N/A'}`
+                                                                    : `Facility: ${typeof booking.facility === 'object' ? booking.facility?.name || 'N/A' : 'N/A'}`}
                                                             </h3>
                                                             <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-600">
                                                                 <span className="inline-flex items-center">
@@ -655,6 +691,10 @@ const details = await financialAidService.getAdminApplicationById(appId);
                                                                         src={`${BACKEND_BASE_URL}${facility.images[0]}`}
                                                                         alt={facility.name}
                                                                         className="h-full w-full object-cover"
+                                                                        onError={(e) => {
+                                                                            (e.target as HTMLImageElement).onerror = null;
+                                                                            (e.target as HTMLImageElement).src = FALLBACK_FACILITY_IMAGE;
+                                                                        }}
                                                                     />
                                                                 ) : (
                                                                     <div className="h-full w-full flex items-center justify-center">
