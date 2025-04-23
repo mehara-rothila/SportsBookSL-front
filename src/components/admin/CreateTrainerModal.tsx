@@ -46,12 +46,30 @@ export default function CreateTrainerModal({ isOpen, onClose, onSuccess }: Creat
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            // Add validation for file type and size
+            const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg'];
+            if (!validImageTypes.includes(file.type)) {
+                setError('Please select a valid image file (JPEG, PNG, GIF, WEBP)');
+                // Reset the file input
+                if (fileInputRef.current) fileInputRef.current.value = '';
+                return;
+            }
+            
+            // Optional: Check file size (e.g., max 5MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                setError('Image is too large. Maximum size is 5MB.');
+                if (fileInputRef.current) fileInputRef.current.value = '';
+                return;
+            }
+            
             setImageFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreview(reader.result as string);
             };
             reader.readAsDataURL(file);
+            setError(null); // Clear any errors when file is valid
         } else {
             setImageFile(null);
             setImagePreview(null);
@@ -77,6 +95,11 @@ export default function CreateTrainerModal({ isOpen, onClose, onSuccess }: Creat
                 hourlyRate: Number(formData.hourlyRate) || 0,
                 experienceYears: Number(formData.experienceYears) || 0,
             };
+            
+            // Keep strings as-is - the service will handle conversion to arrays
+            // Type checking shows that the API expects these to remain as strings
+            
+            console.log('Creating trainer with image:', imageFile ? imageFile.name : 'No image');
             await trainerService.createTrainer(dataToSend, imageFile);
             setIsLoading(false);
             onSuccess(); // Call success callback
