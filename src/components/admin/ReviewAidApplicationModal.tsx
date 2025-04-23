@@ -11,7 +11,15 @@ import * as financialAidService from '@/services/financialAidService';
 // Import the specific types from the service file
 type ApplicationDetails = financialAidService.FinancialAidApplicationDetails;
 type ApplicationStatus = ApplicationDetails['status'];
-type AdminUpdateData = financialAidService.AdminUpdateAidApplicationData;
+
+// --- FIXED: Define the type locally based on the service function's parameter ---
+type AdminUpdateData = {
+  status: ApplicationStatus;
+  adminNotes?: string;
+  approvedAmount?: number;
+  validUntil?: string; // Expecting YYYY-MM-DD string from form
+};
+// --- End Fix ---
 
 interface ReviewAidApplicationModalProps {
   isOpen: boolean;
@@ -71,17 +79,20 @@ export default function ReviewAidApplicationModal({
   const formatDate = (dateStr: string | Date | undefined, formatString = 'PPP') => {
     if(!dateStr) return 'N/A';
     try {
-      return format(parseISO(String(dateStr)), formatString);
+      // Handle potential Date objects or ISO strings
+      const dateObj = typeof dateStr === 'string' ? parseISO(dateStr) : dateStr;
+      return format(dateObj, formatString);
     } catch(e) {
+      console.error("Date formatting error for:", dateStr, e);
       return 'Invalid Date';
     }
   };
-  
+
   const formatCurrency = (amount: number | undefined | null) => {
     if (amount === undefined || amount === null) return 'N/A';
     return `Rs. ${amount.toLocaleString('en-LK')}`;
   };
-  
+
   const getStatusPill = (s: ApplicationStatus) => {
     switch (s) {
       case 'pending':
@@ -138,8 +149,12 @@ export default function ReviewAidApplicationModal({
         return;
       }
       try {
-        // Validate date format/validity
-        new Date(validUntil).toISOString();
+        // Basic check if it's a valid date string structure
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(validUntil)) {
+             throw new Error('Invalid date format');
+        }
+        // Further check if parseISO works
+        parseISO(validUntil + "T00:00:00.000Z"); // Add time to make it a valid ISO string for parsing
       } catch (dateError) {
         setFormError("Invalid date format for 'Valid Until'. Please use YYYY-MM-DD.");
         toast.error("Invalid date format for 'Valid Until'.");
@@ -147,13 +162,18 @@ export default function ReviewAidApplicationModal({
       }
     }
 
-    // Prepare data to send
+    // Prepare data to send using the locally defined type
     const updateData: AdminUpdateData = {
       status: status,
-      approvedAmount: status === 'approved' ? (approvedAmount || undefined) : undefined,
+       // Send number or undefined
+      approvedAmount: status === 'approved' ? (approvedAmount ? Number(approvedAmount) : undefined) : undefined,
+      // Send YYYY-MM-DD string or undefined
       validUntil: status === 'approved' ? (validUntil || undefined) : undefined,
-      adminNotes: adminNotes,
+      adminNotes: adminNotes || undefined, // Send string or undefined
     };
+
+    // Remove undefined properties before sending if needed by backend, though usually handled
+    // Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
 
     setIsSaving(true);
     const loadingToast = toast.loading("Updating application...");
@@ -189,9 +209,9 @@ export default function ReviewAidApplicationModal({
   );
 
   const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
-    value ? (
-      <div className="flex">
-        <strong className="w-28 font-medium text-emerald-100 shrink-0">{label}:</strong>
+    value || value === 0 ? ( // Render even if value is 0
+      <div className="flex flex-col sm:flex-row sm:items-baseline">
+        <strong className="w-full sm:w-28 font-medium text-emerald-100 shrink-0 mb-0.5 sm:mb-0">{label}:</strong>
         <span className="break-words text-white/80">{value}</span>
       </div>
     ) : null
@@ -211,7 +231,7 @@ export default function ReviewAidApplicationModal({
         >
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
         </Transition.Child>
-        
+
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
             <Transition.Child
@@ -239,7 +259,7 @@ export default function ReviewAidApplicationModal({
                     <XMarkIcon className="h-6 w-6" />
                   </button>
                 </div>
-                
+
                 {/* Body (Scrollable) */}
                 <div className="p-6 flex-grow overflow-y-auto max-h-[75vh] custom-scrollbar">
                   {isLoadingDetails ? (
@@ -256,38 +276,48 @@ export default function ReviewAidApplicationModal({
                       {/* Left Column: Application Details */}
                       <div className="space-y-6">
                         <DetailSection title="Applicant Info" icon={UserCircleIcon}>
-                          <DetailItem label="Name" value={application.applicantUser?.name}/>
-                          <DetailItem label="Email" value={application.applicantUser?.email}/>
-                          <DetailItem label="Phone" value={application.applicantUser?.phone}/>
+                          <DetailItem label="Name" value={application.personalInfoSnapshot?.fullName || 'N/A'}/>
+                          <DetailItem label="Email" value={application.personalInfoSnapshot?.email || 'N/A'}/>
+                          <DetailItem label="Phone" value={application.personalInfoSnapshot?.phone || 'N/A'}/>
+                          <DetailItem label="DOB" value={formatDate(application.personalInfoSnapshot?.dateOfBirth)}/>
+                          <DetailItem label="Address" value={`${application.personalInfoSnapshot?.address || ''}, ${application.personalInfoSnapshot?.city || ''} ${application.personalInfoSnapshot?.postalCode || ''}`.replace(/^,|,$/g, '').trim() || 'N/A'}/>
                           <DetailItem label="Submitted" value={formatDate(application.submittedDate)}/>
                           <DetailItem label="Current Status" value={getStatusPill(application.status)}/>
                         </DetailSection>
 
                         <DetailSection title="Sports Background" icon={ClipboardDocumentListIcon}>
-                          <DetailItem label="Primary Sport" value={application.sportsInfo?.primarySport} />
-                          <DetailItem label="Skill Level" value={application.sportsInfo?.skillLevel} />
-                          <DetailItem 
-                            label="Experience" 
-                            value={application.sportsInfo?.yearsExperience ? `${application.sportsInfo.yearsExperience} years` : 'N/A'} 
+                          <DetailItem label="Primary Sport" value={application.sportsInfo?.primarySport || 'N/A'} />
+                          <DetailItem label="Skill Level" value={application.sportsInfo?.skillLevel || 'N/A'} />
+                          <DetailItem
+                            label="Experience"
+                            value={application.sportsInfo?.yearsExperience ? `${application.sportsInfo.yearsExperience} years` : 'N/A'}
                           />
-                          <DetailItem label="Affiliation" value={application.sportsInfo?.currentAffiliation} />
-                          <DetailItem 
-                            label="Achievements" 
-                            value={application.sportsInfo?.achievements ? 
-                              <p className="whitespace-pre-wrap">{application.sportsInfo.achievements}</p> : 'None specified'} 
+                          <DetailItem label="Affiliation" value={application.sportsInfo?.currentAffiliation || 'N/A'} />
+                          <DetailItem
+                            label="Achievements"
+                            value={application.sportsInfo?.achievements ?
+                              <p className="whitespace-pre-wrap">{application.sportsInfo.achievements}</p> : 'None specified'}
                           />
                         </DetailSection>
 
                         <DetailSection title="Financial Need" icon={CurrencyDollarIcon}>
                           <DetailItem label="Requested Amount" value={formatCurrency(application.financialNeed?.requestedAmount)} />
-                          <DetailItem label="Monthly Usage" value={application.financialNeed?.monthlyUsage} />
-                          <DetailItem label="Facilities Needed" value={application.financialNeed?.facilitiesNeeded?.join(', ')} />
-                          <DetailItem 
-                            label="Need Description" 
-                            value={application.financialNeed?.description ? 
-                              <p className="whitespace-pre-wrap">{application.financialNeed.description}</p> : 'None specified'} 
+                          <DetailItem label="Monthly Usage" value={application.financialNeed?.monthlyUsage || 'N/A'} />
+                          <DetailItem label="Facilities Needed" value={application.financialNeed?.facilitiesNeeded?.join(', ') || 'N/A'} />
+                          <DetailItem
+                            label="Need Description"
+                            value={application.financialNeed?.description ?
+                              <p className="whitespace-pre-wrap">{application.financialNeed.description}</p> : 'None specified'}
                           />
                         </DetailSection>
+
+                        <DetailSection title="Reference" icon={InformationCircleIcon}>
+                           <DetailItem label="Name" value={application.reference?.name || 'N/A'} />
+                           <DetailItem label="Relationship" value={application.reference?.relationship || 'N/A'} />
+                           <DetailItem label="Contact Info" value={application.reference?.contactInfo || 'N/A'} />
+                           <DetailItem label="Organization" value={application.reference?.organizationName || 'N/A'} />
+                        </DetailSection>
+
 
                         {(application.status === 'approved' && (application.approvedAmount || application.validUntil)) && (
                           <DetailSection title="Approval Details" icon={CheckCircleIcon}>
@@ -299,12 +329,12 @@ export default function ReviewAidApplicationModal({
                         <DetailSection title="Supporting Information" icon={DocumentTextIcon}>
                           <DetailItem label="Previous Aid" value={application.supportingInfo?.previousAid || 'N/A'} />
                           <DetailItem label="Other Programs" value={application.supportingInfo?.otherPrograms || 'N/A'} />
-                          <DetailItem 
-                            label="Additional Info" 
-                            value={application.supportingInfo?.additionalInfo ? 
-                              <p className="whitespace-pre-wrap">{application.supportingInfo.additionalInfo}</p> : 'None'} 
+                          <DetailItem
+                            label="Additional Info"
+                            value={application.supportingInfo?.additionalInfo ?
+                              <p className="whitespace-pre-wrap">{application.supportingInfo.additionalInfo}</p> : 'None'}
                           />
-                          
+
                           {/* Document Links */}
                           {application.documentUrls && application.documentUrls.length > 0 ? (
                             <div className="pt-2">
@@ -312,10 +342,10 @@ export default function ReviewAidApplicationModal({
                               <ul className='list-disc list-inside space-y-1 pl-1'>
                                 {application.documentUrls.map((url, index) => (
                                   <li key={index}>
-                                    <a 
-                                      href={`${BACKEND_BASE_URL}${url}`} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer" 
+                                    <a
+                                      href={`${BACKEND_BASE_URL}${url}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
                                       className="text-emerald-400 hover:text-emerald-300 hover:underline transition-colors"
                                     >
                                       View Document {index + 1}
@@ -341,14 +371,14 @@ export default function ReviewAidApplicationModal({
 
                       {/* Right Column: Admin Action Form */}
                       <div>
-                        <form 
-                          onSubmit={handleSave} 
-                          className="bg-emerald-900/30 backdrop-blur-sm p-4 rounded-lg border border-white/20 space-y-4 sticky top-0"
+                        <form
+                          onSubmit={handleSave}
+                          className="bg-emerald-900/30 backdrop-blur-sm p-4 rounded-lg border border-white/20 space-y-4 sticky top-4" // Added sticky
                         >
                           <h3 className="text-base font-semibold text-white border-b border-white/10 pb-2 mb-3">
                             Admin Action
                           </h3>
-                          
+
                           {/* Status Update */}
                           <div>
                             <label className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
@@ -365,7 +395,7 @@ export default function ReviewAidApplicationModal({
                                       checked
                                         ? 'border-transparent bg-emerald-600 text-white hover:bg-emerald-700'
                                         : 'border-white/20 bg-white/5 text-white/80 hover:bg-white/10',
-                                      active ? 'ring-2 ring-emerald-500 ring-offset-1' : '',
+                                      active ? 'ring-2 ring-emerald-500 ring-offset-1 ring-offset-emerald-900/30' : '', // Added offset color
                                       'flex cursor-pointer items-center justify-center rounded-md border py-2 px-2 text-xs font-medium uppercase transition-all focus:outline-none'
                                     )}
                                   >
@@ -389,8 +419,8 @@ export default function ReviewAidApplicationModal({
                           >
                             <div className="space-y-3 pt-3 border-t border-white/10">
                               <div>
-                                <label 
-                                  htmlFor="approvedAmount" 
+                                <label
+                                  htmlFor="approvedAmount"
                                   className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1"
                                 >
                                   Approved Amount (LKR) <span className="text-red-400">*</span>
@@ -406,8 +436,8 @@ export default function ReviewAidApplicationModal({
                                 />
                               </div>
                               <div>
-                                <label 
-                                  htmlFor="validUntil" 
+                                <label
+                                  htmlFor="validUntil"
                                   className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1"
                                 >
                                   Valid Until Date <span className="text-red-400">*</span>
@@ -418,7 +448,7 @@ export default function ReviewAidApplicationModal({
                                   value={validUntil}
                                   onChange={(e) => setValidUntil(e.target.value)}
                                   className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                                  min={format(new Date(), 'yyyy-MM-dd')}
+                                  min={format(new Date(), 'yyyy-MM-dd')} // Set min date to today
                                   required={status === 'approved'}
                                 />
                               </div>
@@ -427,8 +457,8 @@ export default function ReviewAidApplicationModal({
 
                           {/* Admin Notes */}
                           <div>
-                            <label 
-                              htmlFor="adminNotes" 
+                            <label
+                              htmlFor="adminNotes"
                               className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1"
                             >
                               Admin Notes
@@ -453,7 +483,7 @@ export default function ReviewAidApplicationModal({
                           {/* Submit Button */}
                           <button
                             type="submit"
-                            className="w-full inline-flex justify-center rounded-md border border-transparent bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 transition-all duration-200"
+                            className="w-full inline-flex justify-center rounded-md border border-transparent bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-emerald-900/30 disabled:opacity-50 transition-all duration-200" // Added offset color
                             disabled={isSaving || !application}
                           >
                             {isSaving ? 'Saving...' : 'Save Changes'}
