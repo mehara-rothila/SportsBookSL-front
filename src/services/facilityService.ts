@@ -16,7 +16,7 @@ interface FacilityListItemPublic {
     isPremium?: boolean;
     isNew?: boolean;
     pricePerHourValue?: number;
-    address?: string;
+    address: string; // <-- FIX APPLIED HERE (Required)
 }
 
 // Interface for public facility list API response
@@ -30,7 +30,7 @@ interface FacilitiesApiResponsePublic {
 // Interface for single facility details (used also as return type for create/update)
 // Exporting for use in modal/page
 export interface FacilityDetails extends FacilityListItemPublic {
-    description: string; // <-- FIX APPLIED HERE
+    description: string; // <-- FIX APPLIED HERE (Required)
     longDescription?: string;
     amenities?: string[];
     pricePerDay?: number;
