@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react'; // Added useCallback
+import { useState, useEffect, useCallback } from 'react'; 
 import Link from 'next/link';
 import Hero from '../components/home/Hero';
 import api from '@/services/api';
@@ -62,163 +62,186 @@ export default function Home() {
 
     fetchDataFromBackend();
   }, []);
-// --- Helper function to render the Sport Categories section ---
-const renderSportCategoriesSection = () => {
-  // --- Loading State ---
-  if (loading) {
+
+  // --- Helper function to render the Sport Categories section with ENHANCED STYLING ---
+  const renderSportCategoriesSection = () => {
+    // --- Loading State ---
+    if (loading) {
+      return (
+        <section id="sport-categories" className="py-24 relative">
+          <div className="container mx-auto px-4 relative z-10">
+            {/* Simplified Loading Skeleton */}
+            <div className="text-center mb-16">
+              <div className="w-40 h-8 bg-gray-200 rounded-full animate-pulse mx-auto mb-4"></div>
+              <div className="w-96 h-12 bg-gray-200 rounded mx-auto mb-6 animate-pulse"></div>
+              <div className="w-full max-w-3xl h-6 bg-gray-200 rounded mx-auto animate-pulse"></div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-10">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="h-60 rounded-2xl bg-gray-200 animate-pulse"></div>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // --- Error State ---
+    if (error && categories.length === 0) {
+      return (
+        <section id="sport-categories" className="py-24 relative">
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="text-center mb-16 relative">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                Discover Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600">Perfect Sport</span>
+              </h2>
+              <p className="text-lg text-red-600 max-w-3xl mx-auto">
+                Having trouble loading categories. Please try again later.
+              </p>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // --- Success State with ENHANCED STYLING ---
     return (
       <section id="sport-categories" className="py-24 relative">
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 opacity-50 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+        <div className="absolute bottom-20 left-10 w-72 h-72 bg-emerald-50 opacity-40 rounded-full blur-3xl"></div>
+        
         <div className="container mx-auto px-4 relative z-10">
-          {/* Simplified Loading Skeleton */}
-          <div className="text-center mb-16">
-            <div className="w-40 h-8 bg-gray-200 rounded-full animate-pulse mx-auto mb-4"></div>
-            <div className="w-96 h-12 bg-gray-200 rounded mx-auto mb-6 animate-pulse"></div>
-            <div className="w-full max-w-3xl h-6 bg-gray-200 rounded mx-auto animate-pulse"></div>
+          {/* Header */}
+          <div className="relative mb-16">
+            <div className="absolute top-[-60px] left-8 z-10">
+              <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold bg-emerald-50/90 text-emerald-700 backdrop-blur-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+                EXPLORE BY CATEGORY
+              </span>
+            </div>
+            <div className="mx-auto text-center bg-white/40 backdrop-blur-sm px-8 py-12 rounded-xl max-w-3xl">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                <span className="text-gray-900">Discover Your</span> <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600">Perfect Sport</span>
+              </h2>
+              <div className="flex justify-center items-center mb-6">
+                <div className="w-16 h-1 bg-gray-200"></div>
+                <div className="w-16 h-1 bg-emerald-400"></div>
+                <div className="w-16 h-1 bg-emerald-600"></div>
+              </div>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Whether you're into team sports or individual athletics, find and book the perfect facilities for your passion
+              </p>
+            </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-10">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="h-60 rounded-2xl bg-gray-200 animate-pulse"></div>
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
+          {/* Render categories from the API with ENHANCED STYLING */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-10">
+            {categories.length > 0 ? (
+              <>
+                {categories.map(category => {
+                  const imageUrl = category.imageSrc
+                    ? `${BACKEND_BASE_URL}${category.imageSrc}`
+                    : '/images/category-placeholder.jpg';
+                  const categoryId = category.id || category._id;
 
-  // --- Error State ---
-  if (error && categories.length === 0) {
-    return (
-      <section id="sport-categories" className="py-24 relative">
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center mb-16 relative">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Discover Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600">Perfect Sport</span>
-            </h2>
-            <p className="text-lg text-red-600 max-w-3xl mx-auto">
-              Having trouble loading categories. Please try again later.
-            </p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  // --- Success State ---
-  return (
-    <section id="sport-categories" className="py-24 relative">
-      <div className="container mx-auto px-4 relative z-10">
-        {/* Header */}
-        <div className="text-center mb-16 relative">
-           <div className="inline-block mb-3">
-            <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-emerald-500/10 to-green-500/10 text-emerald-700 backdrop-blur-sm animate-pulse-slow">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
-              EXPLORE BY CATEGORY
-            </span>
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            Discover Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600">Perfect Sport</span>
-          </h2>
-          <div className="flex justify-center items-center mb-6">
-            <div className="w-16 h-1 bg-emerald-200 rounded-l-full"></div>
-            <div className="w-10 h-1 bg-emerald-400 animate-pulse-slow"></div>
-            <div className="w-16 h-1 bg-emerald-600 rounded-r-full"></div>
-          </div>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Whether you're into team sports or individual athletics, find and book the perfect facilities for your passion
-          </p>
-        </div>
-
-        {/* Render categories from the API */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
-          {categories.length > 0 ? (
-            <>
-              {categories.map(category => {
-                const imageUrl = category.imageSrc
-                  ? `${BACKEND_BASE_URL}${category.imageSrc}`
-                  : '/images/category-placeholder.jpg';
-                const categoryId = category.id || category._id;
-
-                return (
-                  <Link
-                    key={categoryId}
-                    href={`/facilities?sport=${category.slug || categoryId}`}
-                    className="group relative rounded-xl overflow-hidden shadow-lg transform transition-all duration-500 hover:scale-[1.03] hover:shadow-xl bg-white flex flex-col"
-                  >
-                    {/* Image at the top */}
-                    <div className="h-40 overflow-hidden relative">
-                      <div 
-                        className="absolute inset-0 bg-cover bg-center transition-all duration-500 group-hover:scale-105"
-                        style={{ backgroundImage: `url("${imageUrl}")` }}
-                      ></div>
-                      <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/50"></div>
-                    </div>
-                    
-                    {/* Content Container - Separated from the image */}
-                    <div className="p-5 flex flex-col justify-between flex-grow bg-white">
-                      {/* Category Title */}
-                      <div>
-                        <h3 className="text-xl font-bold text-emerald-700 mb-2">{category.name}</h3>
+                  return (
+                    <Link
+                      key={categoryId}
+                      href={`/facilities?sport=${category.slug || categoryId}`}
+                      className="group relative overflow-hidden shadow-lg transform transition-all duration-500 hover:scale-[1.03] hover:shadow-xl flex flex-col rounded-2xl"
+                      onMouseEnter={() => setCategoryHoveredId(categoryId)}
+                      onMouseLeave={() => setCategoryHoveredId(null)}
+                    >
+                      {/* Enhanced Image Container with Overlay and Effects */}
+                      <div className="h-48 overflow-hidden relative">
+                        <div 
+                          className="absolute inset-0 bg-cover bg-center transition-all duration-700 group-hover:scale-110"
+                          style={{ backgroundImage: `url("${imageUrl}")` }}
+                        ></div>
+                        
+                        {/* Enhanced Overlay with Gradient and Shine Effect */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/60 opacity-80 group-hover:opacity-70 transition-opacity duration-300"></div>
+                        
+                        {/* Shine effect on hover */}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 shine-effect"></div>
+                        
+                        {/* Category Name Overlay - For visual impact */}
+                        <div className="absolute bottom-0 left-0 w-full p-4">
+                          <h3 className="text-xl font-bold text-white mb-1 drop-shadow-md transform transition-all duration-300 group-hover:translate-y-[-5px]">
+                            {category.name}
+                          </h3>
+                        </div>
+                      </div>
+                      
+                      {/* Content Container with Enhanced Styling */}
+                      <div className="p-5 flex flex-col justify-between flex-grow bg-white">
+                        {/* Description */}
                         <p className="text-gray-600 text-sm mb-4">
                           {category.description || `Book ${category.name.toLowerCase()} facilities across Sri Lanka`}
                         </p>
-                      </div>
-                      
-                      {/* Bottom Action Area */}
-                      <div className="mt-auto flex items-center justify-between">
-                        <span className="text-xs font-medium bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full">
-                          {category.facilityCount || '0'}+ Facilities
-                        </span>
-                        <div className="flex items-center text-emerald-600 text-sm font-medium transition-all duration-300 group-hover:translate-x-1">
-                          <span>Explore</span>
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
+                        
+                        {/* Bottom Action Area with Enhanced Styling */}
+                        <div className="mt-auto flex items-center justify-between">
+                          <span className="text-xs font-medium bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full border border-emerald-100">
+                            {category.facilityCount || '0'}+ Facilities
+                          </span>
+                          <div className="flex items-center text-emerald-600 text-sm font-medium transition-all duration-300 group-hover:translate-x-1">
+                            <span>Explore</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </div>
                         </div>
                       </div>
+                      
+                      {/* Bottom Accent Bar */}
+                      <div className="h-1 w-0 bg-gradient-to-r from-emerald-500 to-green-500 group-hover:w-full transition-all duration-500"></div>
+                    </Link>
+                  );
+                })}
+                
+                {/* Enhanced View All Card */}
+                <div className="relative overflow-hidden shadow-lg flex flex-col rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-900 group hover:shadow-2xl transition-all duration-500 hover:scale-[1.03]">
+                  <div className="absolute inset-0 bg-sports-pattern opacity-5 group-hover:opacity-8 transition-opacity duration-300"></div>
+                  
+                  {/* Animated Background Circles */}
+                  <div className="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-5 rounded-full group-hover:scale-110 transition-transform duration-700"></div>
+                  <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-white opacity-5 rounded-full group-hover:scale-110 transition-transform duration-700"></div>
+                  
+                  <div className="p-8 flex flex-col items-center justify-center text-center h-full z-10">
+                    <div className="w-16 h-16 flex items-center justify-center rounded-full bg-white/10 mb-6 group-hover:scale-110 transition-transform duration-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
                     </div>
-                  </Link>
-                );
-              })}
-              
-              {/* View All Card */}
-              <div className="relative rounded-xl overflow-hidden shadow-lg bg-gradient-to-br from-emerald-700 to-emerald-900 flex flex-col">
-                <div className="absolute inset-0 bg-sports-pattern opacity-5"></div>
-                <div className="p-6 flex flex-col items-center justify-center text-center h-full">
-                  <div className="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
+                    <h3 className="text-2xl font-bold text-white mb-3 group-hover:translate-y-[-5px] transition-transform duration-300">Explore All Sports</h3>
+                    <p className="text-white/80 text-sm mb-6">
+                      Discover all {categories.length}+ sports categories and find the perfect facilities for your passion
+                    </p>
+                    <Link href="/facilities" className="inline-flex items-center px-6 py-2.5 rounded-full border border-white/30 text-white text-sm font-medium bg-white/10 hover:bg-white/20 transition-all duration-300 group-hover:shadow-lg">
+                      View All Categories
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Explore All Sports</h3>
-                  <p className="text-white/80 text-sm">
-                    Discover all {categories.length}+ sports categories and find the perfect facilities for your passion
-                  </p>
-                  <Link href="/facilities" className="mt-5 inline-flex items-center px-4 py-2 rounded-full border border-white/30 text-white text-sm font-medium bg-white/10 hover:bg-white/20 transition-all duration-300">
-                    View All Categories
-                  </Link>
                 </div>
+              </>
+            ) : (
+              // --- No Categories Found State ---
+              <div className="col-span-full text-center py-10">
+                <p className="text-gray-600 mb-4">No categories found at the moment. Please check back later!</p>
               </div>
-            </>
-          ) : (
-            // --- No Categories Found State ---
-            <div className="col-span-full text-center py-10">
-              <p className="text-gray-600 mb-4">No categories found at the moment. Please check back later!</p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
-    </section>
-  );
-};
+      </section>
+    );
+  };
 
-
-
-
-
-
-  // --- Helper function to render the Featured Facilities section ---
+  // --- Helper function to render the Featured Facilities section with ENHANCED STYLING ---
   const renderFeaturedFacilitiesSection = () => {
     // Define filters inside the function scope
     const filters = [
@@ -230,12 +253,11 @@ const renderSportCategoriesSection = () => {
       { id: 'premium', name: 'Premium' },
     ];
 
-    // Filter facilities based on activeFilter (using 'featuredFacilities' state from Home)
+    // Filter facilities based on activeFilter
     const filteredFacilities = featuredFacilities.filter(facility => {
       if (activeFilter === 'all') return true;
       if (activeFilter === 'new') return facility.isNew;
       if (activeFilter === 'premium') return facility.isPremium;
-      // Check if sportTypes array exists and includes the active filter
       return facility.sportTypes && facility.sportTypes.some(sport =>
         sport.toLowerCase() === activeFilter.toLowerCase());
     }).slice(0, 4); // Show only first 4 after filtering
@@ -282,28 +304,38 @@ const renderSportCategoriesSection = () => {
       );
     }
 
-    // --- Success State ---
+    // --- Success State with ENHANCED STYLING ---
     return (
-      <section className="py-24 relative">
+      <section className="py-24 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute top-40 right-0 w-80 h-80 bg-emerald-50 opacity-70 rounded-full -translate-x-1/3 blur-3xl"></div>
+        <div className="absolute -bottom-20 left-0 w-72 h-72 bg-emerald-50 opacity-50 rounded-full translate-x-1/4 blur-3xl"></div>
+        
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-          {/* Header and Filters */}
+          {/* Enhanced Header and Filters */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-12">
-            <div className="mb-6 md:mb-0">
+            <div className="mb-8 md:mb-0">
               <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 inline-block mb-4">TOP RATED</span>
               <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
                 Featured Facilities
               </h2>
-              <div className="mt-4 w-20 h-1 bg-emerald-600 rounded"></div>
+              <div className="mt-4 w-24 h-1.5 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full"></div>
               <p className="mt-4 text-lg text-gray-600 max-w-2xl">
                 Discover top-rated sports facilities across Sri Lanka
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 bg-white/70 backdrop-blur-sm p-2 rounded-xl shadow-sm">
+            
+            {/* Enhanced Filter Buttons */}
+            <div className="flex flex-wrap gap-2 bg-white/80 backdrop-blur-sm p-3 rounded-xl shadow-md border border-gray-100">
               {filters.map((filter) => (
                 <button
                   key={filter.id}
                   onClick={() => setActiveFilter(filter.id)}
-                  className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${activeFilter === filter.id ? 'bg-emerald-100 text-emerald-800 shadow-sm transform scale-105' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}
+                  className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+                    activeFilter === filter.id 
+                      ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md transform scale-105' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
                 >
                   {filter.name}
                 </button>
@@ -311,7 +343,7 @@ const renderSportCategoriesSection = () => {
             </div>
           </div>
 
-          {/* Facilities Grid */}
+          {/* Enhanced Facilities Grid with Category Card Styling */}
           {featuredFacilities.length > 0 ? (
             <>
               {filteredFacilities.length > 0 ? (
@@ -326,76 +358,97 @@ const renderSportCategoriesSection = () => {
                       <Link
                         key={facilityId}
                         href={`/facilities/${facilityId}`}
-                        className="group flex flex-col h-full"
+                        className="group relative overflow-hidden shadow-lg transform transition-all duration-500 hover:scale-[1.03] hover:shadow-xl flex flex-col rounded-2xl"
                         onMouseEnter={() => setFacilityHoveredId(facilityId)}
                         onMouseLeave={() => setFacilityHoveredId(null)}
                       >
-                        <div
-                          className={`relative overflow-hidden rounded-xl shadow-md transition-all duration-500 flex-grow bg-white ${facilityHoveredId === facilityId ? 'shadow-lg shadow-emerald-200/50 scale-[1.03]' : ''}`}
-                        >
-                          {/* Badges */}
-                          {facility.isNew && (
-                            <div className="absolute top-3 left-3 z-10">
+                        <div className="relative overflow-hidden flex-grow">
+                          {/* Enhanced Badges with Better Positioning and Styling */}
+                          <div className="absolute top-0 left-0 w-full p-4 flex gap-2 z-20">
+                            {facility.isNew && (
                               <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 ring-1 ring-inset ring-green-200 shadow-sm">
+                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse mr-1"></span>
                                 New
                               </span>
-                            </div>
-                          )}
-                          {facility.isPremium && (
-                            <div className={`absolute top-3 ${facility.isNew ? 'left-14' : 'left-3'} z-10`}>
+                            )}
+                            {facility.isPremium && (
                               <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 ring-1 ring-inset ring-amber-200 shadow-sm">
+                                <svg className="h-3 w-3 text-amber-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 2a.75.75 0 01.692.462l2.24 5.37 5.38.446a.75.75 0 01.423 1.311l-4.16 3.34 1.29 5.233a.75.75 0 01-1.114.813L10 16.914l-4.75 2.74a.75.75 0 01-1.114-.813l1.29-5.233-4.16-3.34a.75.75 0 01.423-1.311l5.38-.446 2.24-5.37A.75.75 0 0110 2z" clipRule="evenodd" />
+                                </svg>
                                 Premium
                               </span>
-                            </div>
-                          )}
-
-                          {/* Image Container */}
-                          <div className="aspect-w-16 aspect-h-9 w-full overflow-hidden">
-                            <div
-                              className="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                              style={{ backgroundImage: `url("${imageUrl}")` }}
-                            />
+                            )}
                           </div>
 
-                          {/* Content Area */}
-                          <div className="p-4 flex flex-col flex-grow">
-                            {/* Sport Types */}
-                            <div className="flex flex-wrap gap-1 mb-2">
-                              {facility.sportTypes && facility.sportTypes.slice(0, 2).map((sport) => (
-                                <span key={sport} className="inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
-                                  {sport}
-                                </span>
-                              ))}
+                          {/* Enhanced Image Container with Overlay and Effects - Similar to Category Cards */}
+                          <div className="aspect-w-16 aspect-h-9 w-full overflow-hidden">
+                            <div
+                              className="h-48 w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                              style={{ backgroundImage: `url("${imageUrl}")` }}
+                            />
+                            
+                            {/* Enhanced Image Overlay Gradient - Similar to Category Cards */}
+                            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/60 opacity-80 group-hover:opacity-70 transition-opacity duration-300"></div>
+                            
+                            {/* Shine effect on hover - Same as Category Cards */}
+                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 shine-effect"></div>
+                            
+                            {/* Facility Name Overlay - Similar to Category Card name */}
+                            <div className="absolute bottom-0 left-0 w-full p-4">
+                              <h3 className="text-xl font-bold text-white mb-1 drop-shadow-md transform transition-all duration-300 group-hover:translate-y-[-5px]">
+                                {facility.name}
+                              </h3>
+                              <div className="flex flex-wrap gap-1.5 mb-1">
+                                {facility.sportTypes && facility.sportTypes.slice(0, 2).map((sport) => (
+                                  <span key={sport} className="inline-block rounded-full bg-white/20 backdrop-blur-sm px-2.5 py-0.5 text-xs font-medium text-white border border-white/10">
+                                    {sport}
+                                  </span>
+                                ))}
+                              </div>
                             </div>
+                          </div>
 
-                            {/* Name */}
-                            <h3 className="text-base font-semibold text-gray-900 mb-1 group-hover:text-emerald-700 transition-colors duration-300 truncate">
-                              {facility.name}
-                            </h3>
-
-                            {/* Location */}
-                            <div className="flex items-center text-sm text-gray-500 mb-2">
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1 flex-shrink-0">
+                          {/* Enhanced Content Area - Styled like Category Cards */}
+                          <div className="p-5 flex flex-col flex-grow bg-white">
+                            {/* Location Display */}
+                            <div className="flex items-center text-sm text-gray-500 mb-3">
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1.5 flex-shrink-0 text-emerald-500">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                               </svg>
                               <span className="truncate">{facility.location}</span>
                             </div>
 
-                            {/* Rating */}
+                            {/* Enhanced Rating Display */}
                             <div className="flex items-center text-sm text-gray-700 mb-3">
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-amber-400 mr-1">
-                                <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
-                              </svg>
-                              <span className="font-medium">{facility.rating?.toFixed(1) || 'N/A'}</span>
-                              <span className="ml-1 text-gray-500">({facility.reviewCount || 0} reviews)</span>
+                              <div className="flex items-center bg-amber-50 px-2 py-1 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-amber-400 mr-1">
+                                  <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
+                                </svg>
+                                <span className="font-medium">{facility.rating?.toFixed(1) || 'N/A'}</span>
+                                <span className="ml-1 text-gray-500">({facility.reviewCount || 0})</span>
+                              </div>
                             </div>
 
-                            {/* Price */}
-                            <div className="mt-auto pt-2 border-t border-gray-100">
-                               <span className="text-sm font-semibold text-gray-800">{facility.pricePerHour ? `Rs. ${facility.pricePerHour}/hr` : 'Price not available'}</span>
+                            {/* Bottom Action Area with Enhanced Styling - Similar to Category Cards */}
+                            <div className="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between">
+                              <span className="text-xs font-medium bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full border border-emerald-100">
+                                {facility.pricePerHour ? `Rs. ${facility.pricePerHour}/hr` : 'Price not available'}
+                              </span>
+                              
+                              {/* Action Button - Similar to Category Cards */}
+                              <div className="flex items-center text-emerald-600 text-sm font-medium transition-all duration-300 group-hover:translate-x-1">
+                                <span>Book now</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                              </div>
                             </div>
                           </div>
+                          
+                          {/* Bottom Accent Bar - Same as Category Cards */}
+                          <div className="h-1 w-0 bg-gradient-to-r from-emerald-500 to-green-500 group-hover:w-full transition-all duration-500"></div>
                         </div>
                       </Link>
                     );
@@ -407,7 +460,7 @@ const renderSportCategoriesSection = () => {
                   <p className="text-gray-600 mb-4">No facilities match the selected filter.</p>
                   <button
                     onClick={() => setActiveFilter('all')}
-                    className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                    className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300"
                   >
                     Show All Featured
                   </button>
@@ -424,28 +477,32 @@ const renderSportCategoriesSection = () => {
             </div>
           )}
 
-          {/* View All Button - Enhanced for visibility on baseball field */}
-<div className="mt-16 text-center">
-  <Link
-    href="/facilities"
-    className="inline-flex items-center px-6 py-3 bg-white/90 hover:bg-white text-emerald-700 font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 group border border-white/20 backdrop-blur-sm"
-  >
-    <span className="relative z-10">View All Facilities</span>
-    <svg 
-      className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1 relative z-10" 
-      xmlns="http://www.w3.org/2000/svg" 
-      viewBox="0 0 20 20" 
-      fill="currentColor"
-    >
-      <path 
-        fillRule="evenodd" 
-        d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" 
-        clipRule="evenodd" 
-      />
-    </svg>
-  </Link>
-</div>
-
+          {/* Enhanced View All Button - Similar to Category View All Card */}
+          <div className="mt-16 text-center">
+            <Link
+              href="/facilities"
+              className="group relative overflow-hidden inline-flex items-center px-7 py-3.5 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+            >
+              <span className="relative z-10">View All Facilities</span>
+              {/* Animated decoration circle */}
+              <div className="absolute -left-4 -top-4 w-16 h-16 bg-white opacity-10 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
+              <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-white opacity-10 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
+              <svg 
+                className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1 relative z-10" 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 20 20" 
+                fill="currentColor"
+              >
+                <path 
+                  fillRule="evenodd" 
+                  d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" 
+                  clipRule="evenodd" 
+                />
+              </svg>
+              {/* Bottom accent line animation */}
+              <span className="absolute bottom-0 left-0 h-1 w-0 bg-white/30 transition-all duration-500 group-hover:w-full"></span>
+            </Link>
+          </div>
         </div>
       </section>
     );
@@ -741,195 +798,9 @@ const renderSportCategoriesSection = () => {
     );
   };
 
-
-  // --- Main Component Return ---
-  return (
-    <div className="min-h-screen">
-      {/* Baseball Field Background - Fixed Position */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        {/* Enhanced baseball field background */}
-        <div className="absolute inset-0 opacity-75">
-          {/* Stadium atmosphere elements */}
-          <div className="absolute inset-0 bg-pattern-noise opacity-5"></div>
-          <div className="absolute top-0 left-0 w-full h-[8%] bg-gradient-to-b from-black/30 to-transparent"></div>
-          <div className="absolute bottom-0 left-0 w-full h-[8%] bg-gradient-to-t from-black/30 to-transparent"></div>
-
-          {/* Enhanced diamond field with more realistic texture */}
-          <div className="absolute top-1/2 left-1/2 w-[750px] h-[750px] -translate-x-1/2 -translate-y-1/2 bg-green-700 rounded-lg transform rotate-45 border-4 border-white/30 overflow-hidden shadow-2xl">
-            {/* Improved mowed grass pattern */}
-            <div
-              className="absolute inset-0 opacity-60"
-              style={{
-                backgroundImage: 'repeating-linear-gradient(0deg, rgba(255, 255, 255, .15) 0px, rgba(255, 255, 255, .15) 25px, transparent 25px, transparent 50px)',
-                backgroundSize: '100px 50px'
-              }}
-            />
-            {/* Radial highlight in center */}
-            <div className="absolute inset-0 bg-radial-gradient opacity-20"></div>
-          </div>
-
-          {/* Enhanced infield (dirt area) with texture */}
-          <div className="absolute top-1/2 left-1/2 w-[480px] h-[480px] -translate-x-1/2 -translate-y-1/2 bg-amber-800 rounded-lg transform rotate-45 border-2 border-amber-700/70 overflow-hidden">
-            {/* Dirt texture */}
-            <div
-              className="absolute inset-0 opacity-40"
-              style={{
-                backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' opacity=\'0.25\'/%3E%3C/svg%3E")',
-                backgroundSize: '150px 150px'
-              }}
-            />
-          </div>
-
-          {/* Enhanced infield grass */}
-          <div className="absolute top-1/2 left-1/2 w-[280px] h-[280px] -translate-x-1/2 -translate-y-1/2 bg-green-600 rounded-lg transform rotate-45 border-2 border-green-500/70 overflow-hidden shadow-inner">
-            {/* Center grass texture */}
-            <div
-              className="absolute inset-0 opacity-50"
-              style={{
-                backgroundImage: 'repeating-linear-gradient(90deg, rgba(255, 255, 255, .1) 0px, rgba(255, 255, 255, .1) 20px, transparent 20px, transparent 40px)',
-                backgroundSize: '80px 80px'
-              }}
-            />
-          </div>
-
-          {/* Enhanced base lines with glow */}
-          <div className="absolute top-1/2 left-1/2 w-[730px] h-[730px] -translate-x-1/2 -translate-y-1/2 transform rotate-45 border-l-4 border-b-4 border-white pointer-events-none shadow-glow"></div>
-
-          {/* Enhanced foul lines extending beyond diamond */}
-          <div className="absolute top-[75%] left-[14%] w-[30%] h-1 bg-white/40 rotate-45 origin-left blur-[0.5px]"></div>
-          <div className="absolute top-[75%] right-[14%] w-[30%] h-1 bg-white/40 -rotate-45 origin-right blur-[0.5px]"></div>
-
-          {/* Improved pitcher's mound with 3D effect */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="w-[100px] h-[100px] bg-amber-700 rounded-full border-2 border-amber-600/50 shadow-lg overflow-hidden">
-              {/* Dirt texture */}
-              <div
-                className="absolute inset-0 opacity-30"
-                style={{
-                  backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' opacity=\'0.25\'/%3E%3C/svg%3E")',
-                  backgroundSize: '100px 100px'
-                }}
-              />
-              {/* Radial gradient for 3D effect */}
-              <div className="absolute inset-0 bg-radial-gradient from-amber-600/30 to-transparent"></div>
-            </div>
-            {/* Pitcher's plate with 3D effect */}
-            <div className="absolute top-1/2 left-1/2 w-[24px] h-[6px] -translate-x-1/2 -translate-y-1/2 bg-white shadow-md"></div>
-          </div>
-
-          {/* Enhanced home plate with 3D effect */}
-          <div className="absolute top-[calc(50%+243px)] left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="w-[24px] h-[24px] bg-white rotate-45 transform origin-bottom-right shadow-lg">
-              <div className="absolute bottom-0 right-0 border-r-[24px] border-b-[12px] border-transparent border-r-white"></div>
-            </div>
-            {/* Subtle shadow under home plate */}
-            <div className="absolute -bottom-1 -right-1 w-[24px] h-[24px] bg-black/20 rotate-45 blur-[2px] -z-10"></div>
-          </div>
-
-          {/* Enhanced bases with 3D effects and shadows */}
-          <div className="absolute top-1/2 left-[calc(50%+243px)] -translate-y-1/2 -translate-x-1/2">
-            <div className="w-[18px] h-[18px] bg-white border border-gray-300 transform rotate-45 shadow-lg"></div>
-            <div className="absolute -bottom-1 -right-1 w-[18px] h-[18px] bg-black/20 rotate-45 blur-[2px] -z-10"></div>
-          </div>
-
-          <div className="absolute top-[calc(50%-243px)] left-1/2 -translate-y-1/2 -translate-x-1/2">
-            <div className="w-[18px] h-[18px] bg-white border border-gray-300 transform rotate-45 shadow-lg"></div>
-            <div className="absolute -bottom-1 -right-1 w-[18px] h-[18px] bg-black/20 rotate-45 blur-[2px] -z-10"></div>
-          </div>
-
-          <div className="absolute top-1/2 left-[calc(50%-243px)] -translate-y-1/2 -translate-x-1/2">
-            <div className="w-[18px] h-[18px] bg-white border border-gray-300 transform rotate-45 shadow-lg"></div>
-            <div className="absolute -bottom-1 -right-1 w-[18px] h-[18px] bg-black/20 rotate-45 blur-[2px] -z-10"></div>
-          </div>
-
-          {/* FIELDERS WITH RANDOM MOVEMENT PATTERNS */}
-          {/* Left field */}
-          <div className="absolute w-10 h-14 top-[30%] left-[30%] animate-fielder-move-1">
-            <div className="relative w-full h-full">
-              <div className="absolute top-0 left-1.5 w-6 h-6 rounded-full bg-blue-500/90 shadow-md"></div>
-              <div className="absolute top-6 left-2 w-5 h-7 bg-blue-600/80 shadow-md"></div>
-              <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
-            </div>
-          </div>
-
-          {/* Right field */}
-          <div className="absolute w-10 h-14 top-[65%] right-[25%] animate-fielder-move-2 animation-delay-500">
-            <div className="relative w-full h-full">
-              <div className="absolute top-0 left-1.5 w-6 h-6 rounded-full bg-blue-500/90 shadow-md"></div>
-              <div className="absolute top-6 left-2 w-5 h-7 bg-blue-600/80 shadow-md"></div>
-              <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
-            </div>
-          </div>
-
-          {/* Center field */}
-          <div className="absolute w-10 h-14 top-[20%] left-[50%] animate-fielder-move-3 animation-delay-800">
-            <div className="relative w-full h-full">
-              <div className="absolute top-0 left-1.5 w-6 h-6 rounded-full bg-blue-500/90 shadow-md"></div>
-              <div className="absolute top-6 left-2 w-5 h-7 bg-blue-600/80 shadow-md"></div>
-              <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
-            </div>
-          </div>
-
-          {/* Shortstop */}
-          <div className="absolute w-10 h-14 top-[40%] left-[40%] animate-fielder-move-7 animation-delay-700">
-            <div className="relative w-full h-full">
-              <div className="absolute top-0 left-1.5 w-6 h-6 rounded-full bg-blue-500/90 shadow-md"></div>
-              <div className="absolute top-6 left-2 w-5 h-7 bg-blue-600/80 shadow-md"></div>
-              <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
-            </div>
-          </div>
-
-          {/* Second baseman */}
-          <div className="absolute w-10 h-14 top-[40%] right-[40%] animate-fielder-move-8 animation-delay-200">
-            <div className="relative w-full h-full">
-              <div className="absolute top-0 left-1.5 w-6 h-6 rounded-full bg-blue-500/90 shadow-md"></div>
-              <div className="absolute top-6 left-2 w-5 h-7 bg-blue-600/80 shadow-md"></div>
-              <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
-            </div>
-          </div>
-
-          {/* First base runner */}
-          <div className="absolute w-10 h-14 top-1/2 left-[calc(50%+230px)] -translate-y-1/2 -translate-x-1/2 animate-baserunner-1">
-            <div className="relative w-full h-full">
-              <div className="absolute top-0 left-1.5 w-6 h-6 rounded-full bg-red-500/90 shadow-md"></div>
-              <div className="absolute top-6 left-2 w-5 h-7 bg-red-600/80 shadow-md"></div>
-              <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
-            </div>
-          </div>
-
-          {/* Animated baseball with trail effect */}
-          <div className="baseball-container absolute top-[calc(50%-20px)] left-[calc(50%)] -translate-x-1/2 -translate-y-1/2">
-            <div className="baseball w-4 h-4 bg-white rounded-full border border-red-500/60 shadow-md animate-baseball-throw"></div>
-            <div className="baseball-trail absolute w-1.5 h-1.5 rounded-full bg-white/40 blur-[1px] translate-y-[40px]"></div>
-            <div className="baseball-trail absolute w-1 h-1 rounded-full bg-white/30 blur-[1px] translate-y-[80px]"></div>
-            <div className="baseball-trail absolute w-0.5 h-0.5 rounded-full bg-white/20 blur-[1px] translate-y-[120px]"></div>
-          </div>
-
-          {/* Stadium lights effects */}
-          <div className="absolute top-0 left-[20%] w-1 h-40 bg-gradient-to-b from-white/30 to-transparent rotate-12 blur-[2px]"></div>
-          <div className="absolute top-0 right-[20%] w-1 h-40 bg-gradient-to-b from-white/30 to-transparent -rotate-12 blur-[2px]"></div>
-        </div>
-      </div>
-
-      {/* Hero Section */}
-      <div className="relative z-10">
-        <Hero />
-      </div>
-
-      {/* Background Wrapper div that spans multiple sections */}
-      <div className="relative overflow-hidden z-10">
-        {/* --- Integrated Sport Categories Section --- */}
-        <div className="relative">
-          {renderSportCategoriesSection()}
-        </div>
-
-        {/* --- Integrated Featured Facilities Section --- */}
-        <div className="relative">
-          {renderFeaturedFacilitiesSection()}
-        </div>
-      </div>
-
-      {/* Weather Integration Highlight Section - Styled with baseball theme */}
+  // --- Weather Integration Highlight Section - Styled with baseball theme ---
+  const renderWeatherSection = () => {
+    return (
       <section className="py-24 relative overflow-hidden z-10">
         {/* Semi-transparent overlay for readability */}
         <div className="absolute inset-0 bg-emerald-900/75 backdrop-blur-sm"></div>
@@ -1172,13 +1043,12 @@ const renderSportCategoriesSection = () => {
           </div>
         </div>
       </section>
+    );
+  };
 
-      {/* --- Integrated Testimonials Section --- */}
-      <div className="relative z-10">
-        {renderTestimonialsSection()} {/* Call the integrated function */}
-      </div>
-
-      {/* Enhanced Call to Action - Styled with baseball theme */}
+  // --- Call to Action Section ---
+  const renderCallToActionSection = () => {
+    return (
       <section className="py-24 bg-black/60 backdrop-blur-lg text-white relative overflow-hidden z-10">
         {/* Dark overlay for better readability */}
         <div className="absolute inset-0 bg-black/30"></div>
@@ -1253,6 +1123,204 @@ const renderSportCategoriesSection = () => {
           </div>
         </div>
       </section>
+    );
+  };
+
+  // --- Main Component Return ---
+  return (
+    <div className="min-h-screen">
+      {/* Baseball Field Background - Fixed Position */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        {/* Enhanced baseball field background */}
+        <div className="absolute inset-0 opacity-75">
+          {/* Stadium atmosphere elements */}
+          <div className="absolute inset-0 bg-pattern-noise opacity-5"></div>
+          <div className="absolute top-0 left-0 w-full h-[8%] bg-gradient-to-b from-black/30 to-transparent"></div>
+          <div className="absolute bottom-0 left-0 w-full h-[8%] bg-gradient-to-t from-black/30 to-transparent"></div>
+
+          {/* Enhanced diamond field with more realistic texture */}
+          <div className="absolute top-1/2 left-1/2 w-[750px] h-[750px] -translate-x-1/2 -translate-y-1/2 bg-green-700 rounded-lg transform rotate-45 border-4 border-white/30 overflow-hidden shadow-2xl">
+            {/* Improved mowed grass pattern */}
+            <div
+              className="absolute inset-0 opacity-60"
+              style={{
+                backgroundImage: 'repeating-linear-gradient(0deg, rgba(255, 255, 255, .15) 0px, rgba(255, 255, 255, .15) 25px, transparent 25px, transparent 50px)',
+                backgroundSize: '100px 50px'
+              }}
+            />
+            {/* Radial highlight in center */}
+            <div className="absolute inset-0 bg-radial-gradient opacity-20"></div>
+          </div>
+
+          {/* Enhanced infield (dirt area) with texture */}
+          <div className="absolute top-1/2 left-1/2 w-[480px] h-[480px] -translate-x-1/2 -translate-y-1/2 bg-amber-800 rounded-lg transform rotate-45 border-2 border-amber-700/70 overflow-hidden">
+            {/* Dirt texture */}
+            <div
+              className="absolute inset-0 opacity-40"
+              style={{
+                backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' opacity=\'0.25\'/%3E%3C/svg%3E")',
+                backgroundSize: '150px 150px'
+              }}
+            />
+          </div>
+
+          {/* Enhanced infield grass */}
+          <div className="absolute top-1/2 left-1/2 w-[280px] h-[280px] -translate-x-1/2 -translate-y-1/2 bg-green-600 rounded-lg transform rotate-45 border-2 border-green-500/70 overflow-hidden shadow-inner">
+            {/* Center grass texture */}
+            <div
+              className="absolute inset-0 opacity-50"
+              style={{
+                backgroundImage: 'repeating-linear-gradient(90deg, rgba(255, 255, 255, .1) 0px, rgba(255, 255, 255, .1) 20px, transparent 20px, transparent 40px)',
+                backgroundSize: '80px 80px'
+              }}
+            />
+          </div>
+
+          {/* Enhanced base lines with glow */}
+          <div className="absolute top-1/2 left-1/2 w-[730px] h-[730px] -translate-x-1/2 -translate-y-1/2 transform rotate-45 border-l-4 border-b-4 border-white pointer-events-none shadow-glow"></div>
+
+          {/* Enhanced foul lines extending beyond diamond */}
+          <div className="absolute top-[75%] left-[14%] w-[30%] h-1 bg-white/40 rotate-45 origin-left blur-[0.5px]"></div>
+          <div className="absolute top-[75%] right-[14%] w-[30%] h-1 bg-white/40 -rotate-45 origin-right blur-[0.5px]"></div>
+
+          {/* Improved pitcher's mound with 3D effect */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="w-[100px] h-[100px] bg-amber-700 rounded-full border-2 border-amber-600/50 shadow-lg overflow-hidden">
+              {/* Dirt texture */}
+              <div
+                className="absolute inset-0 opacity-30"
+                style={{
+                  backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' opacity=\'0.25\'/%3E%3C/svg%3E")',
+                  backgroundSize: '100px 100px'
+                }}
+              />
+              {/* Radial gradient for 3D effect */}
+              <div className="absolute inset-0 bg-radial-gradient from-amber-600/30 to-transparent"></div>
+            </div>
+            {/* Pitcher's plate with 3D effect */}
+            <div className="absolute top-1/2 left-1/2 w-[24px] h-[6px] -translate-x-1/2 -translate-y-1/2 bg-white shadow-md"></div>
+          </div>
+
+          {/* Enhanced home plate with 3D effect */}
+          <div className="absolute top-[calc(50%+243px)] left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="w-[24px] h-[24px] bg-white rotate-45 transform origin-bottom-right shadow-lg">
+              <div className="absolute bottom-0 right-0 border-r-[24px] border-b-[12px] border-transparent border-r-white"></div>
+            </div>
+            {/* Subtle shadow under home plate */}
+            <div className="absolute -bottom-1 -right-1 w-[24px] h-[24px] bg-black/20 rotate-45 blur-[2px] -z-10"></div>
+          </div>
+
+          {/* Enhanced bases with 3D effects and shadows */}
+          <div className="absolute top-1/2 left-[calc(50%+243px)] -translate-y-1/2 -translate-x-1/2">
+            <div className="w-[18px] h-[18px] bg-white border border-gray-300 transform rotate-45 shadow-lg"></div>
+            <div className="absolute -bottom-1 -right-1 w-[18px] h-[18px] bg-black/20 rotate-45 blur-[2px] -z-10"></div>
+          </div>
+
+          <div className="absolute top-[calc(50%-243px)] left-1/2 -translate-y-1/2 -translate-x-1/2">
+            <div className="w-[18px] h-[18px] bg-white border border-gray-300 transform rotate-45 shadow-lg"></div>
+            <div className="absolute -bottom-1 -right-1 w-[18px] h-[18px] bg-black/20 rotate-45 blur-[2px] -z-10"></div>
+          </div>
+
+          <div className="absolute top-1/2 left-[calc(50%-243px)] -translate-y-1/2 -translate-x-1/2">
+            <div className="w-[18px] h-[18px] bg-white border border-gray-300 transform rotate-45 shadow-lg"></div>
+            <div className="absolute -bottom-1 -right-1 w-[18px] h-[18px] bg-black/20 rotate-45 blur-[2px] -z-10"></div>
+          </div>
+
+          {/* FIELDERS WITH RANDOM MOVEMENT PATTERNS */}
+          {/* Left field */}
+          <div className="absolute w-10 h-14 top-[30%] left-[30%] animate-fielder-move-1">
+            <div className="relative w-full h-full">
+              <div className="absolute top-0 left-1.5 w-6 h-6 rounded-full bg-blue-500/90 shadow-md"></div>
+              <div className="absolute top-6 left-2 w-5 h-7 bg-blue-600/80 shadow-md"></div>
+              <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
+            </div>
+          </div>
+
+          {/* Right field */}
+          <div className="absolute w-10 h-14 top-[65%] right-[25%] animate-fielder-move-2 animation-delay-500">
+            <div className="relative w-full h-full">
+              <div className="absolute top-0 left-1.5 w-6 h-6 rounded-full bg-blue-500/90 shadow-md"></div>
+              <div className="absolute top-6 left-2 w-5 h-7 bg-blue-600/80 shadow-md"></div>
+              <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
+            </div>
+          </div>
+
+          {/* Center field */}
+          <div className="absolute w-10 h-14 top-[20%] left-[50%] animate-fielder-move-3 animation-delay-800">
+            <div className="relative w-full h-full">
+              <div className="absolute top-0 left-1.5 w-6 h-6 rounded-full bg-blue-500/90 shadow-md"></div>
+              <div className="absolute top-6 left-2 w-5 h-7 bg-blue-600/80 shadow-md"></div>
+              <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
+            </div>
+          </div>{/* Shortstop */}
+          <div className="absolute w-10 h-14 top-[40%] left-[40%] animate-fielder-move-7 animation-delay-700">
+            <div className="relative w-full h-full">
+              <div className="absolute top-0 left-1.5 w-6 h-6 rounded-full bg-blue-500/90 shadow-md"></div>
+              <div className="absolute top-6 left-2 w-5 h-7 bg-blue-600/80 shadow-md"></div>
+              <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
+            </div>
+          </div>
+
+          {/* Second baseman */}
+          <div className="absolute w-10 h-14 top-[40%] right-[40%] animate-fielder-move-8 animation-delay-200">
+            <div className="relative w-full h-full">
+              <div className="absolute top-0 left-1.5 w-6 h-6 rounded-full bg-blue-500/90 shadow-md"></div>
+              <div className="absolute top-6 left-2 w-5 h-7 bg-blue-600/80 shadow-md"></div>
+              <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
+            </div>
+          </div>
+
+          {/* First base runner */}
+          <div className="absolute w-10 h-14 top-1/2 left-[calc(50%+230px)] -translate-y-1/2 -translate-x-1/2 animate-baserunner-1">
+            <div className="relative w-full h-full">
+              <div className="absolute top-0 left-1.5 w-6 h-6 rounded-full bg-red-500/90 shadow-md"></div>
+              <div className="absolute top-6 left-2 w-5 h-7 bg-red-600/80 shadow-md"></div>
+              <div className="absolute top-14 h-2 w-5 left-2 bg-black/10 rounded-full blur-[2px] -z-10"></div>
+            </div>
+          </div>
+
+          {/* Animated baseball with trail effect */}
+          <div className="baseball-container absolute top-[calc(50%-20px)] left-[calc(50%)] -translate-x-1/2 -translate-y-1/2">
+            <div className="baseball w-4 h-4 bg-white rounded-full border border-red-500/60 shadow-md animate-baseball-throw"></div>
+            <div className="baseball-trail absolute w-1.5 h-1.5 rounded-full bg-white/40 blur-[1px] translate-y-[40px]"></div>
+            <div className="baseball-trail absolute w-1 h-1 rounded-full bg-white/30 blur-[1px] translate-y-[80px]"></div>
+            <div className="baseball-trail absolute w-0.5 h-0.5 rounded-full bg-white/20 blur-[1px] translate-y-[120px]"></div>
+          </div>
+
+          {/* Stadium lights effects */}
+          <div className="absolute top-0 left-[20%] w-1 h-40 bg-gradient-to-b from-white/30 to-transparent rotate-12 blur-[2px]"></div>
+          <div className="absolute top-0 right-[20%] w-1 h-40 bg-gradient-to-b from-white/30 to-transparent -rotate-12 blur-[2px]"></div>
+        </div>
+      </div>
+
+      {/* Hero Section */}
+      <div className="relative z-10">
+        <Hero />
+      </div>
+
+      {/* Background Wrapper div that spans multiple sections */}
+      <div className="relative overflow-hidden z-10">
+        {/* --- Integrated Sport Categories Section --- */}
+        <div className="relative">
+          {renderSportCategoriesSection()}
+        </div>
+
+        {/* --- Integrated Featured Facilities Section --- */}
+        <div className="relative">
+          {renderFeaturedFacilitiesSection()}
+        </div>
+      </div>
+
+      {/* Weather Integration Highlight Section */}
+      {renderWeatherSection()}
+
+      {/* --- Integrated Testimonials Section --- */}
+      <div className="relative z-10">
+        {renderTestimonialsSection()}
+      </div>
+
+      {/* Enhanced Call to Action */}
+      {renderCallToActionSection()}
 
       {/* Display error notification if there's an error */}
       {error && (
@@ -1474,7 +1542,6 @@ const renderSportCategoriesSection = () => {
         .animation-delay-700 {
           animation-delay: 0.7s;
         }
-
       `}</style>
     </div>
   );

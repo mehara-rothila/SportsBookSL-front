@@ -1,4 +1,5 @@
 // src/services/authService.ts
+// Complete updated version with improved authentication handling
 import api from './api'; // Import the configured Axios instance
 
 // Define structure for user data stored/returned
@@ -66,7 +67,7 @@ export const register = async (userData: any): Promise<AuthResponse> => {
   }
 };
 
-// Login user
+// Login user with enhanced event dispatching
 export const login = async (email: string, password: string): Promise<AuthResponse> => {
   try {
     const response = await api.post<AuthResponse>('/auth/login', { email, password });
@@ -77,16 +78,28 @@ export const login = async (email: string, password: string): Promise<AuthRespon
 
     if (response.data?.token) {
       localStorage.setItem(USER_TOKEN_KEY, response.data.token);
-       const userInfo: UserInfo = {
-          _id: response.data._id,
-          name: response.data.name,
-          email: response.data.email,
-          role: response.data.role,
-          avatar: response.data.avatar,
+      const userInfo: UserInfo = {
+        _id: response.data._id,
+        name: response.data.name,
+        email: response.data.email,
+        role: response.data.role,
+        avatar: response.data.avatar,
       };
       localStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo));
       logUserInfo(userInfo, "login-saved");
       console.log("Token stored in localStorage");
+      
+      // Dispatch a custom event to notify components about login
+      // This event will be processed by Header.tsx to update UI immediately
+      if (typeof window !== 'undefined') {
+        try {
+          const loginEvent = new Event('user-login');
+          window.dispatchEvent(loginEvent);
+          console.log("Login event dispatched from authService");
+        } catch (eventError) {
+          console.error("Error dispatching login event:", eventError);
+        }
+      }
     } else {
         console.warn("Login response did not contain a token.");
     }
@@ -97,13 +110,22 @@ export const login = async (email: string, password: string): Promise<AuthRespon
   }
 };
 
-// Logout user
+// Logout user with event dispatching
 export const logout = () => {
   try {
       if (typeof window !== 'undefined') {
           localStorage.removeItem(USER_TOKEN_KEY);
           localStorage.removeItem(USER_INFO_KEY);
           console.log("Token and user info removed from localStorage");
+          
+          // Dispatch a logout event
+          try {
+            const logoutEvent = new Event('user-logout');
+            window.dispatchEvent(logoutEvent);
+            console.log("Logout event dispatched");
+          } catch (eventError) {
+            console.error("Error dispatching logout event:", eventError);
+          }
       }
   } catch (error) {
       console.error("Error during logout:", error);
@@ -152,6 +174,14 @@ export const updateLocalUserInfo = (userData: Partial<UserInfo>): void => {
         localStorage.setItem(USER_INFO_KEY, JSON.stringify(updatedUser));
         logUserInfo(updatedUser, "updateLocalUserInfo-saved");
         console.log("User info updated in localStorage");
+        
+        // Dispatch an event to notify components about user info update
+        try {
+          const updateEvent = new Event('user-updated');
+          window.dispatchEvent(updateEvent);
+        } catch (eventError) {
+          console.error("Error dispatching user update event:", eventError);
+        }
       }
     }
   } catch (error) {

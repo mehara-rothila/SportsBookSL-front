@@ -73,12 +73,18 @@ export default function LoginPage() {
 
       // Only proceed if login was truly successful (token received)
       if (loginResponse?.token) {
+          // Dispatch a custom event to notify Header component
+          const loginEvent = new Event('user-login');
+          window.dispatchEvent(loginEvent);
+          console.log('Dispatched user-login event');
+          
           // Optional: Success animation before redirect
           const loginFormElement = document.getElementById('login-form');
           if (loginFormElement) {
               loginFormElement.classList.add('scale-95', 'opacity-0');
               await new Promise(resolve => setTimeout(resolve, 300)); // Shorter delay
           }
+
           // Redirect on success using Next.js router
           router.push('/'); // Redirect to homepage or dashboard
           return; // Stop execution here after successful redirect
