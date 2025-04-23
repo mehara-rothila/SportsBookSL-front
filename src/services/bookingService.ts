@@ -5,7 +5,8 @@ import api from './api';
 
 // Interface for detailed booking data, often returned by GET /bookings/:id
 // or after creation/update
-export interface Booking { // <-- ADD 'export' HERE    _id: string;
+export interface Booking { // <-- EXPORTED
+    _id: string;
     bookingId?: string;
     user: string | { _id: string; name: string; email: string; }; // Can be populated
     facility?: { _id: string; name: string; address?: string; images?: string[]; location?: string; pricePerHourValue?: number; } | string; // Can be populated or just ID
@@ -30,7 +31,7 @@ export interface Booking { // <-- ADD 'export' HERE    _id: string;
 }
 
 // Interface for data needed to create a booking
-interface CreateBookingData {
+export interface CreateBookingData { // <-- EXPORTED
     facility?: string; // Facility ID
     trainer?: string; // Trainer ID
     date: string; // YYYY-MM-DD
@@ -44,14 +45,14 @@ interface CreateBookingData {
 }
 
 // Interface for the response when cancelling a booking
-interface CancelResponse {
+interface CancelResponse { // <-- Keep internal if only used here
     message: string;
     booking: Booking;
 }
 
 // Interface for items in the admin booking list
 // Include necessary populated fields from the backend
-interface AdminBookingListItem {
+interface AdminBookingListItem { // <-- Keep internal if only used here
     _id: string;
     bookingId?: string;
     user: { _id: string; name: string; email: string; }; // Assume populated user
@@ -67,7 +68,7 @@ interface AdminBookingListItem {
 }
 
 // Interface for the API response for admin bookings list
-interface AdminBookingsApiResponse {
+interface AdminBookingsApiResponse { // <-- Keep internal if only used here
     bookings: AdminBookingListItem[];
     page: number;
     pages: number;
