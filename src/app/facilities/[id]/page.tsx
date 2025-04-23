@@ -60,7 +60,15 @@ import { startOfMonth, format as formatDateFns } from 'date-fns';
 // --- Interfaces ---
 interface OperatingHours { day: string; open: string; close: string; }
 interface EquipmentItem { _id?: string; name: string; pricePerHour: number; available: number; }
-interface Coach { _id: string; id?: string; name: string; specialization: string; hourlyRate: number; rating: number; profileImage?: string; }
+interface Coach { 
+    _id: string; 
+    id?: string; 
+    name: string; 
+    specialization: string; 
+    hourlyRate?: number; // Now optional
+    rating?: number; // Also making rating optional
+    profileImage?: string; 
+}
 interface ReviewUser { _id?: string; id?: string; name: string; avatar?: string; }
 interface Review { _id: string; id?: string; user: ReviewUser; rating: number; reviewDate: string; content: string; createdAt?: string; }
 
