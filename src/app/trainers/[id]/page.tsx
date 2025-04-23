@@ -75,12 +75,15 @@ export default function TrainerDetailPage() {
             setLoading(true); setError(null);
             try {
                 const data = await trainerService.getTrainerById(id);
-             // Replace with this code to ensure profileImage is always defined
-             setTrainer({
-                ...data,
-                profileImage: data.profileImage || FALLBACK_IMAGE,
-                rating: data.rating || 0  // Add a default value for rating
-              });
+                setTrainer({
+                    ...data,
+                    profileImage: data.profileImage || FALLBACK_IMAGE,
+                    rating: data.rating || 0,
+                    reviewCount: data.reviewCount || 0, 
+                    availability: data.availability || [],
+                    certifications: data.certifications || [],
+                    // Add any other required properties with defaults
+                  } as Trainer); // Explicitly cast to Trainer type
                 setReviews(data.reviews || []);
                 const initialReviewLimit = 5;
                 setHasMoreReviews((data.reviews?.length || 0) >= initialReviewLimit && data.reviewCount > initialReviewLimit);
