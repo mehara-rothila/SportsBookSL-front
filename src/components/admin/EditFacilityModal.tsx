@@ -51,6 +51,24 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
 
   const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
 
+  // FIXED: Improved image URL handler to handle both relative and absolute URLs
+  const getImageUrl = (path: string | null | undefined): string => {
+    if (!path) return '';
+    
+    // If it's already a full URL, return it as is
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    
+    // If it's a relative path from the backend, add the base URL
+    if (path.startsWith('/')) {
+      return `${BACKEND_BASE_URL}${path}`;
+    }
+    
+    // For any other case, try to construct a URL with backend base
+    return `${BACKEND_BASE_URL}/${path}`;
+  };
+
   // Pre-fill form when the facility prop changes
   useEffect(() => {
     if (facility && isOpen) {
@@ -76,7 +94,9 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
         isFeatured: facility.isFeatured || false,
         isActive: facility.isActive === undefined ? true : facility.isActive,
       });
-      const currentImageUrls = facility.images?.map(img => img.startsWith('http') ? img : `${BACKEND_BASE_URL}${img}`) || [];
+      
+      // FIXED: Use getImageUrl for each image in the array
+      const currentImageUrls = facility.images?.map(img => getImageUrl(img)) || [];
       setExistingImagePaths(facility.images || []);
       setImagePreviews(currentImageUrls); // Show existing images
       setNewImageFiles([]); // Clear new files selection
@@ -152,16 +172,30 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
         if (selectedFiles.length > 5) {
             setError("Max 5 images allowed.");
             setNewImageFiles([]);
-            setImagePreviews(existingImagePaths.map(p => p.startsWith('http') ? p : `${BACKEND_BASE_URL}${p}`)); // Revert preview
+            
+            // FIXED: Use getImageUrl for each image when reverting
+            setImagePreviews(existingImagePaths.map(p => getImageUrl(p))); // Revert preview
             if(fileInputRef.current) fileInputRef.current.value = "";
             return;
         }
 
-        const validFiles = selectedFiles.filter(file => file.type.startsWith('image/'));
+        // FIXED: Enhanced validation for file types
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg'];
+        const validFiles = selectedFiles.filter(file => validImageTypes.includes(file.type));
+        
         if(validFiles.length !== selectedFiles.length) {
-            setError("Please select only image files.");
+            setError("Please select only valid image files (JPEG, PNG, GIF, WEBP).");
             if(fileInputRef.current) fileInputRef.current.value = "";
              return;
+        }
+        
+        // FIXED: Added size validation
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const oversizedFiles = validFiles.filter(file => file.size > maxSize);
+        if (oversizedFiles.length > 0) {
+            setError(`Some images exceed the 5MB size limit: ${oversizedFiles.map(f => f.name).join(', ')}`);
+            if(fileInputRef.current) fileInputRef.current.value = "";
+            return;
         }
 
         setNewImageFiles(validFiles); // Store new files
@@ -172,7 +206,7 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
         let filesRead = 0;
         if (validFiles.length === 0) {
             // If selection cleared, revert to existing images preview
-            setImagePreviews(existingImagePaths.map(p => p.startsWith('http') ? p : `${BACKEND_BASE_URL}${p}`));
+            setImagePreviews(existingImagePaths.map(p => getImageUrl(p)));
             setClearExistingImages(false); // Not clearing if no new files selected
             return;
         }
@@ -191,7 +225,7 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
     } else {
         // If file input is cleared completely
         setNewImageFiles([]);
-        setImagePreviews(existingImagePaths.map(p => p.startsWith('http') ? p : `${BACKEND_BASE_URL}${p}`)); // Revert preview
+        setImagePreviews(existingImagePaths.map(p => getImageUrl(p))); // Revert preview
         setClearExistingImages(false);
     }
   };
@@ -205,7 +239,7 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
       // If all new previews removed, clear the file input and revert to showing existing images
       if (updatedFiles.length === 0) {
            if (fileInputRef.current) fileInputRef.current.value = "";
-           setImagePreviews(existingImagePaths.map(p => p.startsWith('http') ? p : `${BACKEND_BASE_URL}${p}`));
+           setImagePreviews(existingImagePaths.map(p => getImageUrl(p)));
            setClearExistingImages(false); // Since no new files are staged, don't clear existing
       }
   };
@@ -257,7 +291,7 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
         // Compare as strings for simplicity, ensures types like number/undefined are compared correctly
         if (String(formCompValue) !== String(originalCompValue)) {
              // Use type assertion on dataToUpdate for this dynamic assignment
-             (dataToUpdate as any)[key] = formValue; // <-- REVISED FIX HERE
+             (dataToUpdate as any)[key] = formValue;
         }
     });
 
@@ -289,7 +323,12 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
       };
 
       // Debug log before sending
-      // console.log("Data being sent to updateFacilityByAdmin:", { facilityId: facility._id, data: finalDataToSend, images: newImageFiles, clearExisting: clearExistingImages });
+      console.log("Data being sent to updateFacilityByAdmin:", { 
+          facilityId: facility._id, 
+          data: finalDataToSend, 
+          images: newImageFiles, 
+          clearExisting: clearExistingImages
+      });
 
       const updatedFacility = await facilityService.updateFacilityByAdmin(
           facility._id,
@@ -297,6 +336,7 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
           newImageFiles,
           clearExistingImages // This flag tells the backend whether to wipe old images
       );
+      
       onSave(updatedFacility);
       onClose();
     } catch (err: any) {
@@ -424,10 +464,10 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
                                     <div className="col-span-1 flex items-center justify-end">
                                          <input
                                              type="checkbox"
+                                             id={`closed-${h.day}-edit`}
                                              checked={h.isClosed}
                                              onChange={(e) => handleHoursChange(index, 'isClosed', e.target.checked)}
                                              className="h-4 w-4 rounded border-white/30 bg-white/5 text-emerald-600 focus:ring-emerald-500"
-                                             id={`closed-${h.day}-edit`}
                                          />
                                          <label htmlFor={`closed-${h.day}-edit`} className="ml-2 text-xs text-white/80 cursor-pointer">Closed</label>
                                     </div>
@@ -493,7 +533,17 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
                   {/* Action Buttons */}
                   <div className="mt-8 flex justify-end space-x-3 border-t border-white/10 pt-5">
                     <button type="button" className="btn-secondary-admin" onClick={onClose} disabled={isLoading}> Cancel </button>
-                    <button type="submit" className="btn-primary-admin" disabled={isLoading}> {isLoading ? 'Saving...' : 'Save Changes'} </button>
+                    <button type="submit" className="btn-primary-admin" disabled={isLoading}> 
+                      {isLoading ? (
+                        <div className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Saving...
+                        </div>
+                      ) : 'Save Changes'} 
+                    </button>
                   </div>
                 </form>
               </Dialog.Panel>
@@ -504,15 +554,3 @@ export default function EditFacilityModal({ isOpen, onClose, facility, onSave }:
     </Transition>
   );
 }
-
-// Example CSS classes (adjust as needed, maybe put in global CSS or use Tailwind directly)
-/*
-.form-label-admin { @apply block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1; }
-.input-field-admin { @apply mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500; }
-.input-help-text-admin { @apply mt-1 text-xs text-emerald-200/60; }
-.checkbox-label-admin { @apply inline-flex items-center; }
-.checkbox-admin { @apply rounded border-white/30 bg-white/5 text-emerald-600 shadow-sm focus:ring-emerald-500; }
-.btn-primary-admin { @apply inline-flex justify-center rounded-md border border-transparent bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-emerald-900 disabled:opacity-50 transition-all duration-200; }
-.btn-secondary-admin { @apply inline-flex justify-center rounded-md border border-white/20 bg-white/5 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-emerald-900 disabled:opacity-50 transition-all duration-200; }
-.custom-scrollbar { @apply scrollbar-thin scrollbar-thumb-emerald-700 scrollbar-track-emerald-900/50; }
-*/

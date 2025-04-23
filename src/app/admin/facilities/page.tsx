@@ -3,7 +3,6 @@
 
 import { useState, useEffect, Fragment, useCallback } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import toast from 'react-hot-toast';
 import * as facilityService from '@/services/facilityService';
 import CreateFacilityModal from '@/components/admin/CreateFacilityModal';
@@ -66,6 +65,23 @@ const NoDataMessage = ({ message, onCreateClick }: { message: string; onCreateCl
     </td>
   </tr>
 );
+
+// FIXED: Improved image URL helper function to handle both relative and absolute URLs
+const getImageUrl = (path?: string): string => {
+  if (!path) return FALLBACK_IMAGE;
+  
+  // If already a full URL
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  
+  // For relative paths from backend
+  if (path.startsWith('/')) {
+    return `${BACKEND_BASE_URL}${path}`;
+  }
+  
+  return FALLBACK_IMAGE;
+};
 
 export default function AdminFacilitiesPage() {
     const [facilities, setFacilities] = useState<AdminFacilityListItem[]>([]);
@@ -285,8 +301,9 @@ export default function AdminFacilitiesPage() {
 
                                 {/* Table Rows */}
                                 {!loading && !error && facilities.map((facility) => {
+                                    // FIXED: Use the improved image URL helper function
                                     const imageUrl = (facility.images && facility.images.length > 0) 
-                                        ? `${BACKEND_BASE_URL}${facility.images[0]}` 
+                                        ? getImageUrl(facility.images[0]) 
                                         : FALLBACK_IMAGE;
                                     return (
                                         <tr key={facility._id} className={`hover:bg-emerald-800/10 transition-colors duration-150 ${deletingId === facility._id ? 'opacity-50 pointer-events-none' : ''}`}>
