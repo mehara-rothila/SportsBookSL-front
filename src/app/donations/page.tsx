@@ -459,6 +459,7 @@ export default function DonationsPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+        // CORRECTED CODE
                 {athletes.map((athlete) => (
                   <DonationCard
                     key={athlete._id}
@@ -472,7 +473,7 @@ export default function DonationsPage() {
                     achievements={athlete.achievements}
                     story={athlete.story}
                     location={athlete.location}
-                    imageOpacity={100}
+                    // imageOpacity prop removed
                   />
                 ))}
               </div>
