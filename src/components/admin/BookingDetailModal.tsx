@@ -148,7 +148,8 @@ export default function BookingDetailModal({
                                 <dd className="mt-1 text-sm text-white font-semibold">{getTrainerName(booking.trainer)}</dd>
                                 {/* Add specialization if available */}
                                 {typeof booking.trainer === 'object' && booking.trainer?.specialization && <dd className="text-sm text-emerald-100/80">{booking.trainer.specialization}</dd>}
-                                {typeof booking.trainer === 'object' && booking.trainer?._id && booking.facility?._id && (
+                                {/* --- FIXED LINE BELOW: Added typeof check for booking.facility --- */}
+                                {typeof booking.trainer === 'object' && booking.trainer?._id && typeof booking.facility === 'object' && booking.facility?._id && (
                                    <dd className="text-xs text-emerald-300/70 mt-1 italic">(Session potentially at: {getFacilityName(booking.facility)})</dd>
                                 )}
                             </div>
