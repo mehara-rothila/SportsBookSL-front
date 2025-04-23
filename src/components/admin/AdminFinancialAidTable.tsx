@@ -2,11 +2,10 @@
 import { format, parseISO } from 'date-fns';
 import { EyeIcon, CheckCircleIcon, XCircleIcon, ClockIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 
-// --- FIXED: Import the correct type using a named import ---
+// Import the correct type using a named import
 import type { FinancialAidApplicationSummary } from '@/services/financialAidService';
 
 interface AdminFinancialAidTableProps {
-  // --- FIXED: Use the correct type ---
   applications: FinancialAidApplicationSummary[];
   onReview: (applicationId: string) => void; // Callback to open the review modal/page
 }
@@ -19,10 +18,7 @@ export default function AdminFinancialAidTable({
   const formatCurrency = (amount: number | undefined | null) => {
     if (amount === undefined || amount === null) return 'N/A';
     // Note: FinancialAidApplicationSummary doesn't seem to have requestedAmount.
-    // Assuming it might come from somewhere else or needs adjustment based on actual data.
-    // If requestedAmount is needed here, it might imply the table needs FinancialAidApplicationDetails
-    // or FinancialAidApplicationSummary needs updating.
-    // For now, keeping the function signature, but be aware of potential mismatch.
+    // This function remains but might not be used if data isn't available.
     return `Rs. ${amount.toLocaleString('en-LK')}`;
   };
 
@@ -35,7 +31,7 @@ export default function AdminFinancialAidTable({
     }
   };
 
-  // --- FIXED: Use the correct type for status lookup ---
+  // Use the correct type for status lookup
   const getStatusBadge = (status: FinancialAidApplicationSummary['status'] | undefined) => {
     switch (status) {
       case 'pending':
@@ -89,7 +85,7 @@ export default function AdminFinancialAidTable({
             Primary Sport
           </th>
           <th scope="col" className="px-4 py-4 text-left text-xs font-semibold text-emerald-200 uppercase tracking-wider">
-            Requested Amt (LKR) {/* See note in formatCurrency */}
+            Requested Amt (LKR) {/* Displaying N/A as per type */}
           </th>
           <th scope="col" className="px-4 py-4 text-center text-xs font-semibold text-emerald-200 uppercase tracking-wider">
             Status
@@ -104,20 +100,24 @@ export default function AdminFinancialAidTable({
         {applications.map((app) => (
           <tr key={app._id} className="hover:bg-emerald-800/10 transition-colors duration-150">
             <td className="px-4 py-4 whitespace-nowrap">
-              {/* FinancialAidApplicationSummary doesn't have applicantUser, name, email */}
-              {/* You might need to adjust the service/backend or the component */}
-              <div className="text-base font-medium text-white">{/* app.applicantUser?.name ?? */} 'N/A'}</div>
-              <div className="text-xs text-emerald-200/80">{/* app.applicantUser?.email ?? */} 'N/A'}</div>
+              {/* Displaying N/A as applicantUser is not in Summary type */}
+              {/* --- FIXED LINE BELOW --- */}
+              <div className="text-base font-medium text-white">N/A</div>
+              {/* --- FIXED LINE BELOW --- */}
+              <div className="text-xs text-emerald-200/80">N/A</div>
             </td>
             <td className="px-4 py-4 whitespace-nowrap">
-              <div className="text-sm text-white/70">{formatDateString(app.submittedDate /*?? app.createdAt*/)}</div> {/* createdAt likely not in Summary */}
+              {/* Displaying submittedDate; createdAt not available in Summary */}
+              {/* --- FIXED LINE BELOW (removed commented out fallback) --- */}
+              <div className="text-sm text-white/70">{formatDateString(app.submittedDate)}</div>
             </td>
             <td className="px-4 py-4 whitespace-nowrap">
               <div className="text-sm text-white/70">{app.sportsInfo?.primarySport || 'N/A'}</div>
             </td>
             <td className="px-4 py-4 whitespace-nowrap">
-              {/* FinancialAidApplicationSummary doesn't have financialNeed or requestedAmount */}
-              <div className="text-base font-medium text-white/90">{/* formatCurrency(app.financialNeed?.requestedAmount) */} 'N/A'}</div>
+              {/* Displaying N/A as requestedAmount is not in Summary type */}
+              {/* --- FIXED LINE BELOW --- */}
+              <div className="text-base font-medium text-white/90">N/A</div>
             </td>
             <td className="px-4 py-4 whitespace-nowrap text-center">
               {getStatusBadge(app.status)}
