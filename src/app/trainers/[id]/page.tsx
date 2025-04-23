@@ -1,3 +1,4 @@
+//\trainers\[id]\page.tsx
 'use client';
 
 import { useState, useEffect, useMemo, Fragment } from 'react';
@@ -74,7 +75,12 @@ export default function TrainerDetailPage() {
             setLoading(true); setError(null);
             try {
                 const data = await trainerService.getTrainerById(id);
-                setTrainer(data);
+             // Replace with this code to ensure profileImage is always defined
+             setTrainer({
+                ...data,
+                profileImage: data.profileImage || FALLBACK_IMAGE,
+                rating: data.rating || 0  // Add a default value for rating
+              });
                 setReviews(data.reviews || []);
                 const initialReviewLimit = 5;
                 setHasMoreReviews((data.reviews?.length || 0) >= initialReviewLimit && data.reviewCount > initialReviewLimit);
