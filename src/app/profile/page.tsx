@@ -299,7 +299,8 @@ function ProfilePageContent() {
 
                 toast.success("Profile updated!");
             } else {
-                toast.info("No changes made.");
+                // *** FIX 1: Use base toast for info messages ***
+                toast("No changes made.");
             }
 
             setIsEditingProfile(false);
@@ -483,7 +484,7 @@ function ProfilePageContent() {
                             <button
                                 onClick={() => fileInputRef.current?.click()}
                                 className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer rounded-full"
-                                aria-label="Change profile picture"
+                                aria-label="Change profile picture" // Label for the button
                             >
                                 <CameraIcon className="h-8 w-8 text-white/90" />
                             </button>
@@ -493,6 +494,8 @@ function ProfilePageContent() {
                                 onChange={handleAvatarFileSelect}
                                 accept="image/*"
                                 className="hidden"
+                                // *** FIX 2: Add aria-label for accessibility ***
+                                aria-label="Profile picture upload"
                             />
                         </div>
 
