@@ -30,10 +30,29 @@ interface ReviewUser { _id?: string; id?: string; name: string; avatar?: string;
 interface Review { _id: string; id?: string; user: ReviewUser; rating: number; reviewDate: string; content: string; createdAt?: string; }
 interface Trainer { _id: string; name: string; specialization: string; sports: string[]; location: string; profileImage: string; rating: number; reviewCount: number; hourlyRate: number; experienceYears: number; availability: string[]; certifications: string[]; bio: string; languages: string[]; associatedFacilities?: Facility[]; reviews?: Review[]; }
 
-// --- Get Base URL & Fallback Image ---
+// --- Get Base URL & Fallback Images ---
 const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
-const FALLBACK_IMAGE = '/images/default-trainer.png';
-const FALLBACK_AVATAR = '/images/default-avatar.png';
+const FALLBACK_IMAGE = '/images/default-trainer.png'; // Default for trainer/facility
+const FALLBACK_AVATAR = '/images/default-avatar.png'; // Default for user avatars
+
+// --- Helper function for Image URLs ---
+const getImageUrl = (path: string | null | undefined, fallback: string = FALLBACK_IMAGE): string => {
+  if (!path) return fallback;
+
+  // If it's already a full URL, return it as is
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+
+  // If it's a relative path likely from the backend, add the base URL
+  // Adjust the condition if your backend paths have a different structure
+  if (path.startsWith('/')) {
+    return `${BACKEND_BASE_URL}${path}`;
+  }
+
+  // For any other case (e.g., just a filename, potentially malformed data), return the fallback
+  return fallback;
+};
 
 // --- Helper function for class names ---
 function classNames(...classes: string[]) { return classes.filter(Boolean).join(' '); }
@@ -77,14 +96,25 @@ export default function TrainerDetailPage() {
                 const data = await trainerService.getTrainerById(id);
                 setTrainer({
                     ...data,
-                    profileImage: data.profileImage || FALLBACK_IMAGE,
+                    // Use getImageUrl here for initial load too, though profileImage is handled below
+                    profileImage: data.profileImage, // Keep original path for getImageUrl below
                     rating: data.rating || 0,
-                    reviewCount: data.reviewCount || 0, 
+                    reviewCount: data.reviewCount || 0,
                     availability: data.availability || [],
                     certifications: data.certifications || [],
                     // Add any other required properties with defaults
                   } as Trainer); // Explicitly cast to Trainer type
-                setReviews(data.reviews || []);
+
+                // Process reviews to ensure avatar URLs are handled correctly if needed immediately
+                const processedReviews = (data.reviews || []).map(review => ({
+                    ...review,
+                    user: {
+                        ...review.user,
+                        // Avatar URL will be handled by getImageUrl in the JSX render
+                    }
+                }));
+                setReviews(processedReviews);
+
                 const initialReviewLimit = 5;
                 setHasMoreReviews((data.reviews?.length || 0) >= initialReviewLimit && data.reviewCount > initialReviewLimit);
                 setTotalReviewPages(Math.ceil((data.reviewCount || 0) / initialReviewLimit));
@@ -108,7 +138,15 @@ export default function TrainerDetailPage() {
         const reviewLimit = 10;
         try {
             const data = await trainerService.getTrainerReviews(id, nextPage, reviewLimit);
-            setReviews(prev => [...prev, ...(data.reviews || [])]);
+            // Process new reviews if needed (usually handled in render)
+             const newReviews = (data.reviews || []).map(review => ({
+                ...review,
+                user: {
+                    ...review.user,
+                    // Avatar URL will be handled by getImageUrl in the JSX render
+                }
+            }));
+            setReviews(prev => [...prev, ...newReviews]);
             setReviewPage(nextPage);
             setTotalReviewPages(data.pages || 1);
             setHasMoreReviews(nextPage < (data.pages || 1));
@@ -129,124 +167,124 @@ export default function TrainerDetailPage() {
             user: {
                 _id: newReviewData.user?._id || currentUser?._id || 'temp-user-id',
                 name: newReviewData.user?.name || currentUser?.name || 'You',
-                avatar: newReviewData.user?.avatar || currentUser?.avatar || FALLBACK_AVATAR
+                avatar: newReviewData.user?.avatar || currentUser?.avatar // Keep original path
             },
             reviewDate: newReviewData.reviewDate || new Date().toISOString()
         };
         setReviews(prevReviews => [reviewWithUser, ...prevReviews]);
         setIsReviewModalOpen(false);
         if (trainer && id) {
-            setTrainer(prevTrainer => {
-                if (!prevTrainer) return null;
-                const newReviewCount = (prevTrainer.reviewCount || 0) + 1;
-                trainerService.getTrainerById(id)
-                .then(trainerData => {
-                  setTrainer({
-                    ...trainerData,
-                    profileImage: trainerData.profileImage || FALLBACK_IMAGE,
-                    rating: trainerData.rating || 0,
-                    reviewCount: trainerData.reviewCount || 0, 
-                    availability: trainerData.availability || [],
-                    certifications: trainerData.certifications || []
-                  } as Trainer);
-                })
-                .catch(console.error);                return { ...prevTrainer, reviewCount: newReviewCount };
-            });
+             // Re-fetch trainer data to get updated average rating and review count
+            trainerService.getTrainerById(id)
+            .then(trainerData => {
+              setTrainer(prevTrainer => prevTrainer ? {
+                ...prevTrainer, // Keep existing loaded data
+                rating: trainerData.rating || 0, // Update rating
+                reviewCount: trainerData.reviewCount || 0, // Update review count
+                // No need to update profileImage here unless it can change
+              } : null);
+               setHasMoreReviews(trainerData.reviewCount > reviews.length + 1); // +1 for the new review just added locally
+               setTotalReviewPages(Math.ceil((trainerData.reviewCount || 0) / 10)); // Assuming limit 10 for subsequent loads
+            })
+            .catch(console.error);
         }
     };
+
 
     // --- Helper Functions ---
     const formatCurrency = (amount: number | undefined) => { if (amount === undefined || amount === null) return 'N/A'; return `Rs. ${amount.toLocaleString('en-LK')}`; };
     const renderStars = (rating: number) => { return ( <div className="flex items-center"> {[1, 2, 3, 4, 5].map((star) => ( <StarIcon key={star} className={`h-5 w-5 flex-shrink-0 ${rating >= star ? 'text-yellow-400' : 'text-gray-300/40'}`} aria-hidden="true" /> ))} </div> ); };
 
     // --- Render Logic ---
-    if (loading) { 
-        return ( 
-            <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-emerald-800 via-green-800 to-emerald-900"> 
-                <div className="w-16 h-16 border-4 border-emerald-200/30 border-t-emerald-600 rounded-full animate-spin"></div> 
-                <p className="ml-4 text-xl font-semibold text-white">Loading Trainer Profile...</p> 
-            </div> 
-        ); 
-    }
-    
-    if (error) { 
-        return ( 
-            <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-emerald-800 via-green-800 to-emerald-900 text-white p-8"> 
-                <h2 className="text-2xl font-bold mb-4">Error Loading Trainer</h2> 
-                <p className="mb-4 text-center">{error}</p> 
-                <button onClick={() => window.location.reload()} className="px-6 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors flex items-center border border-white/30"> 
-                    <ArrowPathIcon className="w-5 h-5 mr-2" /> Try Again 
-                </button> 
-            </div> 
-        ); 
-    }
-    
-    if (!trainer) { 
-        return ( 
-            <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-emerald-800 via-green-800 to-emerald-900 p-8"> 
-                <h2 className="text-2xl font-bold text-white mb-2">Trainer Not Found</h2> 
-                <p className="text-emerald-100 mb-4 text-center">We couldn't find the trainer you were looking for (ID: {id}).</p> 
-                <Link href="/trainers" className="px-6 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors border border-white/30"> 
-                    Back to Trainers 
-                </Link> 
-            </div> 
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-emerald-800 via-green-800 to-emerald-900">
+                <div className="w-16 h-16 border-4 border-emerald-200/30 border-t-emerald-600 rounded-full animate-spin"></div>
+                <p className="ml-4 text-xl font-semibold text-white">Loading Trainer Profile...</p>
+            </div>
         );
     }
 
-    const trainerImageUrl = trainer.profileImage ? `${BACKEND_BASE_URL}${trainer.profileImage}` : FALLBACK_IMAGE;
+    if (error) {
+        return (
+            <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-emerald-800 via-green-800 to-emerald-900 text-white p-8">
+                <h2 className="text-2xl font-bold mb-4">Error Loading Trainer</h2>
+                <p className="mb-4 text-center">{error}</p>
+                <button onClick={() => window.location.reload()} className="px-6 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors flex items-center border border-white/30">
+                    <ArrowPathIcon className="w-5 h-5 mr-2" /> Try Again
+                </button>
+            </div>
+        );
+    }
+
+    if (!trainer) {
+        return (
+            <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-emerald-800 via-green-800 to-emerald-900 p-8">
+                <h2 className="text-2xl font-bold text-white mb-2">Trainer Not Found</h2>
+                <p className="text-emerald-100 mb-4 text-center">We couldn't find the trainer you were looking for (ID: {id}).</p>
+                <Link href="/trainers" className="px-6 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors border border-white/30">
+                    Back to Trainers
+                </Link>
+            </div>
+        );
+    }
+
+    // Use the helper function for the trainer's profile image
+    const trainerImageUrl = getImageUrl(trainer.profileImage, FALLBACK_IMAGE);
 
     return (
         <div className="bg-gradient-to-br from-emerald-800 via-green-800 to-emerald-900 min-h-screen pb-16 relative overflow-hidden">
-            {/* Cricket Stadium Background */}
+            {/* Cricket Stadium Background - Remains the same */}
             <div className="absolute inset-0">
-                {/* Oval field */}
+                {/* ... (background elements code - unchanged) ... */}
+                  {/* Oval field */}
                 <div className="absolute top-[10%] left-[5%] right-[5%] bottom-[10%] rounded-full border-2 border-white/20 bg-green-700/30"></div>
-                
+
                 {/* Pitch - LEFT SIDE */}
                 <div className="absolute top-1/2 left-[20%] w-40 h-96 bg-yellow-100/20 -translate-x-1/2 -translate-y-1/2 border border-white/10">
                     {/* Crease markings */}
                     <div className="absolute top-[15%] left-0 right-0 h-1 bg-white/30"></div>
                     <div className="absolute bottom-[15%] left-0 right-0 h-1 bg-white/30"></div>
                     <div className="absolute top-[15%] bottom-[15%] left-1/2 w-1 bg-white/10 -translate-x-1/2"></div>
-                    
+
                     {/* Wickets */}
                     <div className="absolute top-[5%] left-1/2 -translate-x-1/2 flex space-x-1">
                         <div className="w-1 h-8 bg-white/80"></div>
                         <div className="w-1 h-8 bg-white/80"></div>
                         <div className="w-1 h-8 bg-white/80"></div>
                     </div>
-                    
+
                     <div className="absolute bottom-[5%] left-1/2 -translate-x-1/2 flex space-x-1">
                         <div className="w-1 h-8 bg-white/80"></div>
                         <div className="w-1 h-8 bg-white/80"></div>
                         <div className="w-1 h-8 bg-white/80"></div>
                     </div>
                 </div>
-                
+
                 {/* Second pitch - RIGHT SIDE */}
                 <div className="absolute top-1/2 right-[20%] w-40 h-96 bg-yellow-100/20 translate-x-1/2 -translate-y-1/2 border border-white/10">
                     {/* Crease markings */}
                     <div className="absolute top-[15%] left-0 right-0 h-1 bg-white/30"></div>
                     <div className="absolute bottom-[15%] left-0 right-0 h-1 bg-white/30"></div>
                     <div className="absolute top-[15%] bottom-[15%] left-1/2 w-1 bg-white/10 -translate-x-1/2"></div>
-                    
+
                     {/* Wickets */}
                     <div className="absolute top-[5%] left-1/2 -translate-x-1/2 flex space-x-1">
                         <div className="w-1 h-8 bg-white/80"></div>
                         <div className="w-1 h-8 bg-white/80"></div>
                         <div className="w-1 h-8 bg-white/80"></div>
                     </div>
-                    
+
                     <div className="absolute bottom-[5%] left-1/2 -translate-x-1/2 flex space-x-1">
                         <div className="w-1 h-8 bg-white/80"></div>
                         <div className="w-1 h-8 bg-white/80"></div>
                         <div className="w-1 h-8 bg-white/80"></div>
                     </div>
                 </div>
-                
+
                 {/* Boundary rope */}
                 <div className="absolute top-[15%] left-[10%] right-[10%] bottom-[15%] rounded-full border-dashed border-4 border-white/20"></div>
-                
+
                 {/* Animated players - ORIGINAL FIELDERS */}
                 <div className="absolute w-6 h-8 top-[30%] left-[10%] animate-fielder-move">
                     <div className="relative w-full h-full">
@@ -254,21 +292,21 @@ export default function TrainerDetailPage() {
                         <div className="absolute top-4 left-1.5 w-3 h-4 bg-blue-600/60"></div>
                     </div>
                 </div>
-                
+
                 <div className="absolute w-6 h-8 top-[70%] right-[10%] animate-fielder-move animation-delay-500">
                     <div className="relative w-full h-full">
                         <div className="absolute top-0 left-1 w-4 h-4 rounded-full bg-blue-500/80"></div>
                         <div className="absolute top-4 left-1.5 w-3 h-4 bg-blue-600/60"></div>
                     </div>
                 </div>
-                
+
                 <div className="absolute w-6 h-8 bottom-[40%] left-[5%] animate-fielder-move animation-delay-1000">
                     <div className="relative w-full h-full">
                         <div className="absolute top-0 left-1 w-4 h-4 rounded-full bg-blue-500/80"></div>
                         <div className="absolute top-4 left-1.5 w-3 h-4 bg-blue-600/60"></div>
                     </div>
                 </div>
-                
+
                 {/* Batsman - LEFT SIDE */}
                 <div className="absolute w-8 h-12 top-[40%] left-[15%] animate-batsman-ready">
                     <div className="relative w-full h-full">
@@ -277,7 +315,7 @@ export default function TrainerDetailPage() {
                         <div className="absolute top-2 left-5 w-1 h-10 bg-yellow-800/80 rotate-45 origin-top-left animate-bat-swing"></div>
                     </div>
                 </div>
-                
+
                 {/* Bowler - LEFT SIDE */}
                 <div className="absolute w-8 h-12 bottom-[35%] left-[25%] animate-bowler-run">
                     <div className="relative w-full h-full">
@@ -286,7 +324,7 @@ export default function TrainerDetailPage() {
                         <div className="absolute top-1 right-2 w-2 h-2 rounded-full bg-red-500/80 animate-cricket-ball"></div>
                     </div>
                 </div>
-                
+
                 {/* Batsman - RIGHT SIDE */}
                 <div className="absolute w-8 h-12 top-[40%] right-[15%] animate-batsman-ready animation-delay-500">
                     <div className="relative w-full h-full">
@@ -295,7 +333,7 @@ export default function TrainerDetailPage() {
                         <div className="absolute top-2 left-5 w-1 h-10 bg-yellow-800/80 rotate-45 origin-top-left animate-bat-swing"></div>
                     </div>
                 </div>
-                
+
                 {/* Bowler - RIGHT SIDE */}
                 <div className="absolute w-8 h-12 bottom-[35%] right-[25%] animate-bowler-run animation-delay-500">
                     <div className="relative w-full h-full">
@@ -304,9 +342,9 @@ export default function TrainerDetailPage() {
                         <div className="absolute top-1 right-2 w-2 h-2 rounded-full bg-red-500/80 animate-cricket-ball"></div>
                     </div>
                 </div>
-                
+
                 {/* NEW PLAYERS - JUST ADDING 4 */}
-                
+
                 {/* Wicket-keeper - LEFT SIDE (NEW) */}
                 <div className="absolute w-6 h-8 top-[35%] left-[15%] animate-wicketkeeper-ready">
                     <div className="relative w-full h-full">
@@ -314,7 +352,7 @@ export default function TrainerDetailPage() {
                         <div className="absolute top-4 left-1.5 w-3 h-4 bg-yellow-600/60"></div>
                     </div>
                 </div>
-                
+
                 {/* Wicket-keeper - RIGHT SIDE (NEW) */}
                 <div className="absolute w-6 h-8 top-[35%] right-[15%] animate-wicketkeeper-ready animation-delay-500">
                     <div className="relative w-full h-full">
@@ -322,7 +360,7 @@ export default function TrainerDetailPage() {
                         <div className="absolute top-4 left-1.5 w-3 h-4 bg-yellow-600/60"></div>
                     </div>
                 </div>
-                
+
                 {/* Non-striker - LEFT SIDE (NEW) */}
                 <div className="absolute w-8 h-12 top-[55%] left-[18%] animate-nonstriker-ready">
                     <div className="relative w-full h-full">
@@ -330,7 +368,7 @@ export default function TrainerDetailPage() {
                         <div className="absolute top-4 left-2.5 w-3 h-6 bg-red-600/60"></div>
                     </div>
                 </div>
-                
+
                 {/* Non-striker - RIGHT SIDE (NEW) */}
                 <div className="absolute w-8 h-12 top-[55%] right-[18%] animate-nonstriker-ready animation-delay-500">
                     <div className="relative w-full h-full">
@@ -338,19 +376,20 @@ export default function TrainerDetailPage() {
                         <div className="absolute top-4 left-2.5 w-3 h-6 bg-red-600/60"></div>
                     </div>
                 </div>
-                
+
                 {/* Ball trajectories */}
                 <div className="absolute h-0.5 w-0 bg-red-500/30 top-[43%] left-[18%] animate-ball-trajectory"></div>
                 <div className="absolute h-0.5 w-0 bg-red-500/30 top-[43%] right-[18%] animate-ball-trajectory animation-delay-500"></div>
-                
+
                 {/* Stadium elements */}
                 <div className="absolute top-0 left-0 w-full h-[5%] bg-gradient-to-b from-white/10 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 w-full h-[5%] bg-gradient-to-t from-white/10 to-transparent"></div>
                 <div className="absolute top-0 left-0 h-full w-[5%] bg-gradient-to-r from-white/10 to-transparent"></div>
                 <div className="absolute top-0 right-0 h-full w-[5%] bg-gradient-to-l from-white/10 to-transparent"></div>
-                
-            
+
+
             </div>
+
 
             {/* Back Button */}
             <button onClick={() => router.back()} className="absolute top-6 left-4 sm:left-6 lg:left-8 z-20 inline-flex items-center px-3 py-1.5 bg-white/80 backdrop-blur-sm rounded-full text-xs font-medium text-emerald-800 hover:bg-white shadow-md transition-all duration-300 group">
@@ -366,10 +405,10 @@ export default function TrainerDetailPage() {
                             <div className="md:w-1/3 md:h-auto relative">
                                 <div className="h-80 md:h-full w-full overflow-hidden bg-black/20">
                                     <img
-                                        src={trainerImageUrl}
+                                        src={trainerImageUrl} // <-- UPDATED HERE
                                         alt={trainer.name}
                                         className="h-full w-full object-cover transform hover:scale-105 transition-transform duration-700"
-                                        onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMAGE }}
+                                        onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMAGE }} // Keep onError for runtime failures
                                     />
                                 </div>
                                 <div className="absolute top-4 right-4 bg-yellow-400/80 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold text-yellow-900 border border-yellow-400 shadow-sm flex items-center">
@@ -392,7 +431,8 @@ export default function TrainerDetailPage() {
 
                             {/* Trainer Details */}
                             <div className="p-6 md:p-8 md:w-2/3">
-                                <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                                {/* ... (Trainer details content - unchanged) ... */}
+                                 <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                                     <div>
                                         <h1 className="text-3xl font-bold text-white">{trainer.name}</h1>
                                         <div className="mt-1 flex items-center">
@@ -472,7 +512,8 @@ export default function TrainerDetailPage() {
 
                     {/* --- Overview Section --- */}
                     <section id="overview" className="animate-fade-in">
-                        <div className="space-y-8">
+                         {/* ... (Overview content - unchanged) ... */}
+                         <div className="space-y-8">
                             <div>
                                 <h2 className="text-2xl font-bold text-white mb-4 border-b border-white/20 pb-3 flex items-center">
                                     <span className="bg-emerald-800/80 backdrop-blur-sm h-8 w-8 rounded-full flex items-center justify-center mr-3">
@@ -507,6 +548,7 @@ export default function TrainerDetailPage() {
 
                     {/* --- Experience & Skills Section --- */}
                     <section id="experience" className="animate-fade-in">
+                        {/* ... (Experience content - unchanged) ... */}
                         <div className="space-y-8">
                             <div>
                                 <h2 className="text-2xl font-bold text-white mb-4 border-b border-white/20 pb-3 flex items-center">
@@ -561,11 +603,18 @@ export default function TrainerDetailPage() {
                         {trainer.associatedFacilities && trainer.associatedFacilities.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                                 {trainer.associatedFacilities.map((facility) => {
-                                    const facilityImageUrl = (facility.images && facility.images.length > 0) ? `${BACKEND_BASE_URL}${facility.images[0]}` : FALLBACK_IMAGE;
+                                    // Use the helper function for facility images
+                                    const facilityImageUrl = facility.images && facility.images.length > 0 ?
+                                        getImageUrl(facility.images[0], FALLBACK_IMAGE) : FALLBACK_IMAGE; // <-- UPDATED HERE
                                     return (
                                         <div key={facility._id} className="bg-white/10 backdrop-blur-sm rounded-xl shadow-md overflow-hidden border border-white/20 transform hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
                                             <div className="h-40 overflow-hidden bg-black/30">
-                                                <img src={facilityImageUrl} alt={facility.name} className="w-full h-full object-cover transform hover:scale-110 transition-all duration-700 opacity-80" onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMAGE }}/>
+                                                <img
+                                                    src={facilityImageUrl} // <-- Variable using getImageUrl
+                                                    alt={facility.name}
+                                                    className="w-full h-full object-cover transform hover:scale-110 transition-all duration-700 opacity-80"
+                                                    onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMAGE }} // Keep onError
+                                                />
                                             </div>
                                             <div className="p-5">
                                                 <h3 className="text-lg font-bold text-white mb-2">{facility.name}</h3>
@@ -582,10 +631,10 @@ export default function TrainerDetailPage() {
                                     );
                                 })}
                             </div>
-                        ) : ( 
+                        ) : (
                             <div className="bg-yellow-800/30 backdrop-blur-sm p-6 rounded-xl border border-yellow-700/30 text-center">
                                 <p className="text-yellow-200">No associated facilities listed.</p>
-                            </div> 
+                            </div>
                         )}
                         <div className="mt-8 text-center">
                             <Link href="/facilities">
@@ -599,7 +648,8 @@ export default function TrainerDetailPage() {
 
                     {/* --- Availability Section --- */}
                     <section id="availability" className="animate-fade-in">
-                        <h2 className="text-2xl font-bold text-white mb-4 border-b border-white/20 pb-3 flex items-center">
+                        {/* ... (Availability content - unchanged) ... */}
+                         <h2 className="text-2xl font-bold text-white mb-4 border-b border-white/20 pb-3 flex items-center">
                             <span className="bg-emerald-800/80 backdrop-blur-sm h-8 w-8 rounded-full flex items-center justify-center mr-3">
                                 <CalendarDaysIcon className="w-5 h-5 text-emerald-300" />
                             </span>
@@ -608,12 +658,12 @@ export default function TrainerDetailPage() {
                         <div className="bg-emerald-800/40 backdrop-blur-sm rounded-xl p-6 border border-white/20 shadow-sm">
                             <h3 className="text-lg font-bold text-white mb-4">Available Days</h3>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
-                                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => { 
-                                    const isAvailable = trainer.availability.includes(day); 
+                                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
+                                    const isAvailable = trainer.availability.includes(day);
                                     return (
                                         <div key={day} className={`${
-                                            isAvailable 
-                                                ? 'bg-emerald-700/60 border-emerald-600/30 text-white' 
+                                            isAvailable
+                                                ? 'bg-emerald-700/60 border-emerald-600/30 text-white'
                                                 : 'bg-white/10 border-white/20 text-white/50'
                                             } p-4 rounded-lg border shadow-sm text-center backdrop-blur-sm`}>
                                             <p className="font-medium">{day}</p>
@@ -625,7 +675,7 @@ export default function TrainerDetailPage() {
                                                 <p className="text-xs mt-2">Unavailable</p>
                                             )}
                                         </div>
-                                    ); 
+                                    );
                                 })}
                             </div>
                             <div className="mt-8 bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/20 shadow-inner">
@@ -667,11 +717,12 @@ export default function TrainerDetailPage() {
                                     <div className="flex items-start">
                                         <div className="flex-shrink-0 mr-4">
                                             <div className="h-12 w-12 rounded-full overflow-hidden border border-white/30 bg-emerald-800/40">
-                                                <img 
-                                                    src={review.user.avatar || FALLBACK_AVATAR} 
-                                                    alt={review.user.name} 
+                                                <img
+                                                    // Use helper function for avatar, specifying the avatar fallback
+                                                    src={getImageUrl(review.user.avatar, FALLBACK_AVATAR)} // <-- UPDATED HERE
+                                                    alt={review.user.name}
                                                     className="h-full w-full object-cover"
-                                                    onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_AVATAR }}
+                                                    onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_AVATAR }} // Keep onError for runtime failures
                                                 />
                                             </div>
                                         </div>
@@ -699,12 +750,12 @@ export default function TrainerDetailPage() {
                                 </div>
                             ))}
                         </div>
-                        
+
                         {/* Load More Button */}
                         {hasMoreReviews && (
                             <div className="mt-8 text-center">
-                                <button 
-                                    onClick={fetchMoreReviews} 
+                                <button
+                                    onClick={fetchMoreReviews}
                                     className={`inline-flex items-center justify-center px-6 py-2 rounded-lg border border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all duration-300 ${loadingReviews ? 'opacity-70 cursor-not-allowed' : ''}`}
                                     disabled={loadingReviews}
                                 >
@@ -729,6 +780,7 @@ export default function TrainerDetailPage() {
             </div>
 
             {/* Call to Action */}
+            {/* ... (Call to Action content - unchanged) ... */}
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-16">
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-white/30">
                     <div className="relative px-6 py-10 sm:px-10 sm:py-16 md:py-20 lg:py-28 xl:px-16">
@@ -736,8 +788,8 @@ export default function TrainerDetailPage() {
                             <h2 className="text-3xl font-extrabold text-white sm:text-4xl">Ready to Elevate Your Training?</h2>
                             <p className="mt-4 text-lg text-emerald-100">Book a personalized session with {trainer.name} today and reach your potential.</p>
                             <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
-                                <button 
-                                    onClick={() => router.push(`/trainers/${trainer._id}/book`)} 
+                                <button
+                                    onClick={() => router.push(`/trainers/${trainer._id}/book`)}
                                     className="inline-flex items-center justify-center px-8 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-all duration-300 shadow-lg text-lg"
                                 >
                                     <CalendarDaysIcon className="mr-2 -ml-1 h-5 w-5" />Book Session Now
@@ -754,13 +806,12 @@ export default function TrainerDetailPage() {
             </div>
 
             {/* --- Review Modal --- */}
-            <Transition appear show={isReviewModalOpen} as={Fragment}>
+            {/* Use ReviewForm component within the modal */}
+             <Transition appear show={isReviewModalOpen} as={Fragment}>
                 <Dialog as="div" className="relative z-50" onClose={() => setIsReviewModalOpen(false)}>
-                    {/* Backdrop */}
                     <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0">
                         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
                     </Transition.Child>
-                    {/* Modal Content */}
                     <div className="fixed inset-0 overflow-y-auto">
                         <div className="flex min-h-full items-center justify-center p-4 text-center">
                             <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-200" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
@@ -769,27 +820,18 @@ export default function TrainerDetailPage() {
                                         <span>Write a Review for {trainer.name}</span>
                                         <button onClick={() => setIsReviewModalOpen(false)} className="text-white/60 hover:text-white"><XMarkIcon className="w-6 h-6" /></button>
                                     </Dialog.Title>
-                                    {/* Review Form content would go here but with themed styling */}
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-white/80 mb-1">Rating</label>
-                                            <div className="flex items-center space-x-1">
-                                                {[1, 2, 3, 4, 5].map((star) => (
-                                                    <button key={star} className="p-1">
-                                                        <StarIcon className="h-8 w-8 text-yellow-400" />
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-white/80 mb-1">Review</label>
-                                            <textarea className="w-full rounded-lg bg-white/10 border-white/30 text-white placeholder-white/50 focus:ring-emerald-500 focus:border-emerald-500" rows={4} placeholder="Share your experience with this trainer..."></textarea>
-                                        </div>
-                                        <div className="flex justify-end space-x-3 pt-4">
-                                            <button onClick={() => setIsReviewModalOpen(false)} className="px-4 py-2 rounded-lg border border-white/30 text-white hover:bg-white/10">Cancel</button>
-                                            <button className="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">Submit Review</button>
-                                        </div>
-                                    </div>
+                                    <ReviewForm
+                                        entityId={trainer._id}
+                                        entityType="Trainer"
+                                        onReviewSubmitSuccess={handleReviewSubmitSuccess}
+                                        onCancel={() => setIsReviewModalOpen(false)}
+                                        // Pass themed classes if ReviewForm accepts them
+                                        // e.g., inputClassName="w-full rounded-lg bg-white/10 border-white/30 text-white placeholder-white/50 focus:ring-emerald-500 focus:border-emerald-500"
+                                        // buttonClassName="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
+                                        // cancelButtonClassName="px-4 py-2 rounded-lg border border-white/30 text-white hover:bg-white/10"
+                                        ratingStarClass="text-yellow-400" // Example for star color
+                                        ratingEmptyStarClass="text-gray-300/40" // Example for empty star color
+                                    />
                                 </Dialog.Panel>
                             </Transition.Child>
                         </div>
@@ -798,9 +840,10 @@ export default function TrainerDetailPage() {
             </Transition>
             {/* --- End Review Modal --- */}
 
-            {/* CSS Animations */}
+            {/* CSS Animations - Remains the same */}
             <style jsx>{`
-                @keyframes fielder-move {
+                /* ... (animation keyframes - unchanged) ... */
+                 @keyframes fielder-move {
                     0% { transform: translate(0, 0); }
                     25% { transform: translate(50px, 20px); }
                     50% { transform: translate(20px, 50px); }
@@ -810,7 +853,7 @@ export default function TrainerDetailPage() {
                 .animate-fielder-move {
                     animation: fielder-move 12s ease-in-out infinite;
                 }
-                
+
                 @keyframes batsman-ready {
                     0%, 100% { transform: rotate(-5deg); }
                     50% { transform: rotate(5deg); }
@@ -818,7 +861,7 @@ export default function TrainerDetailPage() {
                 .animate-batsman-ready {
                     animation: batsman-ready 3s ease-in-out infinite;
                 }
-                
+
                 @keyframes nonstriker-ready {
                     0% { transform: translateX(0); }
                     50% { transform: translateX(10px); }
@@ -827,7 +870,7 @@ export default function TrainerDetailPage() {
                 .animate-nonstriker-ready {
                     animation: nonstriker-ready 5s ease-in-out infinite;
                 }
-                
+
                 @keyframes wicketkeeper-ready {
                     0%, 100% { transform: translateY(0) rotate(0deg); }
                     50% { transform: translateY(-5px) rotate(5deg); }
@@ -835,7 +878,7 @@ export default function TrainerDetailPage() {
                 .animate-wicketkeeper-ready {
                     animation: wicketkeeper-ready 2s ease-in-out infinite;
                 }
-                
+
                 @keyframes bowler-run {
                     0% { transform: translateY(0); }
                     100% { transform: translateY(-100px); }
@@ -843,7 +886,7 @@ export default function TrainerDetailPage() {
                 .animate-bowler-run {
                     animation: bowler-run 5s ease-in-out infinite alternate;
                 }
-                
+
                 @keyframes cricket-ball {
                     0% { transform: translate(0, 0); }
                     100% { transform: translate(-80px, -100px); }
@@ -851,7 +894,7 @@ export default function TrainerDetailPage() {
                 .animate-cricket-ball {
                     animation: cricket-ball 5s ease-in infinite alternate;
                 }
-                
+
                 @keyframes bat-swing {
                     0%, 70%, 100% { transform: rotate(45deg); }
                     80%, 90% { transform: rotate(-45deg); }
@@ -859,7 +902,7 @@ export default function TrainerDetailPage() {
                 .animate-bat-swing {
                     animation: bat-swing 5s ease-in-out infinite;
                 }
-                
+
                 @keyframes ball-trajectory {
                     0% { width: 0; opacity: 0.7; }
                     100% { width: 100%; opacity: 0; }
@@ -868,7 +911,7 @@ export default function TrainerDetailPage() {
                     animation: ball-trajectory 5s ease-in infinite alternate;
                     transform-origin: left;
                 }
-                
+
                 @keyframes fade-in {
                     0% { opacity: 0; transform: translateY(10px); }
                     100% { opacity: 1; transform: translateY(0); }
@@ -876,23 +919,23 @@ export default function TrainerDetailPage() {
                 .animate-fade-in {
                     animation: fade-in 0.8s ease-out forwards;
                 }
-                
+
                 .animation-delay-100 {
                     animation-delay: 0.1s;
                 }
-                
+
                 .animation-delay-300 {
                     animation-delay: 0.3s;
                 }
-                
+
                 .animation-delay-500 {
                     animation-delay: 0.5s;
                 }
-                
+
                 .animation-delay-700 {
                     animation-delay: 0.7s;
                 }
-                
+
                 .animation-delay-1000 {
                     animation-delay: 1s;
                 }
