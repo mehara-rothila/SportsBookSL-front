@@ -15,11 +15,14 @@ interface EditTrainerModalProps {
 const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
 const FALLBACK_IMAGE = '/images/default-trainer.png';
 
-// Helper function to get proper image URL
+// Helper function to get proper image URL - FIXED to match pattern in page.tsx
 const getImageUrl = (path: string | null | undefined): string => {
   if (!path) return FALLBACK_IMAGE;
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
-  return `${BACKEND_BASE_URL}${path}`;
+  if (path.startsWith('/uploads/')) return `${BACKEND_BASE_URL}${path}`;
+  // Default to fallback image for unexpected paths
+  console.warn(`Unexpected trainer image path: "${path}"`);
+  return FALLBACK_IMAGE;
 };
 
 export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerToEdit }: EditTrainerModalProps) {
@@ -49,6 +52,11 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
             setImagePreview(getImageUrl(trainerToEdit.profileImage));
             setImageFile(null); // Reset file input
             setError(null);
+            
+            // Reset file input value when trainer changes
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
         } else {
             // Reset form if no trainer is selected
             resetForm();
@@ -68,12 +76,30 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            // Add validation for file type and size
+            const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg'];
+            if (!validImageTypes.includes(file.type)) {
+                setError('Please select a valid image file (JPEG, PNG, GIF, WEBP)');
+                // Reset the file input
+                if (fileInputRef.current) fileInputRef.current.value = '';
+                return;
+            }
+            
+            // Optional: Check file size (e.g., max 5MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                setError('Image is too large. Maximum size is 5MB.');
+                if (fileInputRef.current) fileInputRef.current.value = '';
+                return;
+            }
+            
             setImageFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreview(reader.result as string);
             };
             reader.readAsDataURL(file);
+            setError(null); // Clear any errors when file is valid
         } else {
             // Use helper function for original image
             setImageFile(null);
@@ -95,6 +121,19 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
                 hourlyRate: formData.hourlyRate !== undefined ? Number(formData.hourlyRate) || 0 : undefined,
                 experienceYears: formData.experienceYears !== undefined ? Number(formData.experienceYears) || 0 : undefined,
             };
+            
+            // Process comma-separated strings into arrays
+            if (typeof formData.sports === 'string') {
+                dataToSend.sports = formData.sports.split(',').map(s => s.trim()).filter(Boolean);
+            }
+            if (typeof formData.languages === 'string') {
+                dataToSend.languages = formData.languages.split(',').map(s => s.trim()).filter(Boolean);
+            }
+            if (typeof formData.availability === 'string') {
+                dataToSend.availability = formData.availability.split(',').map(s => s.trim()).filter(Boolean);
+            }
+            
+            console.log('Submitting trainer update with image:', imageFile ? imageFile.name : 'No image');
             await trainerService.updateTrainerByAdmin(trainerToEdit._id, dataToSend, imageFile);
             setIsLoading(false);
             onSuccess(); // Call success callback
@@ -386,7 +425,15 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
                                             disabled={isLoading}
                                             className="inline-flex justify-center rounded-md border border-transparent bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 transition-all duration-200"
                                         >
-                                            {isLoading ? 'Saving...' : 'Save Changes'}
+                                            {isLoading ? (
+                                                <div className="flex items-center">
+                                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    Saving...
+                                                </div>
+                                            ) : 'Save Changes'}
                                         </button>
                                     </div>
                                 </form>
