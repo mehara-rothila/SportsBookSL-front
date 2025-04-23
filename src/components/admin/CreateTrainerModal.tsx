@@ -1,0 +1,389 @@
+// src/components/admin/CreateTrainerModal.tsx
+import { useState, Fragment, ChangeEvent, FormEvent, useRef } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import Image from 'next/image';
+import * as trainerService from '@/services/trainerService';
+import { XMarkIcon, PaperClipIcon } from '@heroicons/react/24/outline';
+
+interface CreateTrainerModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSuccess: () => void; // Callback after successful creation
+}
+
+const initialFormData: trainerService.TrainerFormData = {
+    name: '',
+    specialization: '',
+    sports: '', // Comma-separated
+    location: '',
+    hourlyRate: '',
+    experienceYears: '',
+    bio: '',
+    languages: '', // Comma-separated
+    availability: '', // Comma-separated
+    isActive: true,
+};
+
+export default function CreateTrainerModal({ isOpen, onClose, onSuccess }: CreateTrainerModalProps) {
+    const [formData, setFormData] = useState<trainerService.TrainerFormData>(initialFormData);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value, type } = e.target;
+
+        if (type === 'checkbox') {
+             const { checked } = e.target as HTMLInputElement;
+             setFormData(prev => ({ ...prev, [name]: checked }));
+        } else {
+             setFormData(prev => ({ ...prev, [name]: value }));
+        }
+    };
+
+    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            setImageFile(null);
+            setImagePreview(null);
+        }
+    };
+
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+
+        // Basic frontend validation
+        if (!formData.name || !formData.specialization || !formData.sports || !formData.location || !formData.hourlyRate || !formData.experienceYears || !formData.bio) {
+            setError("Please fill in all required fields.");
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            // Prepare data, ensuring numbers are numbers
+            const dataToSend: trainerService.TrainerFormData = {
+                ...formData,
+                hourlyRate: Number(formData.hourlyRate) || 0,
+                experienceYears: Number(formData.experienceYears) || 0,
+            };
+            await trainerService.createTrainer(dataToSend, imageFile);
+            setIsLoading(false);
+            onSuccess(); // Call success callback
+            resetForm();
+        } catch (err: any) {
+            console.error("Create Trainer Error:", err);
+            setError(err.message || 'Failed to create trainer.');
+            setIsLoading(false);
+        }
+    };
+
+    const resetForm = () => {
+        setFormData(initialFormData);
+        setImageFile(null);
+        setImagePreview(null);
+        setError(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = ''; // Clear file input
+        }
+    };
+
+    const closeModal = () => {
+        if (isLoading) return; // Prevent closing while loading
+        resetForm();
+        onClose();
+    };
+
+    return (
+        <Transition appear show={isOpen} as={Fragment}>
+            <Dialog as="div" className="relative z-50" onClose={closeModal}>
+                <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                >
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+                </Transition.Child>
+
+                <div className="fixed inset-0 overflow-y-auto">
+                    <div className="flex min-h-full items-center justify-center p-4 text-center">
+                        <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-300"
+                            enterFrom="opacity-0 scale-95"
+                            enterTo="opacity-100 scale-100"
+                            leave="ease-in duration-200"
+                            leaveFrom="opacity-100 scale-100"
+                            leaveTo="opacity-0 scale-95"
+                        >
+                            <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-lg bg-emerald-900/20 backdrop-blur-md border border-white/10 p-6 text-left align-middle shadow-xl transition-all">
+                                <Dialog.Title as="h3" className="text-xl font-semibold leading-6 text-white border-b border-white/10 pb-4 flex justify-between items-center">
+                                    Add New Trainer
+                                    <button onClick={closeModal} className="text-white/70 hover:text-white/90 transition-colors">
+                                        <XMarkIcon className="h-6 w-6" />
+                                    </button>
+                                </Dialog.Title>
+                                
+                                <form onSubmit={handleSubmit} className="mt-6 space-y-6 max-h-[70vh] overflow-y-auto pr-3 custom-scrollbar">
+                                    {error && (
+                                        <div className="text-sm text-red-200 bg-red-900/30 p-3 rounded-md border border-red-500/30">
+                                            {error}
+                                        </div>
+                                    )}
+
+                                    {/* Form Fields */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {/* Name */}
+                                        <div>
+                                            <label htmlFor="name" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                                Name <span className="text-red-400">*</span>
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                name="name" 
+                                                id="name" 
+                                                value={formData.name} 
+                                                onChange={handleInputChange} 
+                                                required 
+                                                className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                            />
+                                        </div>
+                                        
+                                        {/* Specialization */}
+                                        <div>
+                                            <label htmlFor="specialization" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                                Specialization <span className="text-red-400">*</span>
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                name="specialization" 
+                                                id="specialization" 
+                                                value={formData.specialization} 
+                                                onChange={handleInputChange} 
+                                                required 
+                                                className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                            />
+                                        </div>
+                                        
+                                        {/* Sports */}
+                                        <div>
+                                            <label htmlFor="sports" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                                Sports (comma-separated) <span className="text-red-400">*</span>
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                name="sports" 
+                                                id="sports" 
+                                                value={formData.sports} 
+                                                onChange={handleInputChange} 
+                                                required 
+                                                placeholder="e.g., Cricket, Tennis" 
+                                                className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                            />
+                                        </div>
+                                        
+                                        {/* Location */}
+                                        <div>
+                                            <label htmlFor="location" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                                Location <span className="text-red-400">*</span>
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                name="location" 
+                                                id="location" 
+                                                value={formData.location} 
+                                                onChange={handleInputChange} 
+                                                required 
+                                                className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                            />
+                                        </div>
+                                        
+                                        {/* Hourly Rate */}
+                                        <div>
+                                            <label htmlFor="hourlyRate" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                                Hourly Rate (LKR) <span className="text-red-400">*</span>
+                                            </label>
+                                            <input 
+                                                type="number" 
+                                                name="hourlyRate" 
+                                                id="hourlyRate" 
+                                                value={formData.hourlyRate} 
+                                                onChange={handleInputChange} 
+                                                required 
+                                                min="0" 
+                                                step="100" 
+                                                className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                            />
+                                        </div>
+                                        
+                                        {/* Experience Years */}
+                                        <div>
+                                            <label htmlFor="experienceYears" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                                Experience (Years) <span className="text-red-400">*</span>
+                                            </label>
+                                            <input 
+                                                type="number" 
+                                                name="experienceYears" 
+                                                id="experienceYears" 
+                                                value={formData.experienceYears} 
+                                                onChange={handleInputChange} 
+                                                required 
+                                                min="0" 
+                                                className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                            />
+                                        </div>
+                                        
+                                        {/* Languages */}
+                                        <div>
+                                            <label htmlFor="languages" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                                Languages (comma-separated)
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                name="languages" 
+                                                id="languages" 
+                                                value={formData.languages} 
+                                                onChange={handleInputChange} 
+                                                placeholder="e.g., English, Sinhala" 
+                                                className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                            />
+                                        </div>
+                                        
+                                        {/* Availability */}
+                                        <div>
+                                            <label htmlFor="availability" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                                Availability (comma-separated)
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                name="availability" 
+                                                id="availability" 
+                                                value={formData.availability} 
+                                                onChange={handleInputChange} 
+                                                placeholder="e.g., Weekdays, Evenings" 
+                                                className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Bio */}
+                                    <div>
+                                        <label htmlFor="bio" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                            Bio <span className="text-red-400">*</span>
+                                        </label>
+                                        <textarea 
+                                            name="bio" 
+                                            id="bio" 
+                                            value={formData.bio} 
+                                            onChange={handleInputChange} 
+                                            required 
+                                            rows={4} 
+                                            className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                        ></textarea>
+                                    </div>
+
+                                    {/* Image Upload */}
+                                    <div>
+                                        <label htmlFor="profileImage" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                            Profile Image
+                                        </label>
+                                        <div className="flex items-center mt-1">
+                                            <label className="block w-full relative">
+                                                <input
+                                                    type="file"
+                                                    name="profileImage"
+                                                    id="profileImage"
+                                                    ref={fileInputRef}
+                                                    onChange={handleFileChange}
+                                                    accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                />
+                                                <div className="w-full h-10 flex items-center justify-center border border-white/20 rounded-md bg-white/5 text-white/70 hover:bg-white/10 transition-colors">
+                                                    <PaperClipIcon className="h-5 w-5 mr-2 text-emerald-400" />
+                                                    <span>Select Profile Image</span>
+                                                </div>
+                                            </label>
+                                        </div>
+                                        
+                                        {imagePreview && (
+                                            <div className="mt-3">
+                                                <p className="text-xs text-emerald-200/60 mb-2">Preview:</p>
+                                                <div className="h-24 w-24 rounded-md overflow-hidden border border-white/20">
+                                                    <Image 
+                                                        src={imagePreview} 
+                                                        alt="Image Preview" 
+                                                        width={100} 
+                                                        height={100} 
+                                                        className="h-full w-full object-cover" 
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Is Active Toggle */}
+                                    <div className="flex items-center">
+                                        <input
+                                            id="isActive"
+                                            name="isActive"
+                                            type="checkbox"
+                                            checked={formData.isActive}
+                                            onChange={handleInputChange}
+                                            className="rounded border-white/30 bg-white/5 text-emerald-600 shadow-sm focus:ring-emerald-500"
+                                        />
+                                        <label htmlFor="isActive" className="ml-2 text-sm text-white/80">
+                                            Active Trainer
+                                        </label>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="mt-8 flex justify-end space-x-3 border-t border-white/10 pt-5">
+                                        <button
+                                            type="button"
+                                            onClick={closeModal}
+                                            disabled={isLoading}
+                                            className="inline-flex justify-center rounded-md border border-white/20 bg-white/5 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 transition-all duration-200"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={isLoading}
+                                            className="inline-flex justify-center rounded-md border border-transparent bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 transition-all duration-200"
+                                        >
+                                            {isLoading ? (
+                                                <div className="flex items-center">
+                                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    Creating...
+                                                </div>
+                                            ) : (
+                                                'Create Trainer'
+                                            )}
+                                        </button>
+                                    </div>
+                                </form>
+                            </Dialog.Panel>
+                        </Transition.Child>
+                    </div>
+                </div>
+            </Dialog>
+        </Transition>
+    );
+}
