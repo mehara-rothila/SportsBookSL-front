@@ -471,13 +471,20 @@ export default function TrainersPage() {
                 </button>
               </div>
             </div>
-            {/* Mobile Filters */}
+  {/* Mobile Filters */}
 <div className="md:hidden">
-  <Transition show={isFilterOpen} enter="transition duration-300 ease-out" enterFrom="transform scale-95 opacity-0" enterTo="transform scale-100 opacity-100" leave="transition duration-200 ease-in" leaveFrom="transform scale-100 opacity-100" leaveTo="transform scale-95 opacity-0">
+  <Transition 
+    show={isFilterOpen} 
+    enter="transition duration-300 ease-out" 
+    enterFrom="transform scale-95 opacity-0" 
+    enterTo="transform scale-100 opacity-100" 
+    leave="transition duration-200 ease-in" 
+    leaveFrom="transform scale-100 opacity-100" 
+    leaveTo="transform scale-95 opacity-0"
+  >
     <div className="mt-6 border-t border-white/20 pt-6">
       <h3 className="text-lg font-bold text-white flex items-center">Filters</h3>
       <div className="mt-6 grid grid-cols-1 gap-y-6 bg-emerald-900/30 backdrop-blur-sm p-5 rounded-xl shadow-inner border border-white/10">
-        {/* Mobile filters content - updated for transparent theme */}
         {/* Sport */}
         <div className="relative group">
           <label htmlFor="mobile-sport" className="block text-sm font-medium text-white mb-1">Sport</label>
@@ -487,6 +494,7 @@ export default function TrainersPage() {
             ))}
           </select>
         </div>
+        
         {/* Location */}
         <div className="relative group">
           <label htmlFor="mobile-location" className="block text-sm font-medium text-white mb-1">Location</label>
@@ -496,6 +504,7 @@ export default function TrainersPage() {
             ))}
           </select>
         </div>
+        
         {/* Rating */}
         <div className="relative group">
           <label htmlFor="mobile-rating" className="block text-sm font-medium text-white mb-1">Rating</label>
@@ -505,6 +514,7 @@ export default function TrainersPage() {
             ))}
           </select>
         </div>
+        
         {/* Price */}
         <div className="relative group">
           <label htmlFor="mobile-price" className="block text-sm font-medium text-white mb-1">Price Range</label>
@@ -514,6 +524,7 @@ export default function TrainersPage() {
             ))}
           </select>
         </div>
+        
         {/* Availability */}
         <div>
           <Disclosure>
@@ -538,7 +549,7 @@ export default function TrainersPage() {
                             type="checkbox"
                             className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                             checked={filters.availability.includes(day)}
-                            onChange={() => toggleDaySelection(day)} 
+                            onChange={() => toggleDaySelection(day)}
                           />
                         </div>
                         <div className="ml-3 text-sm">
