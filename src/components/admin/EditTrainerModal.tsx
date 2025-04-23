@@ -1,76 +1,46 @@
-// src/components/admin/EditTrainerModal.tsx
-import { useState, useEffect, Fragment, ChangeEvent, FormEvent, useRef } from 'react';
+// src/components/admin/CreateTrainerModal.tsx
+import { useState, Fragment, ChangeEvent, FormEvent, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import Image from 'next/image';
 import * as trainerService from '@/services/trainerService';
-import { XMarkIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PaperClipIcon } from '@heroicons/react/24/outline';
 
-interface EditTrainerModalProps {
+interface CreateTrainerModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSuccess: () => void; // Callback after successful update
-    trainerToEdit: trainerService.Trainer | null;
+    onSuccess: () => void; // Callback after successful creation
 }
 
-const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
-const FALLBACK_IMAGE = '/images/default-trainer.png';
-
-// Helper function to get proper image URL - FIXED to match pattern in page.tsx
-const getImageUrl = (path: string | null | undefined): string => {
-  if (!path) return FALLBACK_IMAGE;
-  if (path.startsWith('http://') || path.startsWith('https://')) return path;
-  if (path.startsWith('/uploads/')) return `${BACKEND_BASE_URL}${path}`;
-  // Default to fallback image for unexpected paths
-  console.warn(`Unexpected trainer image path: "${path}"`);
-  return FALLBACK_IMAGE;
+const initialFormData: trainerService.TrainerFormData = {
+    name: '',
+    specialization: '',
+    sports: '', // Comma-separated
+    location: '',
+    hourlyRate: '',
+    experienceYears: '',
+    bio: '',
+    languages: '', // Comma-separated
+    availability: '', // Comma-separated
+    isActive: true,
 };
 
-export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerToEdit }: EditTrainerModalProps) {
-    const [formData, setFormData] = useState<Partial<trainerService.TrainerFormData>>({});
+export default function CreateTrainerModal({ isOpen, onClose, onSuccess }: CreateTrainerModalProps) {
+    const [formData, setFormData] = useState<trainerService.TrainerFormData>(initialFormData);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        if (trainerToEdit) {
-            // Pre-fill form data when trainerToEdit changes
-            setFormData({
-                name: trainerToEdit.name,
-                specialization: trainerToEdit.specialization,
-                sports: trainerToEdit.sports?.join(', ') || '', // Join array for input
-                location: trainerToEdit.location,
-                hourlyRate: trainerToEdit.hourlyRate,
-                experienceYears: trainerToEdit.experienceYears,
-                bio: trainerToEdit.bio,
-                languages: trainerToEdit.languages?.join(', ') || '', // Join array
-                availability: trainerToEdit.availability?.join(', ') || '', // Join array
-                isActive: trainerToEdit.isActive ?? true,
-            });
-            // Use helper function for image URL
-            setImagePreview(getImageUrl(trainerToEdit.profileImage));
-            setImageFile(null); // Reset file input
-            setError(null);
-            
-            // Reset file input value when trainer changes
-            if (fileInputRef.current) {
-                fileInputRef.current.value = '';
-            }
-        } else {
-            // Reset form if no trainer is selected
-            resetForm();
-        }
-    }, [trainerToEdit]); // Dependency array includes trainerToEdit
-
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-         const { name, value, type } = e.target;
-         if (type === 'checkbox') {
+        const { name, value, type } = e.target;
+
+        if (type === 'checkbox') {
              const { checked } = e.target as HTMLInputElement;
              setFormData(prev => ({ ...prev, [name]: checked }));
-         } else {
+        } else {
              setFormData(prev => ({ ...prev, [name]: value }));
-         }
+        }
     };
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -101,71 +71,65 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
             reader.readAsDataURL(file);
             setError(null); // Clear any errors when file is valid
         } else {
-            // Use helper function for original image
             setImageFile(null);
-            setImagePreview(getImageUrl(trainerToEdit?.profileImage));
+            setImagePreview(null);
         }
     };
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        if (!trainerToEdit) return;
-
         setIsLoading(true);
         setError(null);
 
+        // Basic frontend validation
+        if (!formData.name || !formData.specialization || !formData.sports || !formData.location || !formData.hourlyRate || !formData.experienceYears || !formData.bio) {
+            setError("Please fill in all required fields.");
+            setIsLoading(false);
+            return;
+        }
+
         try {
-             // Prepare data, ensuring numbers are numbers
-            const dataToSend: Partial<trainerService.TrainerFormData> = {
+            // Prepare data, ensuring numbers are numbers
+            const dataToSend: trainerService.TrainerFormData = {
                 ...formData,
-                hourlyRate: formData.hourlyRate !== undefined ? Number(formData.hourlyRate) || 0 : undefined,
-                experienceYears: formData.experienceYears !== undefined ? Number(formData.experienceYears) || 0 : undefined,
+                hourlyRate: Number(formData.hourlyRate) || 0,
+                experienceYears: Number(formData.experienceYears) || 0,
             };
             
-            // Process comma-separated strings into arrays
-            if (typeof formData.sports === 'string') {
-                dataToSend.sports = formData.sports.split(',').map(s => s.trim()).filter(Boolean);
-            }
-            if (typeof formData.languages === 'string') {
-                dataToSend.languages = formData.languages.split(',').map(s => s.trim()).filter(Boolean);
-            }
-            if (typeof formData.availability === 'string') {
-                dataToSend.availability = formData.availability.split(',').map(s => s.trim()).filter(Boolean);
-            }
+            // Keep strings as-is - the service will handle conversion to arrays
+            // Type checking shows that the API expects these to remain as strings
             
-            console.log('Submitting trainer update with image:', imageFile ? imageFile.name : 'No image');
-            await trainerService.updateTrainerByAdmin(trainerToEdit._id, dataToSend, imageFile);
+            console.log('Creating trainer with image:', imageFile ? imageFile.name : 'No image');
+            await trainerService.createTrainer(dataToSend, imageFile);
             setIsLoading(false);
             onSuccess(); // Call success callback
+            resetForm();
         } catch (err: any) {
-            console.error("Update Trainer Error:", err);
-            setError(err.message || 'Failed to update trainer.');
+            console.error("Create Trainer Error:", err);
+            setError(err.message || 'Failed to create trainer.');
             setIsLoading(false);
         }
     };
 
-     const resetForm = () => {
-        setFormData({});
+    const resetForm = () => {
+        setFormData(initialFormData);
         setImageFile(null);
         setImagePreview(null);
         setError(null);
         if (fileInputRef.current) {
-            fileInputRef.current.value = '';
+            fileInputRef.current.value = ''; // Clear file input
         }
     };
 
     const closeModal = () => {
-        if (isLoading) return;
-        // Resetting form state is handled by useEffect when trainerToEdit becomes null
+        if (isLoading) return; // Prevent closing while loading
+        resetForm();
         onClose();
     };
-
-    if (!trainerToEdit) return null; // Don't render if no trainer selected
 
     return (
         <Transition appear show={isOpen} as={Fragment}>
             <Dialog as="div" className="relative z-50" onClose={closeModal}>
-                {/* Overlay */}
                 <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-300"
@@ -178,7 +142,6 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
                     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
                 </Transition.Child>
 
-                {/* Modal Content */}
                 <div className="fixed inset-0 overflow-y-auto">
                     <div className="flex min-h-full items-center justify-center p-4 text-center">
                         <Transition.Child
@@ -191,11 +154,8 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
                             leaveTo="opacity-0 scale-95"
                         >
                             <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-lg bg-emerald-900/20 backdrop-blur-md border border-white/10 p-6 text-left align-middle shadow-xl transition-all">
-                                <Dialog.Title
-                                    as="h3"
-                                    className="text-xl font-semibold leading-6 text-white border-b border-white/10 pb-4 flex justify-between items-center"
-                                >
-                                    Edit Trainer: <span className="font-bold text-emerald-300">{trainerToEdit.name}</span>
+                                <Dialog.Title as="h3" className="text-xl font-semibold leading-6 text-white border-b border-white/10 pb-4 flex justify-between items-center">
+                                    Add New Trainer
                                     <button onClick={closeModal} className="text-white/70 hover:text-white/90 transition-colors">
                                         <XMarkIcon className="h-6 w-6" />
                                     </button>
@@ -212,14 +172,14 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {/* Name */}
                                         <div>
-                                            <label htmlFor="edit-name" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                            <label htmlFor="name" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                                 Name <span className="text-red-400">*</span>
                                             </label>
                                             <input 
                                                 type="text" 
                                                 name="name" 
-                                                id="edit-name" 
-                                                value={formData.name ?? ''} 
+                                                id="name" 
+                                                value={formData.name} 
                                                 onChange={handleInputChange} 
                                                 required 
                                                 className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -228,14 +188,14 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
                                         
                                         {/* Specialization */}
                                         <div>
-                                            <label htmlFor="edit-specialization" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                            <label htmlFor="specialization" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                                 Specialization <span className="text-red-400">*</span>
                                             </label>
                                             <input 
                                                 type="text" 
                                                 name="specialization" 
-                                                id="edit-specialization" 
-                                                value={formData.specialization ?? ''} 
+                                                id="specialization" 
+                                                value={formData.specialization} 
                                                 onChange={handleInputChange} 
                                                 required 
                                                 className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -244,30 +204,31 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
                                         
                                         {/* Sports */}
                                         <div>
-                                            <label htmlFor="edit-sports" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                            <label htmlFor="sports" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                                 Sports (comma-separated) <span className="text-red-400">*</span>
                                             </label>
                                             <input 
                                                 type="text" 
                                                 name="sports" 
-                                                id="edit-sports" 
-                                                value={formData.sports ?? ''} 
+                                                id="sports" 
+                                                value={formData.sports} 
                                                 onChange={handleInputChange} 
                                                 required 
+                                                placeholder="e.g., Cricket, Tennis" 
                                                 className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                             />
                                         </div>
                                         
                                         {/* Location */}
                                         <div>
-                                            <label htmlFor="edit-location" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                            <label htmlFor="location" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                                 Location <span className="text-red-400">*</span>
                                             </label>
                                             <input 
                                                 type="text" 
                                                 name="location" 
-                                                id="edit-location" 
-                                                value={formData.location ?? ''} 
+                                                id="location" 
+                                                value={formData.location} 
                                                 onChange={handleInputChange} 
                                                 required 
                                                 className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -276,14 +237,14 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
                                         
                                         {/* Hourly Rate */}
                                         <div>
-                                            <label htmlFor="edit-hourlyRate" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                            <label htmlFor="hourlyRate" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                                 Hourly Rate (LKR) <span className="text-red-400">*</span>
                                             </label>
                                             <input 
                                                 type="number" 
                                                 name="hourlyRate" 
-                                                id="edit-hourlyRate" 
-                                                value={formData.hourlyRate ?? ''} 
+                                                id="hourlyRate" 
+                                                value={formData.hourlyRate} 
                                                 onChange={handleInputChange} 
                                                 required 
                                                 min="0" 
@@ -294,14 +255,14 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
                                         
                                         {/* Experience Years */}
                                         <div>
-                                            <label htmlFor="edit-experienceYears" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                            <label htmlFor="experienceYears" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                                 Experience (Years) <span className="text-red-400">*</span>
                                             </label>
                                             <input 
                                                 type="number" 
                                                 name="experienceYears" 
-                                                id="edit-experienceYears" 
-                                                value={formData.experienceYears ?? ''} 
+                                                id="experienceYears" 
+                                                value={formData.experienceYears} 
                                                 onChange={handleInputChange} 
                                                 required 
                                                 min="0" 
@@ -311,30 +272,32 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
                                         
                                         {/* Languages */}
                                         <div>
-                                            <label htmlFor="edit-languages" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                            <label htmlFor="languages" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                                 Languages (comma-separated)
                                             </label>
                                             <input 
                                                 type="text" 
                                                 name="languages" 
-                                                id="edit-languages" 
-                                                value={formData.languages ?? ''} 
+                                                id="languages" 
+                                                value={formData.languages} 
                                                 onChange={handleInputChange} 
+                                                placeholder="e.g., English, Sinhala" 
                                                 className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                             />
                                         </div>
                                         
                                         {/* Availability */}
                                         <div>
-                                            <label htmlFor="edit-availability" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                            <label htmlFor="availability" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                                 Availability (comma-separated)
                                             </label>
                                             <input 
                                                 type="text" 
                                                 name="availability" 
-                                                id="edit-availability" 
-                                                value={formData.availability ?? ''} 
+                                                id="availability" 
+                                                value={formData.availability} 
                                                 onChange={handleInputChange} 
+                                                placeholder="e.g., Weekdays, Evenings" 
                                                 className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                             />
                                         </div>
@@ -342,13 +305,13 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
 
                                     {/* Bio */}
                                     <div>
-                                        <label htmlFor="edit-bio" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                        <label htmlFor="bio" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                             Bio <span className="text-red-400">*</span>
                                         </label>
                                         <textarea 
                                             name="bio" 
-                                            id="edit-bio" 
-                                            value={formData.bio ?? ''} 
+                                            id="bio" 
+                                            value={formData.bio} 
                                             onChange={handleInputChange} 
                                             required 
                                             rows={4} 
@@ -358,30 +321,30 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
 
                                     {/* Image Upload */}
                                     <div>
-                                        <label htmlFor="edit-profileImage" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
-                                            Profile Image (Upload new to replace)
+                                        <label htmlFor="profileImage" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
+                                            Profile Image
                                         </label>
                                         <div className="flex items-center mt-1">
                                             <label className="block w-full relative">
                                                 <input
                                                     type="file"
                                                     name="profileImage"
-                                                    id="edit-profileImage"
+                                                    id="profileImage"
                                                     ref={fileInputRef}
                                                     onChange={handleFileChange}
                                                     accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
                                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                                 />
                                                 <div className="w-full h-10 flex items-center justify-center border border-white/20 rounded-md bg-white/5 text-white/70 hover:bg-white/10 transition-colors">
-                                                    <ArrowUpTrayIcon className="h-5 w-5 mr-2 text-emerald-400" />
-                                                    <span>Select New Profile Image</span>
+                                                    <PaperClipIcon className="h-5 w-5 mr-2 text-emerald-400" />
+                                                    <span>Select Profile Image</span>
                                                 </div>
                                             </label>
                                         </div>
                                         
                                         {imagePreview && (
                                             <div className="mt-3">
-                                                <p className="text-xs text-emerald-200/60 mb-2">Current/Preview Image:</p>
+                                                <p className="text-xs text-emerald-200/60 mb-2">Preview:</p>
                                                 <div className="h-24 w-24 rounded-md overflow-hidden border border-white/20">
                                                     <Image 
                                                         src={imagePreview} 
@@ -398,14 +361,14 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
                                     {/* Is Active Toggle */}
                                     <div className="flex items-center">
                                         <input
-                                            id="edit-isActive"
+                                            id="isActive"
                                             name="isActive"
                                             type="checkbox"
-                                            checked={formData.isActive ?? true}
+                                            checked={formData.isActive}
                                             onChange={handleInputChange}
                                             className="rounded border-white/30 bg-white/5 text-emerald-600 shadow-sm focus:ring-emerald-500"
                                         />
-                                        <label htmlFor="edit-isActive" className="ml-2 text-sm text-white/80">
+                                        <label htmlFor="isActive" className="ml-2 text-sm text-white/80">
                                             Active Trainer
                                         </label>
                                     </div>
@@ -431,9 +394,11 @@ export default function EditTrainerModal({ isOpen, onClose, onSuccess, trainerTo
                                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                     </svg>
-                                                    Saving...
+                                                    Creating...
                                                 </div>
-                                            ) : 'Save Changes'}
+                                            ) : (
+                                                'Create Trainer'
+                                            )}
                                         </button>
                                     </div>
                                 </form>
