@@ -5,8 +5,7 @@ import api from './api';
 
 // Interface for detailed booking data, often returned by GET /bookings/:id
 // or after creation/update
-interface Booking {
-    _id: string;
+export interface Booking { // <-- ADD 'export' HERE    _id: string;
     bookingId?: string;
     user: string | { _id: string; name: string; email: string; }; // Can be populated
     facility?: { _id: string; name: string; address?: string; images?: string[]; location?: string; pricePerHourValue?: number; } | string; // Can be populated or just ID
