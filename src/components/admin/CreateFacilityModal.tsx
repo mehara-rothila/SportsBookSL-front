@@ -3,7 +3,7 @@
 
 import { useState, useEffect, Fragment, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import * as facilityService from '@/services/facilityService';
+import * as facilityService from '@/services/facilityService'; // Assuming FacilityFormData is exported here
 import { PlusIcon, XMarkIcon, PaperClipIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 interface CreateFacilityModalProps {
@@ -12,17 +12,17 @@ interface CreateFacilityModalProps {
   onSave: (newFacility: facilityService.FacilityDetails) => void;
 }
 
-// Initial empty state matching the service interface
-const initialFormData: facilityService.CreateFacilityFormData = {
+// --- FIXED: Use the correct type name FacilityFormData ---
+const initialFormData: facilityService.FacilityFormData = {
     name: '',
     location: '',
     address: '',
     description: '',
     longDescription: '',
-    sportTypes: '',
-    amenities: '',
-    pricePerHour: '',
-    pricePerHourValue: 0,
+    sportTypes: '', // Keep as string for input, convert in service if needed
+    amenities: '', // Keep as string for input, convert in service if needed
+    pricePerHour: '', // String for display
+    pricePerHourValue: 0, // Number for backend/filtering
     pricePerDay: undefined,
     contactPhone: '',
     contactEmail: '',
@@ -32,10 +32,12 @@ const initialFormData: facilityService.CreateFacilityFormData = {
     isNew: false,
     isPremium: false,
     isFeatured: false,
+    // Add any other fields defined in FacilityFormData if missing
 };
 
 export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateFacilityModalProps) {
-  const [formData, setFormData] = useState<facilityService.CreateFacilityFormData>(initialFormData);
+  // --- FIXED: Use the correct type name FacilityFormData ---
+  const [formData, setFormData] = useState<facilityService.FacilityFormData>(initialFormData);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,6 +65,7 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
         const { checked } = e.target as HTMLInputElement;
         setFormData(prev => ({ ...prev, [name]: checked }));
     } else if (type === 'number') {
+         // Handle empty string for optional numbers, otherwise convert to number
          setFormData(prev => ({ ...prev, [name]: value === '' ? undefined : Number(value) }));
     }
      else {
@@ -122,7 +125,7 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
 
   const handleSubmit = async () => {
     setError(null);
-    // Basic required field check
+    // Basic required field check - Ensure checks match FacilityFormData fields
     if (!formData.name || !formData.location || !formData.address || !formData.description || !formData.sportTypes || !formData.pricePerHour || formData.pricePerHourValue === undefined || formData.pricePerHourValue < 0 || imageFiles.length === 0) {
       setError("Please fill in all required fields (*) and upload at least one image.");
       return;
@@ -131,6 +134,7 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
     setIsLoading(true);
 
     try {
+      // Pass the formData (which should now match FacilityFormData type)
       const newFacility = await facilityService.createFacility(formData, imageFiles);
       onSave(newFacility);
       onClose();
@@ -168,13 +172,13 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                                 <label htmlFor="fac_name" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                   Facility Name <span className="text-red-400">*</span>
                                 </label>
-                                <input 
-                                  type="text" 
-                                  name="name" 
-                                  id="fac_name" 
-                                  value={formData.name} 
-                                  onChange={handleChange} 
-                                  required 
+                                <input
+                                  type="text"
+                                  name="name"
+                                  id="fac_name"
+                                  value={formData.name}
+                                  onChange={handleChange}
+                                  required
                                   className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                 />
                             </div>
@@ -182,13 +186,13 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                                 <label htmlFor="fac_location" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                   Location (City/Area) <span className="text-red-400">*</span>
                                 </label>
-                                <input 
-                                  type="text" 
-                                  name="location" 
-                                  id="fac_location" 
-                                  value={formData.location} 
-                                  onChange={handleChange} 
-                                  required 
+                                <input
+                                  type="text"
+                                  name="location"
+                                  id="fac_location"
+                                  value={formData.location}
+                                  onChange={handleChange}
+                                  required
                                   className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                 />
                             </div>
@@ -196,13 +200,13 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                                 <label htmlFor="fac_address" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                   Full Address <span className="text-red-400">*</span>
                                 </label>
-                                <input 
-                                  type="text" 
-                                  name="address" 
-                                  id="fac_address" 
-                                  value={formData.address} 
-                                  onChange={handleChange} 
-                                  required 
+                                <input
+                                  type="text"
+                                  name="address"
+                                  id="fac_address"
+                                  value={formData.address}
+                                  onChange={handleChange}
+                                  required
                                   className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                 />
                             </div>
@@ -210,13 +214,13 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                                 <label htmlFor="fac_description" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                   Short Description <span className="text-red-400">*</span>
                                 </label>
-                                <textarea 
-                                  name="description" 
-                                  id="fac_description" 
-                                  value={formData.description} 
-                                  onChange={handleChange} 
-                                  rows={2} 
-                                  required 
+                                <textarea
+                                  name="description"
+                                  id="fac_description"
+                                  value={formData.description}
+                                  onChange={handleChange}
+                                  rows={2}
+                                  required
                                   className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                 />
                             </div>
@@ -224,12 +228,12 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                                 <label htmlFor="fac_longDescription" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                   Long Description
                                 </label>
-                                <textarea 
-                                  name="longDescription" 
-                                  id="fac_longDescription" 
-                                  value={formData.longDescription} 
-                                  onChange={handleChange} 
-                                  rows={4} 
+                                <textarea
+                                  name="longDescription"
+                                  id="fac_longDescription"
+                                  value={formData.longDescription}
+                                  onChange={handleChange}
+                                  rows={4}
                                   className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                 />
                             </div>
@@ -244,13 +248,13 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                                 <label htmlFor="fac_sportTypes" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                   Sport Types <span className="text-red-400">*</span>
                                 </label>
-                                <input 
-                                  type="text" 
-                                  name="sportTypes" 
-                                  id="fac_sportTypes" 
-                                  value={formData.sportTypes} 
-                                  onChange={handleChange} 
-                                  required 
+                                <input
+                                  type="text"
+                                  name="sportTypes"
+                                  id="fac_sportTypes"
+                                  value={formData.sportTypes}
+                                  onChange={handleChange}
+                                  required
                                   className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                 />
                                 <p className="mt-1 text-xs text-emerald-200/60">Comma-separated (e.g., Cricket, Swimming)</p>
@@ -259,13 +263,13 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                                 <label htmlFor="fac_pricePerHour" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                   Price Display (e.g., Rs. 5,000/hr) <span className="text-red-400">*</span>
                                 </label>
-                                <input 
-                                  type="text" 
-                                  name="pricePerHour" 
-                                  id="fac_pricePerHour" 
-                                  value={formData.pricePerHour} 
-                                  onChange={handleChange} 
-                                  required 
+                                <input
+                                  type="text"
+                                  name="pricePerHour"
+                                  id="fac_pricePerHour"
+                                  value={formData.pricePerHour}
+                                  onChange={handleChange}
+                                  required
                                   className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                 />
                             </div>
@@ -273,15 +277,15 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                                 <label htmlFor="fac_pricePerHourValue" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                   Price Value (Number only) <span className="text-red-400">*</span>
                                 </label>
-                                <input 
-                                  type="number" 
-                                  name="pricePerHourValue" 
-                                  id="fac_pricePerHourValue" 
-                                  value={formData.pricePerHourValue} 
-                                  onChange={handleChange} 
-                                  required 
-                                  min="0" 
-                                  step="100" 
+                                <input
+                                  type="number"
+                                  name="pricePerHourValue"
+                                  id="fac_pricePerHourValue"
+                                  value={formData.pricePerHourValue} // Directly use the number state
+                                  onChange={handleChange}
+                                  required
+                                  min="0"
+                                  step="100"
                                   className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                 />
                                 <p className="mt-1 text-xs text-emerald-200/60">e.g., 5000 (for filtering)</p>
@@ -290,14 +294,14 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                                 <label htmlFor="fac_pricePerDay" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                   Price Per Day (Optional)
                                 </label>
-                                <input 
-                                  type="number" 
-                                  name="pricePerDay" 
-                                  id="fac_pricePerDay" 
-                                  value={formData.pricePerDay ?? ''} 
-                                  onChange={handleChange} 
-                                  min="0" 
-                                  step="1000" 
+                                <input
+                                  type="number"
+                                  name="pricePerDay"
+                                  id="fac_pricePerDay"
+                                  value={formData.pricePerDay ?? ''} // Handle undefined for input
+                                  onChange={handleChange}
+                                  min="0"
+                                  step="1000"
                                   className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                 />
                             </div>
@@ -312,12 +316,12 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                                 <label htmlFor="fac_amenities" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                   Amenities
                                 </label>
-                                <input 
-                                  type="text" 
-                                  name="amenities" 
-                                  id="fac_amenities" 
-                                  value={formData.amenities} 
-                                  onChange={handleChange} 
+                                <input
+                                  type="text"
+                                  name="amenities"
+                                  id="fac_amenities"
+                                  value={formData.amenities}
+                                  onChange={handleChange}
                                   className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                 />
                                 <p className="mt-1 text-xs text-emerald-200/60">Comma-separated (e.g., Parking, Wifi)</p>
@@ -328,33 +332,33 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                                 </label>
                                 <div className="mt-2 space-x-4">
                                     <label className="inline-flex items-center">
-                                        <input 
-                                          type="checkbox" 
-                                          name="isNew" 
-                                          checked={formData.isNew} 
-                                          onChange={handleChange} 
+                                        <input
+                                          type="checkbox"
+                                          name="isNew"
+                                          checked={formData.isNew}
+                                          onChange={handleChange}
                                           className="rounded border-white/30 bg-white/5 text-emerald-600 shadow-sm focus:ring-emerald-500"
-                                        /> 
+                                        />
                                         <span className="ml-2 text-sm text-white/80">Is New?</span>
                                     </label>
                                     <label className="inline-flex items-center">
-                                        <input 
-                                          type="checkbox" 
-                                          name="isPremium" 
-                                          checked={formData.isPremium} 
-                                          onChange={handleChange} 
+                                        <input
+                                          type="checkbox"
+                                          name="isPremium"
+                                          checked={formData.isPremium}
+                                          onChange={handleChange}
                                           className="rounded border-white/30 bg-white/5 text-emerald-600 shadow-sm focus:ring-emerald-500"
-                                        /> 
+                                        />
                                         <span className="ml-2 text-sm text-white/80">Is Premium?</span>
                                     </label>
                                     <label className="inline-flex items-center">
-                                        <input 
-                                          type="checkbox" 
-                                          name="isFeatured" 
-                                          checked={formData.isFeatured} 
-                                          onChange={handleChange} 
+                                        <input
+                                          type="checkbox"
+                                          name="isFeatured"
+                                          checked={formData.isFeatured}
+                                          onChange={handleChange}
                                           className="rounded border-white/30 bg-white/5 text-emerald-600 shadow-sm focus:ring-emerald-500"
-                                        /> 
+                                        />
                                         <span className="ml-2 text-sm text-white/80">Is Featured?</span>
                                     </label>
                                 </div>
@@ -370,12 +374,12 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                                 <label htmlFor="fac_contactPhone" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                   Contact Phone
                                 </label>
-                                <input 
-                                  type="tel" 
-                                  name="contactPhone" 
-                                  id="fac_contactPhone" 
-                                  value={formData.contactPhone} 
-                                  onChange={handleChange} 
+                                <input
+                                  type="tel"
+                                  name="contactPhone"
+                                  id="fac_contactPhone"
+                                  value={formData.contactPhone}
+                                  onChange={handleChange}
                                   className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                 />
                             </div>
@@ -383,12 +387,12 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                                 <label htmlFor="fac_contactEmail" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                   Contact Email
                                 </label>
-                                <input 
-                                  type="email" 
-                                  name="contactEmail" 
-                                  id="fac_contactEmail" 
-                                  value={formData.contactEmail} 
-                                  onChange={handleChange} 
+                                <input
+                                  type="email"
+                                  name="contactEmail"
+                                  id="fac_contactEmail"
+                                  value={formData.contactEmail}
+                                  onChange={handleChange}
                                   className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                 />
                             </div>
@@ -396,13 +400,13 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                                 <label htmlFor="fac_contactWebsite" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                   Website URL
                                 </label>
-                                <input 
-                                  type="url" 
-                                  name="contactWebsite" 
-                                  id="fac_contactWebsite" 
-                                  value={formData.contactWebsite} 
-                                  onChange={handleChange} 
-                                  placeholder="https://..." 
+                                <input
+                                  type="url"
+                                  name="contactWebsite"
+                                  id="fac_contactWebsite"
+                                  value={formData.contactWebsite}
+                                  onChange={handleChange}
+                                  placeholder="https://..."
                                   className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                 />
                             </div>
@@ -410,13 +414,13 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                                 <label htmlFor="fac_mapLat" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                   Map Latitude
                                 </label>
-                                <input 
-                                  type="number" 
-                                  name="mapLat" 
-                                  id="fac_mapLat" 
-                                  value={formData.mapLat ?? ''} 
-                                  onChange={handleChange} 
-                                  step="any" 
+                                <input
+                                  type="number"
+                                  name="mapLat"
+                                  id="fac_mapLat"
+                                  value={formData.mapLat ?? ''} // Handle undefined for input
+                                  onChange={handleChange}
+                                  step="any"
                                   className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                 />
                             </div>
@@ -424,13 +428,13 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                                 <label htmlFor="fac_mapLng" className="block text-xs font-medium text-emerald-200 uppercase tracking-wider mb-1">
                                   Map Longitude
                                 </label>
-                                <input 
-                                  type="number" 
-                                  name="mapLng" 
-                                  id="fac_mapLng" 
-                                  value={formData.mapLng ?? ''} 
-                                  onChange={handleChange} 
-                                  step="any" 
+                                <input
+                                  type="number"
+                                  name="mapLng"
+                                  id="fac_mapLng"
+                                  value={formData.mapLng ?? ''} // Handle undefined for input
+                                  onChange={handleChange}
+                                  step="any"
                                   className="mt-1 block w-full rounded-md bg-white/5 backdrop-blur-sm border border-white/20 shadow-sm px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                 />
                             </div>
@@ -446,14 +450,14 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                             </label>
                             <div className="flex items-center mt-1">
                               <label className="block w-full relative">
-                                <input 
-                                  type="file" 
-                                  id="fac_images" 
-                                  ref={fileInputRef} 
-                                  onChange={handleImageChange} 
-                                  required 
-                                  multiple 
-                                  accept="image/*" 
+                                <input
+                                  type="file"
+                                  id="fac_images"
+                                  ref={fileInputRef}
+                                  onChange={handleImageChange}
+                                  required
+                                  multiple
+                                  accept="image/*"
                                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                 />
                                 <div className="w-full h-10 flex items-center justify-center border border-white/20 rounded-md bg-white/5 text-white/70 hover:bg-white/10 transition-colors">
@@ -463,20 +467,20 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
                               </label>
                             </div>
                             <p className="mt-1 text-xs text-emerald-200/60">First image will be the main display image.</p>
-                            
+
                             {/* Image Previews */}
                             {imagePreviews.length > 0 && (
                                 <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
                                     {imagePreviews.map((previewUrl, index) => (
                                         <div key={index} className="relative group aspect-square">
-                                            <img 
-                                              src={previewUrl} 
-                                              alt={`Preview ${index + 1}`} 
+                                            <img
+                                              src={previewUrl}
+                                              alt={`Preview ${index + 1}`}
                                               className="h-full w-full object-cover rounded-md border border-white/20"
                                             />
-                                            <button 
-                                              type="button" 
-                                              onClick={() => removeImage(index)} 
+                                            <button
+                                              type="button"
+                                              onClick={() => removeImage(index)}
                                               className="absolute top-0 right-0 m-1 p-0.5 bg-red-600/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-500"
                                             >
                                                 <XMarkIcon className="h-3 w-3"/>
@@ -498,17 +502,17 @@ export default function CreateFacilityModal({ isOpen, onClose, onSave }: CreateF
 
                   {/* Action Buttons */}
                   <div className="mt-8 flex justify-end space-x-3 border-t border-white/10 pt-5">
-                    <button 
-                      type="button" 
-                      className="inline-flex justify-center rounded-md border border-white/20 bg-white/5 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 transition-all duration-200" 
-                      onClick={onClose} 
+                    <button
+                      type="button"
+                      className="inline-flex justify-center rounded-md border border-white/20 bg-white/5 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 transition-all duration-200"
+                      onClick={onClose}
                       disabled={isLoading}
                     >
                       Cancel
                     </button>
-                    <button 
-                      type="submit" 
-                      className="inline-flex justify-center rounded-md border border-transparent bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 transition-all duration-200" 
+                    <button
+                      type="submit"
+                      className="inline-flex justify-center rounded-md border border-transparent bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 transition-all duration-200"
                       disabled={isLoading}
                     >
                       {isLoading ? 'Creating...' : 'Create Facility'}
