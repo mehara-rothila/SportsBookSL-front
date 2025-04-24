@@ -93,32 +93,38 @@ function FacilityBookingPageContent() {
              setSelectedEquipment({});
         }
     }, [equipmentParam]);
+// --- Fetch Facility Data ---
+useEffect(() => {
+    if (!isAuthChecked || !facilityId) {
+        if(!facilityId && isAuthChecked) {
+            setError("Facility ID missing.");
+            setLoading(false);
+        }
+        return;
+    };
 
-    // --- Fetch Facility Data ---
-    useEffect(() => {
-        if (!isAuthChecked || !facilityId) {
-            if(!facilityId && isAuthChecked) {
-                setError("Facility ID missing.");
-                setLoading(false);
+    const fetchFacility = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            // Validate ID format (MongoDB ObjectId)
+            const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(facilityId);
+            if (!isValidObjectId) {
+                throw new Error(`Invalid Facility ID format: ${facilityId}. Expected a 24-character hexadecimal ID.`);
             }
-            return;
-        };
+            
+            const data = await facilityService.getFacilityById(facilityId);
+            setFacility(data);
+        } catch (err: any) {
+            setError(err.message || 'Failed to load facility details.');
+            setFacility(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchFacility();
+}, [facilityId, isAuthChecked]);
 
-        const fetchFacility = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const data = await facilityService.getFacilityById(facilityId);
-                setFacility(data);
-            } catch (err: any) {
-                setError(err.message || 'Failed to load facility details.');
-                setFacility(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchFacility();
-    }, [facilityId, isAuthChecked]);
 
     // --- Calculate Total Cost ---
      useEffect(() => {

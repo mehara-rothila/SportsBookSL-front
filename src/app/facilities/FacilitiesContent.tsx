@@ -1,3 +1,6 @@
+
+
+
 // src/app/facilities/FacilitiesContent.tsx
 
 'use client';
@@ -7,6 +10,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import api from '@/services/api';
 import * as categoryService from '@/services/categoryService';
+// Ensure FacilityCard is correctly imported
 import FacilityCard from '@/components/facilities/FacilityCard';
 
 // --- Icons ---
@@ -33,7 +37,7 @@ interface FacilitySummary {
   rating?: number; // Rating might still be displayed on cards
   reviewCount?: number;
   sportTypes: string[];
-  images: string[];
+  images: string[]; // This field is crucial for FacilityCard
   pricePerHour: string; // Price might still be displayed on cards
   isNew?: boolean;
   isPremium?: boolean;
@@ -118,9 +122,12 @@ export default function FacilitiesContent() {
       console.log("Fetching facilities with params:", params);
       const response = await api.get<FacilityListResponse>('/facilities', { params });
 
+      // *** Check the structure of response.data.facilities here if debugging ***
+      // console.log("Raw API facilities data:", response.data.facilities);
+
       if (response.data && Array.isArray(response.data.facilities)) {
         console.log("API Response:", response.data);
-        setFacilities(response.data.facilities);
+        setFacilities(response.data.facilities); // Ensure this contains the 'images' array for each facility
         setCurrentPage(response.data.page);
         setTotalPages(response.data.pages);
         setTotalCount(response.data.count);
@@ -187,7 +194,9 @@ export default function FacilitiesContent() {
 
     // Clean up when component unmounts
     return () => {
-      document.head.removeChild(styleElement);
+      if (document.head.contains(styleElement)) {
+         document.head.removeChild(styleElement);
+      }
     };
   }, []);
 
@@ -196,7 +205,8 @@ export default function FacilitiesContent() {
     const pageQuery = parseInt(searchParams.get('page') || '1', 10);
     const keywordQuery = searchParams.get('keyword') || '';
     const locationQuery = searchParams.get('location') || '';
-    const sportQuery = searchParams.get('sportType') || '';
+    // Make sure the parameter name matches what the backend expects (e.g., 'sportType' or 'sport')
+    const sportQuery = searchParams.get('sportType') || searchParams.get('sport') || '';
     // REMOVED: const priceRangeQuery = searchParams.get('priceRange') || '';
     // REMOVED: const ratingQuery = searchParams.get('rating') || '';
 
@@ -212,7 +222,7 @@ export default function FacilitiesContent() {
     fetchFacilities(pageQuery, {
       keyword: keywordQuery,
       location: locationQuery,
-      sportType: sportQuery,
+      sportType: sportQuery, // Ensure this key matches the backend API parameter name
       // REMOVED: priceRange: priceRangeQuery,
       // REMOVED: rating: ratingQuery
     });
@@ -229,15 +239,10 @@ export default function FacilitiesContent() {
     const params = {
       keyword,
       location: locationFilter,
-      sportType: value, // Use the new value
+      sportType: value, // Use the new value. Ensure this key matches backend.
       // REMOVED: priceRange,
       // REMOVED: rating: ratingFilter
     };
-
-    // Clean params (optional - fetchFacilities already does this)
-    // Object.keys(params).forEach(key => {
-    //   if (!params[key as keyof typeof params]) delete params[key as keyof typeof params];
-    // });
 
     // Update URL and force a refetch (page 1)
     updateURLAndFetch(params, 1);
@@ -251,12 +256,10 @@ export default function FacilitiesContent() {
     const params = {
       keyword,
       location: value, // Use the new value
-      sportType: sportFilter,
+      sportType: sportFilter, // Ensure this key matches backend.
       // REMOVED: priceRange,
       // REMOVED: rating: ratingFilter
     };
-
-    // Clean params (optional)
 
     // Update URL and force a refetch (page 1)
     updateURLAndFetch(params, 1);
@@ -271,7 +274,8 @@ export default function FacilitiesContent() {
     // Clean params before fetching and updating URL
     const cleanedParams: Record<string, string> = {};
     Object.entries(params).forEach(([key, value]) => {
-      if (value) {
+      // Ensure value is not empty or 'all' before adding
+      if (value && value !== 'all') {
         cleanedParams[key] = value;
       }
     });
@@ -296,7 +300,7 @@ export default function FacilitiesContent() {
     if (e) e.preventDefault(); // Prevent default form submission if used
 
     // Log the search parameters for debugging
-    console.log("Search Form Submitted:", {
+    console.log("Search Form Submitted/Applied:", {
       keyword,
       locationFilter,
       sportFilter,
@@ -311,15 +315,10 @@ export default function FacilitiesContent() {
     const params = {
       keyword,
       location: locationFilter,
-      sportType: sportFilter,
+      sportType: sportFilter, // Ensure this key matches backend.
       // REMOVED: priceRange,
       // REMOVED: rating: ratingFilter
     };
-
-    // Clean params (optional - updateURLAndFetch does it)
-    // Object.keys(params).forEach(key => {
-    //   if (!params[key as keyof typeof params]) delete params[key as keyof typeof params];
-    // });
 
     // Update URL and force a refetch (page 1)
     updateURLAndFetch(params, 1);
@@ -333,7 +332,10 @@ export default function FacilitiesContent() {
     // REMOVED: setRatingFilter('');
 
     // Update URL to trigger refetch (will fetch with no filters)
-    router.push('/facilities');
+    // Fetch directly first to ensure immediate update
+    fetchFacilities(1, {});
+    // Then update URL
+    router.push('/facilities', { scroll: false });
   };
 
   // --- Pagination Handler ---
@@ -343,7 +345,7 @@ export default function FacilitiesContent() {
           const params = {
               keyword,
               location: locationFilter,
-              sportType: sportFilter,
+              sportType: sportFilter, // Ensure this key matches backend.
               // REMOVED price/rating filters
           };
           updateURLAndFetch(params, newPage);
@@ -634,6 +636,8 @@ export default function FacilitiesContent() {
             </button>
           </div>
 
+
+
           {/* Desktop Search Form */}
           <div className="mt-10 max-w-4xl mx-auto animate-fade-in-up animation-delay-500 hidden md:block">
             <form onSubmit={handleSearch} className="relative rounded-xl overflow-hidden shadow-2xl backdrop-blur-sm">
@@ -644,80 +648,84 @@ export default function FacilitiesContent() {
                   {/* Keyword Search */}
                   <div className="relative">
                     <label htmlFor="keyword-search" className="block text-sm font-medium text-white mb-1">Keyword</label>
-                    <div className="absolute inset-y-0 left-0 pl-3 pt-7 flex items-center pointer-events-none">
-                      <MagnifyingGlassIcon className="h-5 w-5 text-white/60" aria-hidden="true" />
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <MagnifyingGlassIcon className="h-5 w-5 text-white/60" aria-hidden="true" />
+                      </div>
+                      <input
+                        type="text"
+                        name="keyword-search"
+                        id="keyword-search"
+                        className="block w-full rounded-lg bg-white/10 border-white/20 pl-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm text-white placeholder-white/60"
+                        placeholder="e.g., Cricket, Stadium, Nets"
+                        value={keyword}
+                        onChange={(e) => setKeyword(e.target.value)}
+                      />
                     </div>
-                    <input
-                      type="text"
-                      name="keyword-search"
-                      id="keyword-search"
-                      className="block w-full rounded-lg bg-white/10 border-white/20 pl-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm text-white placeholder-white/60"
-                      placeholder="e.g., Cricket, Stadium, Nets"
-                      value={keyword}
-                      onChange={(e) => setKeyword(e.target.value)}
-                    />
                   </div>
 
                   {/* Location Filter - Dropdown */}
                   <div className="relative">
                     <label htmlFor="location-filter" className="block text-sm font-medium text-white mb-1">Location</label>
-                    <div className="absolute inset-y-0 left-0 pl-3 pt-7 flex items-center pointer-events-none">
-                      <MapPinIcon className="h-5 w-5 text-white/60" aria-hidden="true" />
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <MapPinIcon className="h-5 w-5 text-white/60" aria-hidden="true" />
+                      </div>
+                      <select
+                        name="location-filter"
+                        id="location-filter"
+                        className="block w-full rounded-lg bg-white/90 border-emerald-400 pl-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm text-emerald-900 font-medium"
+                        value={locationFilter}
+                        // MODIFIED: Use direct handler
+                        onChange={(e) => handleLocationFilterChange(e.target.value)}
+                        style={{
+                          backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23047857' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")",
+                          backgroundPosition: "right 0.5rem center",
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: "1.5em 1.5em",
+                          paddingRight: "2.5rem",
+                          appearance: "none"
+                        }}
+                      >
+                        <option value="">All Locations</option>
+                        {popularLocations.map((location) => (
+                          <option key={location} value={location}>{location}</option>
+                        ))}
+                      </select>
                     </div>
-                    <select
-                      name="location-filter"
-                      id="location-filter"
-                      className="block w-full rounded-lg bg-white/90 border-emerald-400 pl-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm text-emerald-900 font-medium"
-                      value={locationFilter}
-                      // MODIFIED: Use direct handler
-                      onChange={(e) => handleLocationFilterChange(e.target.value)}
-                      style={{
-                        backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23047857' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")",
-                        backgroundPosition: "right 0.5rem center",
-                        backgroundRepeat: "no-repeat",
-                        backgroundSize: "1.5em 1.5em",
-                        paddingRight: "2.5rem",
-                        appearance: "none"
-                      }}
-                    >
-                      <option value="">All Locations</option>
-                      {popularLocations.map((location) => (
-                        <option key={location} value={location}>{location}</option>
-                      ))}
-                    </select>
                   </div>
 
                   {/* Sport Filter - Dropdown */}
                   <div className="relative">
                     <label htmlFor="sport-filter" className="block text-sm font-medium text-white mb-1">Sport Type</label>
-                    <div className="absolute inset-y-0 left-0 pl-3 pt-7 flex items-center pointer-events-none">
-                      <AdjustmentsHorizontalIcon className="h-5 w-5 text-white/60" aria-hidden="true" />
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <AdjustmentsHorizontalIcon className="h-5 w-5 text-white/60" aria-hidden="true" />
+                      </div>
+                      <select
+                        name="sport-filter"
+                        id="sport-filter"
+                         className="block w-full rounded-lg bg-white/90 border-emerald-400 pl-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm text-emerald-900 font-medium" // Adjusted style to match location
+                        value={sportFilter}
+                        // MODIFIED: Use direct handler
+                        onChange={(e) => handleSportFilterChange(e.target.value)}
+                         style={{ // Added style to match location
+                          backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23047857' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")",
+                          backgroundPosition: "right 0.5rem center",
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: "1.5em 1.5em",
+                          paddingRight: "2.5rem",
+                          appearance: "none"
+                        }}
+                      >
+                        <option value="">All Sports</option>
+                        {sportCategories.map((sport) => (
+                          <option key={sport} value={sport}>{sport}</option>
+                        ))}
+                      </select>
                     </div>
-                    <select
-                      name="sport-filter"
-                      id="sport-filter"
-                       className="block w-full rounded-lg bg-white/90 border-emerald-400 pl-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm text-emerald-900 font-medium" // Adjusted style to match location
-                      value={sportFilter}
-                      // MODIFIED: Use direct handler
-                      onChange={(e) => handleSportFilterChange(e.target.value)}
-                       style={{ // Added style to match location
-                        backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23047857' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")",
-                        backgroundPosition: "right 0.5rem center",
-                        backgroundRepeat: "no-repeat",
-                        backgroundSize: "1.5em 1.5em",
-                        paddingRight: "2.5rem",
-                        appearance: "none"
-                      }}
-                    >
-                      <option value="">All Sports</option>
-                      {sportCategories.map((sport) => (
-                        <option key={sport} value={sport}>{sport}</option>
-                      ))}
-                    </select>
                   </div>
                 </div>
-
-                {/* REMOVED: Additional Filters Row (Price Range and Rating) */}
 
                 {/* Action Buttons */}
                 <div className="mt-6 flex flex-col sm:flex-row gap-4">
@@ -743,6 +751,7 @@ export default function FacilitiesContent() {
               </div>
             </form>
           </div>
+
         </div>
         <div className="absolute bottom-0 left-0 right-0">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" className="w-full h-auto block">
@@ -866,7 +875,7 @@ export default function FacilitiesContent() {
                   Clear All
                 </button>
                 <button
-                  // MODIFIED: This now triggers the form submit logic
+                  // MODIFIED: This now triggers the form submit logic via handleSearch
                   onClick={() => handleSearch()}
                   className="inline-flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
                 >
@@ -942,7 +951,7 @@ export default function FacilitiesContent() {
                   onClick={() => fetchFacilities(currentPage, {
                     keyword,
                     location: locationFilter,
-                    sportType: sportFilter,
+                    sportType: sportFilter, // Ensure this key matches backend.
                     // REMOVED: priceRange, rating
                   })}
                   className="inline-flex items-center rounded-lg border border-transparent bg-emerald-600 px-5 py-3 text-base font-medium text-white shadow-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transform hover:scale-105 transition-all duration-300"
@@ -976,6 +985,8 @@ export default function FacilitiesContent() {
             {!loading && !error && facilities.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {facilities.map((facility) => (
+                  // *** FacilityCard is rendered here. Ensure 'facility' object has 'images' array ***
+                  // console.log("Passing facility to card:", facility); // Optional debug log
                   <div key={facility._id} className="overflow-hidden rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] animate-fade-in">
                     <FacilityCard facility={facility} />
                   </div>
@@ -1004,6 +1015,9 @@ export default function FacilitiesContent() {
                     else if (currentPage <= 3) pageNum = i + 1;
                     else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
                     else pageNum = currentPage - 2 + i;
+
+                    // Only render if pageNum is valid
+                    if (pageNum < 1 || pageNum > totalPages) return null;
 
                     return (
                       <button

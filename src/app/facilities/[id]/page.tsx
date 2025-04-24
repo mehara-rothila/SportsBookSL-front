@@ -150,33 +150,39 @@ export default function FacilityDetailPage() {
         setIsLoggedIn(authService.isAuthenticated());
     }, []);
 
-    // --- Fetch Facility Data ---
-    useEffect(() => {
-        if (!id) { setError("Facility ID is missing or invalid."); setLoading(false); return; }
-        const fetchFacility = async () => {
-            setLoading(true); setError(null);
-            try {
-                const data = await facilityService.getFacilityById(id);
-                setFacility(data);
-                setReviews(data.reviews || []);
-                const initialReviewLimit = 5;
-                setHasMoreReviews((data.reviews?.length || 0) >= initialReviewLimit && data.reviewCount > initialReviewLimit);
-                setTotalReviewPages(Math.ceil((data.reviewCount || 0) / initialReviewLimit));
-                setReviewPage(1);
-
-                if (data.images && data.images.length > 0) {
-                    setMainImage(`${BACKEND_BASE_URL}${data.images[0]}`);
-                } else { setMainImage(FALLBACK_IMAGE); }
-            } catch (err: any) {
-                console.error('Error fetching facility data:', err);
-                setError(typeof err === 'string' ? err : 'Failed to load facility details.');
-                setFacility(null);
-            } finally {
-                setLoading(false);
+  // --- Fetch Facility Data ---
+useEffect(() => {
+    if (!id) { setError("Facility ID is missing or invalid."); setLoading(false); return; }
+    const fetchFacility = async () => {
+        setLoading(true); setError(null);
+        try {
+            // Validate ID format (MongoDB ObjectId)
+            const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(id);
+            if (!isValidObjectId) {
+                throw new Error(`Invalid Facility ID format: ${id}. Expected a 24-character hexadecimal ID.`);
             }
-        };
-        fetchFacility();
-    }, [id]);
+            
+            const data = await facilityService.getFacilityById(id);
+            setFacility(data);
+            setReviews(data.reviews || []);
+            const initialReviewLimit = 5;
+            setHasMoreReviews((data.reviews?.length || 0) >= initialReviewLimit && data.reviewCount > initialReviewLimit);
+            setTotalReviewPages(Math.ceil((data.reviewCount || 0) / initialReviewLimit));
+            setReviewPage(1);
+
+            if (data.images && data.images.length > 0) {
+                setMainImage(`${BACKEND_BASE_URL}${data.images[0]}`);
+            } else { setMainImage(FALLBACK_IMAGE); }
+        } catch (err: any) {
+            console.error('Error fetching facility data:', err);
+            setError(typeof err === 'string' ? err : err.message || 'Failed to load facility details.');
+            setFacility(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchFacility();
+}, [id]);
 
     // --- Fetch Availability Data ---
     const fetchAvailability = useCallback(async (monthDate: Date) => {
@@ -774,9 +780,20 @@ export default function FacilityDetailPage() {
                         </Tab.Group>
                     </div>
 
-                    {/* Right column: Booking widget */}
+                    {/* Right column: Weather Widget and Booking widget */}
                     <div className="lg:col-span-1">
                         <div className="sticky top-24">
+                            {/* Weather Widget - NEW ADDITION */}
+                         {/* Weather Widget */}
+<WeatherWidget 
+  lat={facility.mapLocation?.lat} 
+  lng={facility.mapLocation?.lng} 
+  cityName={facility.location} 
+  facilityName={facility.name} // Add the facility name prop here
+  className="mb-6 animate-fade-in"
+/>
+
+                            {/* Booking Widget */}
                             <div className="bg-gradient-to-br from-emerald-500 to-green-600 p-px rounded-2xl shadow-2xl transform hover:scale-[1.01] transition-all duration-300 animate-fade-in">
                                 <div className="bg-gradient-to-br from-emerald-900/80 to-green-900/80 rounded-2xl overflow-hidden backdrop-blur-sm">
                                     <div className="p-6 border-b border-white/10"><h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-green-200">Book this Facility</h3></div>
@@ -1047,7 +1064,7 @@ export default function FacilityDetailPage() {
 
                     {/* Modal Content */}
                     <div className="fixed inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center p-4 text-center">
+                    <div className="flex min-h-full items-center justify-center p-4 text-center">
                             <Transition.Child
                                 as={Fragment}
                                 enter="ease-out duration-300"

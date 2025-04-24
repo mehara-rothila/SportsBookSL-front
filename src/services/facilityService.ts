@@ -113,8 +113,28 @@ export const getFacilities = async (params = {}): Promise<FacilitiesApiResponseP
         console.log("Service: Get facilities response:", response.data);
         return response.data || { facilities: [], page: 1, pages: 1, count: 0 };
     } catch (error: any) {
-        console.error("Get Facilities Service Error:", error.response?.data || error.message);
-        throw new Error(error.response?.data?.message || 'Error fetching facilities list');
+        // More defensive error handling
+        let errorMessage = 'Error fetching facilities list';
+        let errorDetails = '';
+        
+        try {
+            // Safely extract error details if they exist
+            if (error.response && error.response.data) {
+                errorDetails = JSON.stringify(error.response.data);
+                if (error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+            } else if (error.message) {
+                errorDetails = error.message;
+            } else {
+                errorDetails = String(error);
+            }
+        } catch (e) {
+            errorDetails = 'Error details could not be extracted';
+        }
+        
+        console.error("Get Facilities Service Error:", errorDetails);
+        throw new Error(errorMessage);
     }
 };
 
@@ -122,64 +142,155 @@ export const getFacilities = async (params = {}): Promise<FacilitiesApiResponseP
  * Fetch featured facilities.
  */
 export const getFeaturedFacilities = async (limit = 4): Promise<FacilityListItemPublic[]> => {
-     try {
+    try {
         console.log(`Service: Getting featured facilities (limit: ${limit})`);
         const response = await api.get<FacilityListItemPublic[]>('/facilities/featured', { params: { limit } });
         console.log("Service: Get featured facilities response:", response.data);
         return response.data || [];
     } catch (error: any) {
-        console.error("Get Featured Facilities Service Error:", error.response?.data || error.message);
-        throw new Error(error.response?.data?.message || 'Error fetching featured facilities');
+        // More defensive error handling
+        let errorMessage = 'Error fetching featured facilities';
+        let errorDetails = '';
+        
+        try {
+            // Safely extract error details if they exist
+            if (error.response && error.response.data) {
+                errorDetails = JSON.stringify(error.response.data);
+                if (error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+            } else if (error.message) {
+                errorDetails = error.message;
+            } else {
+                errorDetails = String(error);
+            }
+        } catch (e) {
+            errorDetails = 'Error details could not be extracted';
+        }
+        
+        console.error("Get Featured Facilities Service Error:", errorDetails);
+        throw new Error(errorMessage);
     }
 };
 
 /**
  * Fetch details for a single facility by ID.
  */
+// Modified getFacilityById function for facilityService.ts
+
+/**
+ * Fetch details for a single facility by ID.
+ */
 export const getFacilityById = async (id: string): Promise<FacilityDetails> => {
     if (!id) throw new Error("Facility ID is required");
+    
+    // Check if ID matches MongoDB ObjectId format (24 hex characters)
+    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(id);
+    if (!isValidObjectId) {
+        throw new Error(`Invalid Facility ID format: ${id}. Expected a 24-character hexadecimal ID.`);
+    }
+    
     try {
         console.log(`Service: Getting facility by ID: ${id}`);
         const response = await api.get<FacilityDetails>(`/facilities/${id}`);
         console.log("Service: Get facility details response:", response.data);
         return response.data;
     } catch (error: any) {
-        console.error(`Get Facility By ID Service Error (ID: ${id}):`, error.response?.data || error.message);
-        throw new Error(error.response?.data?.message || 'Error fetching facility details');
+        // More defensive error handling
+        let errorMessage = 'Error fetching facility details';
+        let errorDetails = '';
+        
+        try {
+            // Safely extract error details if they exist
+            if (error.response && error.response.data) {
+                errorDetails = JSON.stringify(error.response.data);
+                if (error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+            } else if (error.message) {
+                errorDetails = error.message;
+            } else {
+                errorDetails = String(error);
+            }
+        } catch (e) {
+            errorDetails = 'Error details could not be extracted';
+        }
+        
+        console.error(`Get Facility By ID Service Error (ID: ${id}):`, errorDetails);
+        throw new Error(errorMessage);
     }
 };
-
 /**
  * Fetch availability for a facility.
  */
 export const getFacilityAvailability = async (id: string, month?: string): Promise<AvailabilityData[]> => {
-     if (!id) throw new Error("Facility ID is required");
-     try {
+    if (!id) throw new Error("Facility ID is required");
+    try {
         console.log(`Service: Getting availability for facility ID: ${id}, Month: ${month}`);
         const params = month ? { month } : {};
         const response = await api.get<AvailabilityData[]>(`/facilities/${id}/availability`, { params });
         console.log("Service: Get facility availability response:", response.data);
         return response.data || [];
-     } catch (error: any) {
-        console.error(`Get Facility Availability Service Error (ID: ${id}):`, error.response?.data || error.message);
-        throw new Error(error.response?.data?.message || 'Error fetching facility availability');
-     }
+    } catch (error: any) {
+        // More defensive error handling
+        let errorMessage = 'Error fetching facility availability';
+        let errorDetails = '';
+        
+        try {
+            // Safely extract error details if they exist
+            if (error.response && error.response.data) {
+                errorDetails = JSON.stringify(error.response.data);
+                if (error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+            } else if (error.message) {
+                errorDetails = error.message;
+            } else {
+                errorDetails = String(error);
+            }
+        } catch (e) {
+            errorDetails = 'Error details could not be extracted';
+        }
+        
+        console.error(`Get Facility Availability Service Error (ID: ${id}):`, errorDetails);
+        throw new Error(errorMessage);
+    }
 };
 
 /**
  * Fetch reviews for a facility.
  */
 export const getFacilityReviews = async (id: string, page = 1, limit = 5): Promise<ReviewsResponse> => {
-     if (!id) throw new Error("Facility ID is required");
-     try {
+    if (!id) throw new Error("Facility ID is required");
+    try {
         console.log(`Service: Getting reviews for facility ID: ${id}, Page: ${page}`);
         const response = await api.get<ReviewsResponse>(`/facilities/${id}/reviews`, { params: { pageNumber: page, limit } });
         console.log("Service: Get facility reviews response:", response.data);
         return response.data || { reviews: [], page: 1, pages: 1, count: 0 };
-     } catch (error: any) {
-        console.error(`Get Facility Reviews Service Error (ID: ${id}):`, error.response?.data || error.message);
-        throw new Error(error.response?.data?.message || 'Error fetching facility reviews');
-     }
+    } catch (error: any) {
+        // More defensive error handling
+        let errorMessage = 'Error fetching facility reviews';
+        let errorDetails = '';
+        
+        try {
+            // Safely extract error details if they exist
+            if (error.response && error.response.data) {
+                errorDetails = JSON.stringify(error.response.data);
+                if (error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+            } else if (error.message) {
+                errorDetails = error.message;
+            } else {
+                errorDetails = String(error);
+            }
+        } catch (e) {
+            errorDetails = 'Error details could not be extracted';
+        }
+        
+        console.error(`Get Facility Reviews Service Error (ID: ${id}):`, errorDetails);
+        throw new Error(errorMessage);
+    }
 };
 
 // --- ADMIN Service Functions ---
@@ -189,16 +300,36 @@ export const getFacilityReviews = async (id: string, page = 1, limit = 5): Promi
  * Requires admin authentication token.
  */
 export const getAllAdminFacilities = async (): Promise<AdminFacilitiesApiResponse> => {
-  try {
-    console.log("Service: Getting all facilities for admin");
-    // Backend route: GET /api/admin/facilities
-    const response = await api.get<AdminFacilitiesApiResponse>('/admin/facilities');
-    console.log("Service: Get all admin facilities response:", response.data);
-    return response.data || { facilities: [] }; // Ensure facilities array exists
-  } catch (error: any) {
-    console.error("Get All Admin Facilities Service Error:", error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || 'Error fetching facilities list for admin');
-  }
+    try {
+        console.log("Service: Getting all facilities for admin");
+        // Backend route: GET /api/admin/facilities
+        const response = await api.get<AdminFacilitiesApiResponse>('/admin/facilities');
+        console.log("Service: Get all admin facilities response:", response.data);
+        return response.data || { facilities: [] }; // Ensure facilities array exists
+    } catch (error: any) {
+        // More defensive error handling
+        let errorMessage = 'Error fetching facilities list for admin';
+        let errorDetails = '';
+        
+        try {
+            // Safely extract error details if they exist
+            if (error.response && error.response.data) {
+                errorDetails = JSON.stringify(error.response.data);
+                if (error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+            } else if (error.message) {
+                errorDetails = error.message;
+            } else {
+                errorDetails = String(error);
+            }
+        } catch (e) {
+            errorDetails = 'Error details could not be extracted';
+        }
+        
+        console.error("Get All Admin Facilities Service Error:", errorDetails);
+        throw new Error(errorMessage);
+    }
 };
 
 /**
@@ -219,9 +350,28 @@ export const createFacility = async (facilityData: FacilityFormData, imageFiles:
         console.log("Service: Create facility response:", response.data);
         return response.data;
     } catch (error: any) {
-        console.error("Create Facility Service Error:", error.response?.data || error.message);
-        if (error.response) { console.error("Error Response Data:", error.response.data); }
-        throw new Error(error.response?.data?.message || 'Error creating facility');
+        // More defensive error handling
+        let errorMessage = 'Error creating facility';
+        let errorDetails = '';
+        
+        try {
+            // Safely extract error details if they exist
+            if (error.response && error.response.data) {
+                errorDetails = JSON.stringify(error.response.data);
+                if (error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+            } else if (error.message) {
+                errorDetails = error.message;
+            } else {
+                errorDetails = String(error);
+            }
+        } catch (e) {
+            errorDetails = 'Error details could not be extracted';
+        }
+        
+        console.error("Create Facility Service Error:", errorDetails);
+        throw new Error(errorMessage);
     }
 };
 
@@ -239,8 +389,28 @@ export const deleteFacilityByAdmin = async (facilityId: string): Promise<{ messa
         console.log("Service: Admin delete facility response:", response.data);
         return response.data; // Return success message
     } catch (error: any) {
-        console.error(`Admin Delete Facility Service Error (ID: ${facilityId}):`, error.response?.data || error.message);
-        throw new Error(error.response?.data?.message || 'Error deleting facility');
+        // More defensive error handling
+        let errorMessage = 'Error deleting facility';
+        let errorDetails = '';
+        
+        try {
+            // Safely extract error details if they exist
+            if (error.response && error.response.data) {
+                errorDetails = JSON.stringify(error.response.data);
+                if (error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+            } else if (error.message) {
+                errorDetails = error.message;
+            } else {
+                errorDetails = String(error);
+            }
+        } catch (e) {
+            errorDetails = 'Error details could not be extracted';
+        }
+        
+        console.error(`Admin Delete Facility Service Error (ID: ${facilityId}):`, errorDetails);
+        throw new Error(errorMessage);
     }
 };
 
@@ -258,11 +428,30 @@ export const getAdminFacilityById = async (facilityId: string): Promise<Facility
         console.log("Service: Admin get facility details response:", response.data);
         return response.data;
     } catch (error: any) {
-        console.error(`Admin Get Facility By ID Service Error (ID: ${facilityId}):`, error.response?.data || error.message);
-        throw new Error(error.response?.data?.message || 'Error fetching facility details for admin');
+        // More defensive error handling
+        let errorMessage = 'Error fetching facility details for admin';
+        let errorDetails = '';
+        
+        try {
+            // Safely extract error details if they exist
+            if (error.response && error.response.data) {
+                errorDetails = JSON.stringify(error.response.data);
+                if (error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+            } else if (error.message) {
+                errorDetails = error.message;
+            } else {
+                errorDetails = String(error);
+            }
+        } catch (e) {
+            errorDetails = 'Error details could not be extracted';
+        }
+        
+        console.error(`Admin Get Facility By ID Service Error (ID: ${facilityId}):`, errorDetails);
+        throw new Error(errorMessage);
     }
 };
-
 
 /**
  * Updates an existing facility (Admin only).
@@ -272,60 +461,82 @@ export const getAdminFacilityById = async (facilityId: string): Promise<Facility
  * @param imageFiles - An array of NEW image File objects (optional). Send empty array or null if not changing images.
  * @param clearImages - Boolean flag to indicate if existing images should be removed before adding new ones (or if just removing all).
  */
-// src/services/facilityService.ts - updateFacilityByAdmin function
 export const updateFacilityByAdmin = async (
-  facilityId: string,
-  facilityData: Partial<FacilityFormData>,
-  imageFiles?: File[] | null,
-  clearImages: boolean = false
+    facilityId: string,
+    facilityData: Partial<FacilityFormData>,
+    imageFiles?: File[] | null,
+    clearImages: boolean = false
 ): Promise<FacilityDetails> => {
-  if (!facilityId) throw new Error("Facility ID is required for update.");
+    if (!facilityId) throw new Error("Facility ID is required for update.");
 
-  const formData = new FormData();
+    const formData = new FormData();
 
-  // Add flag to preserve associatedCoaches field - ADD THIS FIRST
-  formData.append('preserveAssociatedCoaches', 'true');
+    // Add flag to preserve associatedCoaches field - ADD THIS FIRST
+    formData.append('preserveAssociatedCoaches', 'true');
 
-  // Append text fields that are present in facilityData
-  Object.entries(facilityData).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-          if (typeof value === 'boolean') {
-              formData.append(key, String(value));
-          } else {
-              formData.append(key, String(value));
-          }
-      }
-      else if (value === '') {
-          formData.append(key, '');
-      }
-  });
+    // Append text fields that are present in facilityData
+    Object.entries(facilityData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+            if (typeof value === 'boolean') {
+                formData.append(key, String(value));
+            } else {
+                formData.append(key, String(value));
+            }
+        }
+        else if (value === '') {
+            formData.append(key, '');
+        }
+    });
 
-  // Indicate if existing images should be cleared
-  if (clearImages) {
-      formData.append('clearImages', 'true');
-  }
+    // Indicate if existing images should be cleared
+    if (clearImages) {
+        formData.append('clearImages', 'true');
+    }
 
-  // Append NEW image files if provided
-  if (imageFiles && imageFiles.length > 0) {
-      imageFiles.forEach((file) => {
-          formData.append('images', file, file.name);
-      });
-  }
+    // Append NEW image files if provided
+    if (imageFiles && imageFiles.length > 0) {
+        imageFiles.forEach((file) => {
+            formData.append('images', file, file.name);
+        });
+    }
 
-  // Debug FormData contents
-  console.log("FormData contents before sending:");
-  for (const [key, value] of formData.entries()) {
-      console.log(`  ${key}: ${value instanceof File ? `File: ${value.name}` : value}`);
-  }
+    // Debug FormData contents
+    console.log("FormData contents before sending:");
+    try {
+        for (const [key, value] of formData.entries()) {
+            console.log(`  ${key}: ${value instanceof File ? `File: ${value.name}` : value}`);
+        }
+    } catch (e) {
+        console.error("Error logging FormData:", e);
+    }
 
-  try {
-      console.log(`Service: Admin updating facility ${facilityId} with FormData...`);
-      const response = await api.put<FacilityDetails>(`/admin/facilities/${facilityId}`, formData);
-      console.log("Service: Admin update facility response:", response.data);
-      return response.data;
-  } catch (error: any) {
-      console.error(`Admin Update Facility Service Error (ID: ${facilityId}):`, error.response?.data || error.message);
-      if (error.response) { console.error("Error Response Data:", error.response.data); }
-      throw new Error(error.response?.data?.message || 'Error updating facility');
-  }
+    try {
+        console.log(`Service: Admin updating facility ${facilityId} with FormData...`);
+        const response = await api.put<FacilityDetails>(`/admin/facilities/${facilityId}`, formData);
+        console.log("Service: Admin update facility response:", response.data);
+        return response.data;
+    } catch (error: any) {
+        // More defensive error handling
+        let errorMessage = 'Error updating facility';
+        let errorDetails = '';
+        
+        try {
+            // Safely extract error details if they exist
+            if (error.response && error.response.data) {
+                errorDetails = JSON.stringify(error.response.data);
+                if (error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+            } else if (error.message) {
+                errorDetails = error.message;
+            } else {
+                errorDetails = String(error);
+            }
+        } catch (e) {
+            errorDetails = 'Error details could not be extracted';
+        }
+        
+        console.error(`Admin Update Facility Service Error (ID: ${facilityId}):`, errorDetails);
+        throw new Error(errorMessage);
+    }
 };
