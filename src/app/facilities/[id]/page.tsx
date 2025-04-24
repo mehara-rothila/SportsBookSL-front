@@ -120,28 +120,6 @@ export default function FacilityDetailPage() {
     const params = useParams();
     const id = typeof params.id === 'string' ? params.id : undefined;
 
-    // --- Image URL Helper Function ---
-    const getImageUrl = (imagePath: string): string => {
-        if (!imagePath) return FALLBACK_IMAGE;
-        
-        // Check if the path already contains http/https
-        if (imagePath.startsWith('http')) {
-            return imagePath;
-        }
-        
-        // Check if the backend URL ends with a slash
-        const baseUrl = BACKEND_BASE_URL.endsWith('/') 
-            ? BACKEND_BASE_URL.slice(0, -1) 
-            : BACKEND_BASE_URL;
-            
-        // Check if the image path starts with a slash
-        const formattedPath = imagePath.startsWith('/') 
-            ? imagePath 
-            : `/${imagePath}`;
-        
-        return `${baseUrl}${formattedPath}`;
-    };
-
     // --- State Variables ---
     const [facility, setFacility] = useState<Facility | null>(null);
     const [loading, setLoading] = useState(true);
@@ -193,10 +171,8 @@ useEffect(() => {
             setReviewPage(1);
 
             if (data.images && data.images.length > 0) {
-                setMainImage(getImageUrl(data.images[0])); // Using our new helper
-            } else { 
-                setMainImage(FALLBACK_IMAGE); 
-            }
+                setMainImage(`${BACKEND_BASE_URL}${data.images[0]}`);
+            } else { setMainImage(FALLBACK_IMAGE); }
         } catch (err: any) {
             console.error('Error fetching facility data:', err);
             setError(typeof err === 'string' ? err : err.message || 'Failed to load facility details.');
@@ -289,13 +265,7 @@ useEffect(() => {
     const handleTimeSlotSelect = (timeSlot: string) => setSelectedTimeSlot(timeSlot);
     const handleEquipmentChange = (selections: EquipmentSelection) => { setEquipmentSelection(selections); };
     const calculateTotal = useMemo(() => { if (!facility) return 0; let total = selectedTimeSlot ? facility.pricePerHourValue * 2 : 0; Object.entries(equipmentSelection).forEach(([name, quantity]) => { const equipment = facility.equipmentForRent?.find(e => e.name === name); if (equipment && quantity > 0) { total += (equipment.pricePerHour || 0) * quantity * 2; } }); return total; }, [facility, selectedTimeSlot, equipmentSelection]);
-    
-    // Updated lightbox opener with proper image URL handling
-    const openLightbox = (imagePath: string) => { 
-        setLightboxImage(getImageUrl(imagePath)); 
-        setLightboxOpen(true); 
-    };
-    
+    const openLightbox = (imagePath: string) => { setLightboxImage(`${BACKEND_BASE_URL}${imagePath}`); setLightboxOpen(true); };
     const handleProceedToBooking = () => { if (!facility) return; if (selectedDate && selectedTimeSlot) { const bookingUrl = `/facilities/${facility._id}/book`; const queryParams: Record<string, string> = { date: formatDateFns(selectedDate, 'yyyy-MM-dd'), time: selectedTimeSlot, }; const selectedEquipmentForQuery = Object.entries(equipmentSelection).filter(([_, quantity]) => quantity > 0).reduce((acc, [name, quantity]) => { acc[name] = quantity; return acc; }, {} as Record<string, number>); if (Object.keys(selectedEquipmentForQuery).length > 0) { queryParams.equipment = JSON.stringify(selectedEquipmentForQuery); } const urlWithParams = `${bookingUrl}?${new URLSearchParams(queryParams).toString()}`; router.push(urlWithParams); } else { alert("Please select a date and time slot first."); } };
     const toggleFaq = (index: number) => { setActiveFaq(activeFaq === index ? null : index); };
 
@@ -333,7 +303,7 @@ useEffect(() => {
         ); 
     }
 
-    const mainImageUrl = mainImage || (facility.images && facility.images.length > 0 ? getImageUrl(facility.images[0]) : FALLBACK_IMAGE);
+    const mainImageUrl = mainImage || (facility.images && facility.images.length > 0 ? `${BACKEND_BASE_URL}${facility.images[0]}` : FALLBACK_IMAGE);
 
     // --- Main Return JSX ---
     return (
@@ -566,10 +536,7 @@ useEffect(() => {
             {/* Hero section */}
             <div className="relative">
                 <div className="h-[60vh] md:h-[70vh] w-full relative group">
-                    {/* Updated to use a proper img tag for better error handling */}
-                    <div className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 ease-in-out group-hover:scale-110 animate-ken-burns" 
-                         style={{ backgroundImage: `url(${mainImageUrl})` }}
-                         onError={(e) => { (e.target as HTMLDivElement).style.backgroundImage = `url(${FALLBACK_IMAGE})` }}></div>
+                    <div className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 ease-in-out group-hover:scale-110 animate-ken-burns" style={{ backgroundImage: `url(${mainImageUrl})` }} onError={(e) => { (e.target as HTMLDivElement).style.backgroundImage = `url(${FALLBACK_IMAGE})` }}/>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
                         <div className="mx-auto max-w-7xl">
@@ -590,32 +557,14 @@ useEffect(() => {
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="flex space-x-4 overflow-x-auto pb-2 custom-scrollbar">
                             {facility.images?.map((imagePath, index) => {
-                                const fullImageUrl = getImageUrl(imagePath);
+                                const fullImageUrl = `${BACKEND_BASE_URL}${imagePath}`;
                                 return (
                                     <button key={index} className={`flex-shrink-0 h-20 w-32 md:h-24 md:w-40 rounded-lg overflow-hidden transition-all duration-300 transform ${mainImage === fullImageUrl ? 'border-4 border-emerald-500 scale-110 shadow-2xl' : 'border-2 border-transparent hover:border-emerald-400 hover:scale-105'}`} onClick={() => setMainImage(fullImageUrl)}>
-                                        <div className="h-full w-full overflow-hidden"> 
-                                            <img 
-                                                src={fullImageUrl} 
-                                                alt={`${facility.name} ${index + 1}`} 
-                                                className="h-full w-full object-cover hover:scale-110 transition-transform duration-700" 
-                                                loading="lazy" 
-                                                onError={(e) => { 
-                                                    (e.target as HTMLImageElement).src = FALLBACK_IMAGE 
-                                                }}
-                                            /> 
-                                        </div>
+                                        <div className="h-full w-full overflow-hidden"> <img src={fullImageUrl} alt={`${facility.name} ${index + 1}`} className="h-full w-full object-cover hover:scale-110 transition-transform duration-700" loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMAGE }}/> </div>
                                     </button>
                                 );
                             })}
-                            {facility.images && facility.images.length > 0 && ( 
-                                <button 
-                                    className="flex-shrink-0 h-20 w-32 md:h-24 md:w-40 bg-gradient-to-br from-emerald-800/50 to-green-800/40 rounded-lg flex flex-col items-center justify-center text-white hover:text-emerald-200 transition-colors duration-300 hover:shadow-xl border-2 border-white/20 transform hover:scale-105" 
-                                    onClick={() => openLightbox(facility.images[0])}
-                                > 
-                                    <PhotoIcon className="w-8 h-8 mb-1"/> 
-                                    <span className="text-sm font-medium">View Gallery</span> 
-                                </button> 
-                            )}
+                            {facility.images && facility.images.length > 0 && ( <button className="flex-shrink-0 h-20 w-32 md:h-24 md:w-40 bg-gradient-to-br from-emerald-800/50 to-green-800/40 rounded-lg flex flex-col items-center justify-center text-white hover:text-emerald-200 transition-colors duration-300 hover:shadow-xl border-2 border-white/20 transform hover:scale-105" onClick={() => openLightbox(facility.images[0])}> <PhotoIcon className="w-8 h-8 mb-1"/> <span className="text-sm font-medium">View Gallery</span> </button> )}
                         </div>
                     </div>
                 </div>
@@ -667,46 +616,10 @@ useEffect(() => {
                                     {facility.associatedCoaches && facility.associatedCoaches.length > 0 ? (
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             {facility.associatedCoaches.map((coach) => {
-                                                const coachImageUrl = coach.profileImage ? getImageUrl(coach.profileImage) : FALLBACK_AVATAR;
+                                                const coachImageUrl = coach.profileImage ? `${BACKEND_BASE_URL}${coach.profileImage}` : FALLBACK_AVATAR;
                                                 return (
                                                     <div key={coach._id || coach.id} className="bg-gradient-to-br from-emerald-500 to-green-600 p-px rounded-2xl overflow-hidden shadow-xl group transform hover:scale-[1.03] transition-all duration-300 hover:shadow-2xl">
-                                                        <div className="bg-gradient-to-r from-emerald-900/70 to-green-900/50 rounded-2xl overflow-hidden h-full">
-                                                            <div className="flex flex-col sm:flex-row h-full">
-                                                                <div className="sm:w-2/5 h-48 sm:h-auto overflow-hidden relative">
-                                                                    <img 
-                                                                        className="h-full w-full object-cover transform group-hover:scale-110 transition-transform duration-700" 
-                                                                        src={coachImageUrl} 
-                                                                        alt={coach.name} 
-                                                                        loading="lazy" 
-                                                                        onError={(e) => { 
-                                                                            (e.target as HTMLImageElement).src = FALLBACK_AVATAR 
-                                                                        }}
-                                                                    />
-                                                                </div>
-                                                                <div className="p-5 flex flex-col justify-between sm:w-3/5 relative">
-                                                                    <div>
-                                                                        <div className="flex justify-between items-start mb-1">
-                                                                            <h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-green-200">{coach.name}</h4>
-                                                                            <div className="flex items-center bg-amber-400/20 rounded-full px-2 py-1">
-                                                                                <StarIcon className="w-4 h-4 mr-1 text-amber-400"/>
-                                                                                <span className="font-bold text-amber-300">{coach.rating?.toFixed(1) ?? 'N/A'}</span>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div>
-                                                                            <p className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-white mb-2 border border-white/20 shadow-sm">
-                                                                                <AcademicCapIcon className="w-3.5 h-3.5 mr-1"/>{coach.specialization}
-                                                                            </p>
-                                                                        </div>
-                                                                        <div className="flex items-center text-lg font-bold text-emerald-300 mb-3">
-                                                                            <CurrencyDollarIcon className="w-5 h-5 mr-1 text-emerald-400"/>{formatCurrency(coach.hourlyRate)}/hr
-                                                                        </div>
-                                                                    </div>
-                                                                    <Link href={`/trainers/${coach._id}/book`}>
-                                                                        <Button size="sm" fullWidth variant="gradient"> Book Session </Button>
-                                                                    </Link>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                        <div className="bg-gradient-to-r from-emerald-900/70 to-green-900/50 rounded-2xl overflow-hidden h-full"><div className="flex flex-col sm:flex-row h-full"><div className="sm:w-2/5 h-48 sm:h-auto overflow-hidden relative"><img className="h-full w-full object-cover transform group-hover:scale-110 transition-transform duration-700" src={coachImageUrl} alt={coach.name} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_AVATAR }}/></div><div className="p-5 flex flex-col justify-between sm:w-3/5 relative"><div><div className="flex justify-between items-start mb-1"><h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-green-200">{coach.name}</h4><div className="flex items-center bg-amber-400/20 rounded-full px-2 py-1"><StarIcon className="w-4 h-4 mr-1 text-amber-400"/><span className="font-bold text-amber-300">{coach.rating?.toFixed(1) ?? 'N/A'}</span></div></div><div><p className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-white mb-2 border border-white/20 shadow-sm"><AcademicCapIcon className="w-3.5 h-3.5 mr-1"/>{coach.specialization}</p></div><div className="flex items-center text-lg font-bold text-emerald-300 mb-3"><CurrencyDollarIcon className="w-5 h-5 mr-1 text-emerald-400"/>{formatCurrency(coach.hourlyRate)}/hr</div></div><Link href={`/trainers/${coach._id}/book`}><Button size="sm" fullWidth variant="gradient"> Book Session </Button></Link></div></div></div>
                                                     </div>
                                                 );
                                             })}
@@ -763,11 +676,9 @@ useEffect(() => {
                                                             <div className="flex-shrink-0">
                                                                 <img
                                                                     className="h-12 w-12 rounded-full object-cover border-2 border-emerald-900/60 group-hover:border-emerald-500/60 transition-colors duration-300"
-                                                                    src={review.user?.avatar ? getImageUrl(review.user.avatar) : FALLBACK_AVATAR}
+                                                                    src={review.user?.avatar || FALLBACK_AVATAR}
                                                                     alt={review.user?.name || "User"}
-                                                                    onError={(e) => { 
-                                                                        (e.target as HTMLImageElement).src = FALLBACK_AVATAR 
-                                                                    }}
+                                                                    onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_AVATAR }}
                                                                 />
                                                             </div>
                                                             <div className="ml-4 flex-1">
@@ -872,14 +783,15 @@ useEffect(() => {
                     {/* Right column: Weather Widget and Booking widget */}
                     <div className="lg:col-span-1">
                         <div className="sticky top-24">
-                            {/* Weather Widget */}
-                            <WeatherWidget 
-                              lat={facility.mapLocation?.lat} 
-                              lng={facility.mapLocation?.lng} 
-                              cityName={facility.location} 
-                              facilityName={facility.name}
-                              className="mb-6 animate-fade-in"
-                            />
+                            {/* Weather Widget - NEW ADDITION */}
+                         {/* Weather Widget */}
+<WeatherWidget 
+  lat={facility.mapLocation?.lat} 
+  lng={facility.mapLocation?.lng} 
+  cityName={facility.location} 
+  facilityName={facility.name} // Add the facility name prop here
+  className="mb-6 animate-fade-in"
+/>
 
                             {/* Booking Widget */}
                             <div className="bg-gradient-to-br from-emerald-500 to-green-600 p-px rounded-2xl shadow-2xl transform hover:scale-[1.01] transition-all duration-300 animate-fade-in">
@@ -994,7 +906,6 @@ useEffect(() => {
                                         alt={item.name} 
                                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" 
                                         loading="lazy"
-                                        onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMAGE }}
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
                                         <div className="p-4 w-full">
@@ -1129,12 +1040,7 @@ useEffect(() => {
                 <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/95 p-4 animate-fade-in backdrop-blur-sm" onClick={() => setLightboxOpen(false)}>
                     <button className="absolute top-6 right-6 text-white hover:text-white/80 transition-colors z-[1000] bg-black/30 backdrop-blur-sm p-2 rounded-full" onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }} aria-label="Close lightbox"><XMarkIcon className="w-8 h-8"/></button>
                     <div onClick={(e) => e.stopPropagation()} className="relative max-w-5xl w-full group">
-                        <img 
-                            src={lightboxImage} 
-                            alt="Enlarged facility view" 
-                            className="max-w-[90vw] max-h-[85vh] object-contain rounded-xl shadow-2xl mx-auto animate-fade-in" 
-                            onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMAGE }}
-                        />
+                        <img src={lightboxImage} alt="Enlarged facility view" className="max-w-[90vw] max-h-[85vh] object-contain rounded-xl shadow-2xl mx-auto animate-fade-in" onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMAGE }}/>
                         <div className="absolute left-0 right-0 bottom-0 p-6 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-xl"><p className="text-white font-medium text-center">{facility.name}</p></div>
                     </div>
                 </div>
