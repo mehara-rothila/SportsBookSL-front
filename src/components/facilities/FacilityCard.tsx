@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { StarIcon, MapPinIcon } from '@heroicons/react/24/solid';
 
@@ -27,12 +27,31 @@ interface FacilityCardProps {
 }
 
 export default function FacilityCard({ facility }: FacilityCardProps) {
-  // State to track image loading errors
   const [imageError, setImageError] = useState(false);
   
+  // Properly format the image URL to avoid duplication of https://
+  const getImageUrl = (imagePath: string) => {
+    // Check if the path already contains http/https
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    
+    // Check if the backend URL ends with a slash
+    const baseUrl = BACKEND_BASE_URL.endsWith('/') 
+      ? BACKEND_BASE_URL.slice(0, -1) 
+      : BACKEND_BASE_URL;
+      
+    // Check if the image path starts with a slash
+    const formattedPath = imagePath.startsWith('/') 
+      ? imagePath 
+      : `/${imagePath}`;
+    
+    return `${baseUrl}${formattedPath}`;
+  };
+
   // Construct the primary image URL
   const imageUrl = !imageError && facility.images && facility.images.length > 0
-    ? `${BACKEND_BASE_URL}${facility.images[0]}`
+    ? getImageUrl(facility.images[0])
     : FALLBACK_IMAGE;
 
   // Handle potential missing rating/reviewCount
@@ -44,7 +63,7 @@ export default function FacilityCard({ facility }: FacilityCardProps) {
       <div className="relative flex flex-col h-full overflow-hidden rounded-xl bg-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-200/50">
         {/* Image container */}
         <div className="relative h-56 overflow-hidden flex-shrink-0">
-          {/* Use an actual img element with onError instead of background image */}
+          {/* Use actual img element with onError instead of background image */}
           <img
             src={imageUrl}
             alt={facility.name}
@@ -57,11 +76,15 @@ export default function FacilityCard({ facility }: FacilityCardProps) {
           <div className="absolute top-3 left-3 z-10 flex flex-col space-y-1.5">
             {facility.isNew && (
               <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 ring-1 ring-inset ring-green-200 shadow-sm">
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse mr-1"></span>
                 New
               </span>
             )}
             {facility.isPremium && (
               <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 ring-1 ring-inset ring-amber-200 shadow-sm">
+                <svg className="h-3 w-3 text-amber-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 2a.75.75 0 01.692.462l2.24 5.37 5.38.446a.75.75 0 01.423 1.311l-4.16 3.34 1.29 5.233a.75.75 0 01-1.114.813L10 16.914l-4.75 2.74a.75.75 0 01-1.114-.813l1.29-5.233-4.16-3.34a.75.75 0 01.423-1.311l5.38-.446 2.24-5.37A.75.75 0 0110 2z" clipRule="evenodd" />
+                </svg>
                 Premium
               </span>
             )}
