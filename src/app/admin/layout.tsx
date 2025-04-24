@@ -19,7 +19,8 @@ import {
     NewspaperIcon,
     PhotoIcon,
     CalendarDaysIcon,
-    StarIcon
+    StarIcon,
+    ClipboardDocumentCheckIcon, // Add this new icon for applications
 } from '@heroicons/react/24/outline';
 
 // Helper function for conditional classes
@@ -55,7 +56,10 @@ export default function AdminLayout({
     { name: 'Users', href: '/admin/users', icon: UsersIcon },
     { name: 'Facilities', href: '/admin/facilities', icon: BuildingOfficeIcon },
     { name: 'Categories', href: '/admin/categories', icon: NewspaperIcon },
+    // Group trainer related items together
     { name: 'Trainers', href: '/admin/trainers', icon: UserGroupIcon },
+    // Add this new item for trainer applications
+    { name: 'Trainer Applications', href: '/admin/trainer-applications', icon: ClipboardDocumentCheckIcon },
     { name: 'Bookings', href: '/admin/bookings', icon: CalendarDaysIcon },
     { name: 'Donations', href: '/admin/donations', icon: GiftIcon },
     { name: 'Athletes', href: '/admin/athletes', icon: StarIcon },
@@ -63,6 +67,7 @@ export default function AdminLayout({
     { name: 'Testimonials', href: '/admin/testimonials', icon: PhotoIcon },
   ];
 
+  // Rest of the component remains the same...
   // Helper function to determine if a nav link is active
   const isActive = (href: string) => {
       if (href === '/admin' || href === '/admin/') return pathname === '/admin' || pathname === '/admin/';
