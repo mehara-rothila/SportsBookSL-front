@@ -332,8 +332,222 @@ useEffect(() => {
         <div className="min-h-screen relative overflow-hidden">
             {/* Cricket Stadium Background - Enhanced with more players and umpires */}
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-800 via-green-800 to-emerald-900 -z-10">
-                {/* Background elements */}
-                {/* ... (background elements remain unchanged) ... */}
+                {/* Oval field */}
+                <div className="absolute top-[10%] left-[5%] right-[5%] bottom-[10%] rounded-full border-2 border-white/20 bg-green-700/30"></div>
+                
+                {/* Pitch - LEFT SIDE */}
+                <div className="absolute top-1/2 left-[20%] w-40 h-96 bg-yellow-100/20 -translate-x-1/2 -translate-y-1/2 border border-white/10">
+                    {/* Crease markings */}
+                    <div className="absolute top-[15%] left-0 right-0 h-1 bg-white/30"></div>
+                    <div className="absolute bottom-[15%] left-0 right-0 h-1 bg-white/30"></div>
+                    <div className="absolute top-[15%] bottom-[15%] left-1/2 w-1 bg-white/10 -translate-x-1/2"></div>
+                    
+                    {/* Wickets */}
+                    <div className="absolute top-[5%] left-1/2 -translate-x-1/2 flex space-x-1">
+                        <div className="w-1 h-8 bg-white/80"></div>
+                        <div className="w-1 h-8 bg-white/80"></div>
+                        <div className="w-1 h-8 bg-white/80"></div>
+                    </div>
+                    
+                    <div className="absolute bottom-[5%] left-1/2 -translate-x-1/2 flex space-x-1">
+                        <div className="w-1 h-8 bg-white/80"></div>
+                        <div className="w-1 h-8 bg-white/80"></div>
+                        <div className="w-1 h-8 bg-white/80"></div>
+                    </div>
+                </div>
+                
+                {/* Second pitch - RIGHT SIDE */}
+                <div className="absolute top-1/2 right-[20%] w-40 h-96 bg-yellow-100/20 translate-x-1/2 -translate-y-1/2 border border-white/10">
+                    {/* Crease markings */}
+                    <div className="absolute top-[15%] left-0 right-0 h-1 bg-white/30"></div>
+                    <div className="absolute bottom-[15%] left-0 right-0 h-1 bg-white/30"></div>
+                    <div className="absolute top-[15%] bottom-[15%] left-1/2 w-1 bg-white/10 -translate-x-1/2"></div>
+                    
+                    {/* Wickets */}
+                    <div className="absolute top-[5%] left-1/2 -translate-x-1/2 flex space-x-1">
+                        <div className="w-1 h-8 bg-white/80"></div>
+                        <div className="w-1 h-8 bg-white/80"></div>
+                        <div className="w-1 h-8 bg-white/80"></div>
+                    </div>
+                    
+                    <div className="absolute bottom-[5%] left-1/2 -translate-x-1/2 flex space-x-1">
+                        <div className="w-1 h-8 bg-white/80"></div>
+                        <div className="w-1 h-8 bg-white/80"></div>
+                        <div className="w-1 h-8 bg-white/80"></div>
+                    </div>
+                </div>
+                
+                {/* Boundary rope */}
+                <div className="absolute top-[15%] left-[10%] right-[10%] bottom-[15%] rounded-full border-dashed border-4 border-white/20"></div>
+                
+                {/* FIELDERS - ORIGINAL AND ENHANCED */}
+                <div className="absolute w-6 h-8 top-[30%] left-[10%] animate-fielder-move">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-1 w-4 h-4 rounded-full bg-blue-500/80"></div>
+                        <div className="absolute top-4 left-1.5 w-3 h-4 bg-blue-600/60"></div>
+                    </div>
+                </div>
+                
+                <div className="absolute w-6 h-8 top-[70%] right-[10%] animate-fielder-move animation-delay-500">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-1 w-4 h-4 rounded-full bg-blue-500/80"></div>
+                        <div className="absolute top-4 left-1.5 w-3 h-4 bg-blue-600/60"></div>
+                    </div>
+                </div>
+                
+                <div className="absolute w-6 h-8 bottom-[40%] left-[5%] animate-fielder-move animation-delay-1000">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-1 w-4 h-4 rounded-full bg-blue-500/80"></div>
+                        <div className="absolute top-4 left-1.5 w-3 h-4 bg-blue-600/60"></div>
+                    </div>
+                </div>
+                
+                {/* ADDITIONAL FIELDERS */}
+                <div className="absolute w-6 h-8 top-[20%] right-[20%] animate-fielder-move animation-delay-300">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-1 w-4 h-4 rounded-full bg-blue-500/80"></div>
+                        <div className="absolute top-4 left-1.5 w-3 h-4 bg-blue-600/60"></div>
+                    </div>
+                </div>
+                
+                <div className="absolute w-6 h-8 bottom-[20%] right-[30%] animate-fielder-move animation-delay-700">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-1 w-4 h-4 rounded-full bg-blue-500/80"></div>
+                        <div className="absolute top-4 left-1.5 w-3 h-4 bg-blue-600/60"></div>
+                    </div>
+                </div>
+                
+                <div className="absolute w-6 h-8 top-[40%] right-[5%] animate-fielder-move animation-delay-1200">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-1 w-4 h-4 rounded-full bg-blue-500/80"></div>
+                        <div className="absolute top-4 left-1.5 w-3 h-4 bg-blue-600/60"></div>
+                    </div>
+                </div>
+                
+                <div className="absolute w-6 h-8 bottom-[30%] left-[25%] animate-fielder-move animation-delay-200">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-1 w-4 h-4 rounded-full bg-blue-500/80"></div>
+                        <div className="absolute top-4 left-1.5 w-3 h-4 bg-blue-600/60"></div>
+                    </div>
+                </div>
+                
+                <div className="absolute w-6 h-8 top-[15%] left-[30%] animate-fielder-move animation-delay-600">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-1 w-4 h-4 rounded-full bg-blue-500/80"></div>
+                        <div className="absolute top-4 left-1.5 w-3 h-4 bg-blue-600/60"></div>
+                    </div>
+                </div>
+                
+                {/* Batsman - LEFT SIDE */}
+                <div className="absolute w-8 h-12 top-[40%] left-[15%] animate-batsman-ready">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-2 w-4 h-4 rounded-full bg-red-500/80"></div>
+                        <div className="absolute top-4 left-2.5 w-3 h-6 bg-red-600/60"></div>
+                        <div className="absolute top-2 left-5 w-1 h-10 bg-yellow-800/80 rotate-45 origin-top-left animate-bat-swing"></div>
+                    </div>
+                </div>
+                
+                {/* Bowler - LEFT SIDE */}
+                <div className="absolute w-8 h-12 bottom-[35%] left-[25%] animate-bowler-run">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-2 w-4 h-4 rounded-full bg-blue-500/80"></div>
+                        <div className="absolute top-4 left-2.5 w-3 h-6 bg-blue-600/60"></div>
+                        <div className="absolute top-1 right-2 w-2 h-2 rounded-full bg-red-500/80 animate-cricket-ball"></div>
+                    </div>
+                </div>
+                
+                {/* Batsman - RIGHT SIDE */}
+                <div className="absolute w-8 h-12 top-[40%] right-[15%] animate-batsman-ready animation-delay-500">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-2 w-4 h-4 rounded-full bg-red-500/80"></div>
+                        <div className="absolute top-4 left-2.5 w-3 h-6 bg-red-600/60"></div>
+                        <div className="absolute top-2 left-5 w-1 h-10 bg-yellow-800/80 rotate-45 origin-top-left animate-bat-swing"></div>
+                    </div>
+                </div>
+                
+                {/* Bowler - RIGHT SIDE */}
+                <div className="absolute w-8 h-12 bottom-[35%] right-[25%] animate-bowler-run animation-delay-500">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-2 w-4 h-4 rounded-full bg-blue-500/80"></div>
+                        <div className="absolute top-4 left-2.5 w-3 h-6 bg-blue-600/60"></div>
+                        <div className="absolute top-1 right-2 w-2 h-2 rounded-full bg-red-500/80 animate-cricket-ball"></div>
+                    </div>
+                </div>
+                
+                {/* Non-striker batsman - LEFT SIDE */}
+                <div className="absolute w-8 h-12 bottom-[45%] left-[20%] animate-nonstriker-ready">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-2 w-4 h-4 rounded-full bg-red-500/80"></div>
+                        <div className="absolute top-4 left-2.5 w-3 h-6 bg-red-600/60"></div>
+                    </div>
+                </div>
+                
+                {/* Non-striker batsman - RIGHT SIDE */}
+                <div className="absolute w-8 h-12 bottom-[45%] right-[20%] animate-nonstriker-ready animation-delay-500">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-2 w-4 h-4 rounded-full bg-red-500/80"></div>
+                        <div className="absolute top-4 left-2.5 w-3 h-6 bg-red-600/60"></div>
+                    </div>
+                </div>
+                
+                {/* Wicket-keeper - LEFT SIDE */}
+                <div className="absolute w-6 h-8 top-[35%] left-[15%] animate-wicketkeeper-ready">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-1 w-4 h-4 rounded-full bg-yellow-500/80"></div>
+                        <div className="absolute top-4 left-1.5 w-3 h-4 bg-yellow-600/60"></div>
+                    </div>
+                </div>
+                
+                {/* Wicket-keeper - RIGHT SIDE */}
+                <div className="absolute w-6 h-8 top-[35%] right-[15%] animate-wicketkeeper-ready animation-delay-500">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-1 w-4 h-4 rounded-full bg-yellow-500/80"></div>
+                        <div className="absolute top-4 left-1.5 w-3 h-4 bg-yellow-600/60"></div>
+                    </div>
+                </div>
+
+                {/* UMPIRES - NEW ADDITION */}
+                {/* Main Umpire at bowler's end - LEFT SIDE */}
+                <div className="absolute w-7 h-10 bottom-[30%] left-[22%] animate-umpire-movement">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-1.5 w-4 h-4 rounded-full bg-black/80"></div>
+                        <div className="absolute top-4 left-2 w-3 h-6 bg-white/80"></div>
+                    </div>
+                </div>
+                
+                {/* Square leg Umpire - LEFT SIDE */}
+                <div className="absolute w-7 h-10 top-[45%] left-[25%] animate-umpire-movement animation-delay-200">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-1.5 w-4 h-4 rounded-full bg-black/80"></div>
+                        <div className="absolute top-4 left-2 w-3 h-6 bg-white/80"></div>
+                    </div>
+                </div>
+                
+                {/* Main Umpire at bowler's end - RIGHT SIDE */}
+                <div className="absolute w-7 h-10 bottom-[30%] right-[22%] animate-umpire-movement animation-delay-500">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-1.5 w-4 h-4 rounded-full bg-black/80"></div>
+                        <div className="absolute top-4 left-2 w-3 h-6 bg-white/80"></div>
+                    </div>
+                </div>
+                
+                {/* Square leg Umpire - RIGHT SIDE */}
+                <div className="absolute w-7 h-10 top-[45%] right-[25%] animate-umpire-movement animation-delay-700">
+                    <div className="relative w-full h-full">
+                        <div className="absolute top-0 left-1.5 w-4 h-4 rounded-full bg-black/80"></div>
+                        <div className="absolute top-4 left-2 w-3 h-6 bg-white/80"></div>
+                    </div>
+                </div>
+                
+                {/* Ball trajectories */}
+                <div className="absolute h-0.5 w-0 bg-red-500/30 top-[43%] left-[18%] animate-ball-trajectory"></div>
+                <div className="absolute h-0.5 w-0 bg-red-500/30 top-[43%] right-[18%] animate-ball-trajectory animation-delay-500"></div>
+                
+                {/* Stadium elements */}
+                <div className="absolute top-0 left-0 w-full h-[5%] bg-gradient-to-b from-white/10 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 w-full h-[5%] bg-gradient-to-t from-white/10 to-transparent"></div>
+                <div className="absolute top-0 left-0 h-full w-[5%] bg-gradient-to-r from-white/10 to-transparent"></div>
+                <div className="absolute top-0 right-0 h-full w-[5%] bg-gradient-to-l from-white/10 to-transparent"></div>
             </div>
 
             {/* Back Button */}
@@ -372,7 +586,15 @@ useEffect(() => {
                                     </button>
                                 );
                             })}
-                            {facility.images && facility.images.length > 0 && ( <button className="flex-shrink-0 h-20 w-32 md:h-24 md:w-40 bg-gradient-to-br from-emerald-800/50 to-green-800/40 rounded-lg flex flex-col items-center justify-center text-white hover:text-emerald-200 transition-colors duration-300 hover:shadow-xl border-2 border-white/20 transform hover:scale-105" onClick={() => openLightbox(facility.images[0])}> <PhotoIcon className="w-8 h-8 mb-1"/> <span className="text-sm font-medium">View Gallery</span> </button> )}
+                            {facility.images && facility.images.length > 0 && ( 
+                                <button 
+                                    className="flex-shrink-0 h-20 w-32 md:h-24 md:w-40 bg-gradient-to-br from-emerald-800/50 to-green-800/40 rounded-lg flex flex-col items-center justify-center text-white hover:text-emerald-200 transition-colors duration-300 hover:shadow-xl border-2 border-white/20 transform hover:scale-105" 
+                                    onClick={() => openLightbox(facility.images[0])}
+                                > 
+                                    <PhotoIcon className="w-8 h-8 mb-1"/> 
+                                    <span className="text-sm font-medium">View Gallery</span> 
+                                </button> 
+                            )}
                         </div>
                     </div>
                 </div>
@@ -390,8 +612,200 @@ useEffect(() => {
                                 ))}
                             </Tab.List>
                             <Tab.Panels className="mt-2">
-                                {/* Tab Panels */}
-                                {/* ... (content of tab panels) ... */}
+                                {/* Overview Panel */}
+                                <Tab.Panel className="rounded-2xl bg-white/20 backdrop-blur-sm p-6 md:p-8 shadow-xl border border-white/20">
+                                    <div className="prose prose-sm sm:prose-base max-w-none mb-8 text-white"><h3 className="text-2xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300">About this facility</h3><p className="whitespace-pre-line leading-relaxed">{facility.longDescription || facility.description}</p></div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        {/* Location */}
+                                        <div className="transform hover:scale-[1.02] transition-transform duration-300"><h4 className="text-xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300 flex items-center"><MapPinIcon className="w-6 h-6 mr-2 text-emerald-500"/> Location</h4><p className="text-white mb-2">{facility.address}</p><div className="mt-4 h-60 md:h-72 w-full bg-gradient-to-br from-emerald-900/40 to-green-800/30 rounded-xl overflow-hidden border border-white/20 shadow-lg relative group"><div className="h-full w-full bg-gray-800/30 flex items-center justify-center overflow-hidden"><div className="text-center p-4 relative z-10"><MapIcon className="w-16 h-16 text-emerald-400 mx-auto mb-3 animate-bounce-subtle"/><h5 className="text-lg font-bold text-emerald-300 mb-1">View on Map</h5><p className="text-white/80 mb-2">Get directions easily</p>{facility.mapLocation?.lat && facility.mapLocation?.lng && ( <p className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs text-white">Lat: {facility.mapLocation.lat.toFixed(4)}, Lng: {facility.mapLocation.lng.toFixed(4)}</p> )}</div></div><div className="absolute inset-0 bg-gradient-to-t from-emerald-900/70 to-transparent opacity-0 group-hover:opacity-100 flex items-end justify-center pb-6 transition-opacity duration-300"><a href={`https://www.google.com/maps/search/?api=1&query=${facility.mapLocation?.lat ?? ''},${facility.mapLocation?.lng ?? ''}`} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-white text-emerald-700 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300"> Open in Google Maps </a></div></div></div>
+                                        {/* Contact & Hours */}
+                                        <div className="transform hover:scale-[1.02] transition-transform duration-300"><h4 className="text-xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300 flex items-center"><PhoneIcon className="w-6 h-6 mr-2 text-emerald-500"/> Contact & Hours</h4><ul className="space-y-4 text-sm text-white mb-6">{facility.contactInfo?.phone && ( <li className="flex items-start bg-gradient-to-r from-emerald-900/40 to-green-800/30 p-3 rounded-lg shadow-sm border border-white/20"><PhoneIcon className="w-5 h-5 mr-3 text-emerald-400 mt-0.5 flex-shrink-0"/><span className="font-medium">{facility.contactInfo.phone}</span></li> )}{facility.contactInfo?.email && ( <li className="flex items-start bg-gradient-to-r from-emerald-900/40 to-green-800/30 p-3 rounded-lg shadow-sm border border-white/20"><EnvelopeIcon className="w-5 h-5 mr-3 text-emerald-400 mt-0.5 flex-shrink-0"/><span className="font-medium">{facility.contactInfo.email}</span></li> )}{facility.contactInfo?.website && ( <li className="flex items-start bg-gradient-to-r from-emerald-900/40 to-green-800/30 p-3 rounded-lg shadow-sm border border-white/20"><GlobeAltIcon className="w-5 h-5 mr-3 text-emerald-400 mt-0.5 flex-shrink-0"/><a href={facility.contactInfo.website.startsWith('http') ? facility.contactInfo.website : `http://${facility.contactInfo.website}`} target="_blank" rel="noopener noreferrer" className="font-medium hover:text-emerald-300 hover:underline">{facility.contactInfo.website}</a></li> )}</ul><h4 className="text-xl font-bold mt-6 mb-4 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300 flex items-center"><ClockIcon className="w-6 h-6 mr-2 text-emerald-500"/> Operating Hours</h4><div className="space-y-2 text-sm text-white bg-gradient-to-r from-emerald-900/40 to-green-800/30 rounded-2xl p-5 border border-white/20 shadow-lg">{facility.operatingHours?.map((hours, index) => ( <div key={hours.day} className={`flex justify-between p-2 rounded-lg ${index % 2 === 0 ? 'bg-white/10' : 'bg-transparent'} hover:bg-white/20 transition-colors duration-200`}><span className="font-medium text-emerald-300">{hours.day}</span><span className="text-white">{hours.open} - {hours.close}</span></div> ))}{(!facility.operatingHours || facility.operatingHours.length === 0) && <p className="text-gray-400 text-center">Operating hours not listed.</p>}</div></div>
+                                    </div>
+                                </Tab.Panel>
+
+                                {/* Amenities Panel */}
+                                <Tab.Panel className="rounded-2xl bg-white/20 backdrop-blur-sm p-6 md:p-8 shadow-xl border border-white/20">
+                                    <h3 className="text-2xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300">Facilities & Amenities</h3>
+                                    {facility.amenities && facility.amenities.length > 0 ? (<div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4 mb-10">{facility.amenities.map((amenity) => ( <div key={amenity} className="flex items-center p-3 bg-gradient-to-r from-emerald-900/40 to-green-800/30 rounded-xl shadow-sm border border-white/20 transform hover:scale-105 transition-transform duration-300 group"><div className="p-2 bg-gradient-to-br from-emerald-400 to-green-600 rounded-full mr-3 shadow-md group-hover:shadow-lg transition-all duration-300"><CheckCircleIcon className="w-5 h-5 text-white"/></div><span className="font-medium text-white group-hover:text-emerald-300 transition-colors duration-300">{amenity}</span></div> ))}</div>) : ( <p className="text-gray-400 mb-10">No specific amenities listed.</p> )}
+                                    {facility.specialRates && facility.specialRates.length > 0 && (<><h3 className="text-2xl font-bold mt-12 mb-6 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300">Special Rates</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-6">{facility.specialRates.map((rate) => ( <div key={rate.name} className="bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl shadow-lg p-px group transform hover:scale-105 transition-all duration-300 hover:shadow-xl"><div className="bg-gradient-to-r from-emerald-900/50 to-green-800/40 rounded-2xl p-6 h-full"><div className="flex justify-between items-start mb-3"><h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-green-200 group-hover:from-white group-hover:to-white transition-all duration-300">{rate.name}</h4><div className="bg-gradient-to-r from-emerald-500 to-green-600 text-white text-sm font-bold rounded-full px-4 py-1 shadow-md group-hover:shadow-lg transition-all duration-300">{formatCurrency(rate.rate)}/hr</div></div><p className="text-white/80 mb-4">{rate.description}</p><div className="bg-white/10 rounded-lg p-3 text-sm text-white border border-white/20 shadow-inner backdrop-blur-sm"><strong className="text-emerald-300">Conditions:</strong> {rate.conditions}</div></div></div> ))}</div></>)}
+                                </Tab.Panel>
+
+                                {/* Equipment Panel */}
+                                <Tab.Panel className="rounded-2xl bg-white/20 backdrop-blur-sm p-6 md:p-8 shadow-xl border border-white/20">
+                                    <EquipmentRental
+                                        equipmentList={facility.equipmentForRent || []}
+                                        onEquipmentSelect={handleEquipmentChange}
+                                        initialSelections={equipmentSelection}
+                                    />
+                                    <div className="mt-10 p-6 bg-gradient-to-br from-emerald-900/40 to-green-800/30 rounded-2xl border border-white/20 shadow-lg relative overflow-hidden"><div className="absolute -right-12 -top-12 w-40 h-40 bg-emerald-300 opacity-10 rounded-full"></div><div className="absolute -left-8 -bottom-8 w-32 h-32 bg-green-400 opacity-10 rounded-full"></div><h4 className="text-xl font-bold text-emerald-200 mb-4 flex items-center"><InformationCircleIcon className="w-6 h-6 mr-2 text-emerald-400"/> Equipment Rental Info</h4><ul className="space-y-3 text-sm text-white relative z-10"><li className="flex items-start bg-white/10 backdrop-blur-sm p-3 rounded-lg border border-white/20 shadow-sm"><CheckCircleIcon className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5 text-emerald-400"/><span>Return in same condition.</span></li><li className="flex items-start bg-white/10 backdrop-blur-sm p-3 rounded-lg border border-white/20 shadow-sm"><CheckCircleIcon className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5 text-emerald-400"/><span>Deposit may be required.</span></li><li className="flex items-start bg-white/10 backdrop-blur-sm p-3 rounded-lg border border-white/20 shadow-sm"><CheckCircleIcon className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5 text-emerald-400"/><span>Add during booking or contact facility.</span></li></ul></div>
+                                </Tab.Panel>
+
+                                {/* Coaches Panel */}
+                                <Tab.Panel className="rounded-2xl bg-white/20 backdrop-blur-sm p-6 md:p-8 shadow-xl border border-white/20">
+                                    <h3 className="text-2xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300">Available Coaches</h3>
+                                    {facility.associatedCoaches && facility.associatedCoaches.length > 0 ? (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            {facility.associatedCoaches.map((coach) => {
+                                                const coachImageUrl = coach.profileImage ? getImageUrl(coach.profileImage) : FALLBACK_AVATAR;
+                                                return (
+                                                    <div key={coach._id || coach.id} className="bg-gradient-to-br from-emerald-500 to-green-600 p-px rounded-2xl overflow-hidden shadow-xl group transform hover:scale-[1.03] transition-all duration-300 hover:shadow-2xl">
+                                                        <div className="bg-gradient-to-r from-emerald-900/70 to-green-900/50 rounded-2xl overflow-hidden h-full"><div className="flex flex-col sm:flex-row h-full"><div className="sm:w-2/5 h-48 sm:h-auto overflow-hidden relative"><img className="h-full w-full object-cover transform group-hover:scale-110 transition-transform duration-700" src={coachImageUrl} alt={coach.name} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_AVATAR }}/></div><div className="p-5 flex flex-col justify-between sm:w-3/5 relative"><div><div className="flex justify-between items-start mb-1"><h4 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-green-200">{coach.name}</h4><div className="flex items-center bg-amber-400/20 rounded-full px-2 py-1"><StarIcon className="w-4 h-4 mr-1 text-amber-400"/><span className="font-bold text-amber-300">{coach.rating?.toFixed(1) ?? 'N/A'}</span></div></div><div><p className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-white mb-2 border border-white/20 shadow-sm"><AcademicCapIcon className="w-3.5 h-3.5 mr-1"/>{coach.specialization}</p></div><div className="flex items-center text-lg font-bold text-emerald-300 mb-3"><CurrencyDollarIcon className="w-5 h-5 mr-1 text-emerald-400"/>{formatCurrency(coach.hourlyRate)}/hr</div></div><Link href={`/trainers/${coach._id}/book`}><Button size="sm" fullWidth variant="gradient"> Book Session </Button></Link></div></div></div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : ( <p className="text-gray-400">No associated coaches listed.</p> )}
+                                    <div className="mt-10 text-center"><Link href="/trainers"><Button variant="gradient"> View all trainers <ArrowRightIcon className="ml-2 h-5 w-5"/></Button></Link></div>
+                                </Tab.Panel>
+
+                                {/* Reviews Panel */}
+                                <Tab.Panel className="rounded-2xl bg-white/20 backdrop-blur-sm p-6 md:p-8 shadow-xl border border-white/20">
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+                                        <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300 mb-4 sm:mb-0">
+                                            <span className="flex items-center">
+                                                <StarIcon className="h-8 w-8 text-amber-400 mr-2" />
+                                                User Reviews
+                                                <span className="ml-2 px-3 py-1 bg-emerald-800/60 rounded-full text-sm text-white/90">
+                                                    {facility.reviewCount ?? 0}
+                                                </span>
+                                            </span>
+                                        </h3>
+                                        {/* Conditional Add Review Button */}
+                                        {isLoggedIn ? (
+                                            <Button onClick={() => setIsReviewModalOpen(true)} variant="gradient" size="sm">
+                                                <PencilSquareIcon className="w-5 h-5 mr-1.5"/> Write a Review
+                                            </Button>
+                                        ) : (
+                                            <Link href={`/login?redirect=/facilities/${id}`}>
+                                                <Button variant="glass" size="sm">
+                                                    <LockClosedIcon className="w-4 h-4 mr-1.5"/> Login to Review
+                                                </Button>
+                                            </Link>
+                                        )}
+                                    </div>
+                                    
+                                    {/* Cricket-themed review list */}
+                                    <div className="text-white">
+                                        {reviews.length === 0 ? (
+                                            <div className="text-center py-12 bg-gradient-to-br from-emerald-900/30 to-green-900/20 rounded-lg border border-white/10 animate-fade-in backdrop-blur-sm">
+                                                <div className="inline-flex items-center justify-center w-16 h-16 mb-6 rounded-full bg-emerald-900/60">
+                                                    <ChatBubbleBottomCenterTextIcon className="h-8 w-8 text-emerald-400" />
+                                                </div>
+                                                <h3 className="text-lg font-medium text-white mb-1">No reviews yet</h3>
+                                                <p className="text-white/70 max-w-md mx-auto">Be the first to share your experience with this facility.</p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-6">
+                                                {reviews.map((review, index) => (
+                                                    <div 
+                                                        key={review._id || index} 
+                                                        className="group bg-gradient-to-br from-emerald-900/40 to-green-900/30 rounded-xl shadow-sm hover:shadow-md border border-white/10 p-6 transition-all duration-300 animate-fade-in"
+                                                        style={{ animationDelay: `${index * 100}ms` }}
+                                                    >
+                                                        <div className="flex items-start">
+                                                            <div className="flex-shrink-0">
+                                                                <img
+                                                                    className="h-12 w-12 rounded-full object-cover border-2 border-emerald-900/60 group-hover:border-emerald-500/60 transition-colors duration-300"
+                                                                    src={review.user?.avatar || FALLBACK_AVATAR}
+                                                                    alt={review.user?.name || "User"}
+                                                                    onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_AVATAR }}
+                                                                />
+                                                            </div>
+                                                            <div className="ml-4 flex-1">
+                                                                <div className="flex flex-wrap items-center justify-between">
+                                                                    <div>
+                                                                        <h4 className="text-base font-semibold text-white group-hover:text-emerald-300 transition-colors duration-300">{review.user?.name || "Anonymous"}</h4>
+                                                                        <div className="flex items-center mt-1">
+                                                                            <div className="flex">
+                                                                                {[...Array(5)].map((_, i) => (
+                                                                                    <StarIcon
+                                                                                        key={i}
+                                                                                        className={`h-5 w-5 ${
+                                                                                            i < Math.floor(review.rating) 
+                                                                                            ? 'text-amber-400' 
+                                                                                            : 'text-gray-500/40'
+                                                                                        } transition-colors duration-300`}
+                                                                                    />
+                                                                                ))}
+                                                                            </div>
+                                                                            <time className="ml-2 text-sm text-white/60" dateTime={review.reviewDate || review.createdAt}>
+                                                                                {new Date(review.reviewDate || review.createdAt || new Date()).toLocaleDateString('en-US', {
+                                                                                    year: 'numeric',
+                                                                                    month: 'long',
+                                                                                    day: 'numeric'
+                                                                                })}
+                                                                            </time>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    {/* Animated indicator for new reviews - only for the first review */}
+                                                                    {index === 0 && (
+                                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-900/60 text-emerald-300">
+                                                                            <span className="w-1.5 h-1.5 mr-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
+                                                                            New
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                
+                                                                <div className="mt-3 prose prose-sm max-w-none text-white/80">
+                                                                    <p className="leading-relaxed">{review.content}</p>
+                                                                </div>
+                                                                
+                                                                {/* Action buttons */}
+                                                                <div className="mt-4 flex items-center gap-4 pt-2 border-t border-white/10">
+                                                                    <button className="inline-flex items-center text-sm text-white/60 hover:text-white transition-colors duration-200">
+                                                                        <HandThumbUpIcon className="h-4 w-4 mr-1.5 text-emerald-400"/>
+                                                                        Helpful
+                                                                    </button>
+                                                                    <button className="inline-flex items-center text-sm text-white/60 hover:text-white transition-colors duration-200">
+                                                                        <ChatBubbleBottomCenterTextIcon className="h-4 w-4 mr-1.5 text-emerald-400"/>
+                                                                        Reply
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    {/* Load More Button */}
+                                    {hasMoreReviews && (
+                                        <div className="mt-8 text-center">
+                                            <Button 
+                                                onClick={fetchMoreReviews} 
+                                                variant="glass" 
+                                                isLoading={loadingReviews} 
+                                                disabled={loadingReviews}
+                                                leftIcon={loadingReviews ? undefined : <ArrowPathIcon className="h-4 w-4" />}
+                                            >
+                                                {loadingReviews ? 'Loading...' : 'Load More Reviews'}
+                                            </Button>
+                                        </div>
+                                    )}
+                                    
+                                    {!hasMoreReviews && reviews.length > 5 && (
+                                        <p className="text-center text-emerald-400 mt-8 animate-pulse-slow">
+                                            You've seen all reviews
+                                        </p>
+                                    )}
+                                    
+                                    {reviewError && !loadingReviews && (
+                                        <div className="text-center mt-4 bg-red-900/30 text-red-300 p-3 rounded-lg border border-red-500/30">
+                                            {reviewError}
+                                        </div>
+                                    )}
+                                </Tab.Panel>
+
+                                {/* Rules Panel */}
+                                <Tab.Panel className="rounded-2xl bg-white/20 backdrop-blur-sm p-6 md:p-8 shadow-xl border border-white/20">
+                                    <h3 className="text-2xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300">Rules & Policies</h3>
+                                    {facility.rules && facility.rules.length > 0 ? (<ul className="space-y-4 text-white list-disc list-inside pl-4">{facility.rules.map((rule, index) => ( <li key={index} className="bg-gradient-to-r from-emerald-900/50 to-green-800/40 p-3 rounded-lg border border-white/20 shadow-sm">{rule}</li> ))}</ul>) : ( <p className="text-gray-400">No specific rules listed.</p> )}
+                                    <h4 className="text-xl font-bold mt-8 mb-4 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300 flex items-center"><InformationCircleIcon className="w-6 h-6 mr-2 text-emerald-500"/> Cancellation Policy</h4>
+                                    <div className="bg-gradient-to-r from-red-900/40 to-red-800/30 p-5 rounded-xl border border-red-500/30 shadow-md"><p className="text-sm text-red-200"> Free cancellation up to 24 hours before booking. 50% charge if cancelled within 24 hours. No refunds for no-shows or cancellations after the start time.</p></div>
+                                </Tab.Panel>
+
                             </Tab.Panels>
                         </Tab.Group>
                     </div>
@@ -413,8 +827,87 @@ useEffect(() => {
                                 <div className="bg-gradient-to-br from-emerald-900/80 to-green-900/80 rounded-2xl overflow-hidden backdrop-blur-sm">
                                     <div className="p-6 border-b border-white/10"><h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-green-200">Book this Facility</h3></div>
                                     <div className="p-6">
-                                        {/* Booking widget content */}
-                                        {/* ... (content of booking widget) ... */}
+                                        <div className="space-y-6">
+                                            {/* Date Selection */}
+                                            <div>
+                                                <label htmlFor="date-select" className="block text-sm font-bold text-white mb-2 flex items-center"><CalendarDaysIcon className="w-5 h-5 mr-1.5 text-emerald-400"/> Select a Date</label>
+                                                <BookingCalendar
+                                                    availableDates={availabilityData}
+                                                    onDateSelect={(date) => { setSelectedDate(date); setSelectedTimeSlot(''); setEquipmentSelection({}); }}
+                                                    onTimeSelect={handleTimeSlotSelect}
+                                                    selectedDate={selectedDate}
+                                                    selectedTime={selectedTimeSlot}
+                                                    onMonthChange={setCurrentAvailabilityMonth}
+                                                    currentMonth={currentAvailabilityMonth}
+                                                    minDate={new Date()}
+                                                />
+                                                {loadingAvailability && <p className="text-center text-sm text-gray-300 mt-2">Loading availability...</p>}
+                                            </div>
+
+                                            {/* Equipment Selection (Conditional) */}
+                                            {selectedTimeSlot && facility.equipmentForRent && facility.equipmentForRent.length > 0 && (
+                                                <div className="animate-fade-in">
+                                                    <label className="block text-sm font-bold text-white mb-2 flex items-center"><WrenchScrewdriverIcon className="w-5 h-5 mr-1.5 text-emerald-400"/> Add Equipment (Optional)</label>
+                                                    <div className="space-y-3 max-h-48 overflow-y-auto pr-2 bg-gradient-to-r from-emerald-900/50 to-green-900/40 rounded-xl p-4 shadow-inner border border-white/20 custom-scrollbar relative">
+                                                        {/* Cricket equipment background pattern */}
+                                                        <div className="absolute inset-0 opacity-10 pointer-events-none">
+                                                            <div className="absolute top-2 left-4 w-8 h-24 bg-white/20 rounded-full transform -rotate-12"></div>
+                                                            <div className="absolute bottom-2 right-8 w-6 h-20 bg-white/20 rounded-full transform rotate-12"></div>
+                                                        </div>
+                                                        
+                                                        {facility.equipmentForRent.map((equipment) => (
+                                                            <div key={equipment.name} className="flex items-center justify-between bg-white/10 backdrop-blur-sm p-2.5 rounded-lg border border-white/20 shadow-sm hover:shadow-md hover:bg-white/15 transition-all duration-200 transform hover:scale-[1.02]">
+                                                                <div>
+                                                                    <div className="font-medium text-sm text-white">{equipment.name}</div>
+                                                                    <div className="text-emerald-300 text-xs font-medium flex items-center">
+                                                                        <span className="inline-block w-2 h-2 bg-emerald-400 rounded-full mr-1.5 animate-pulse"></span>
+                                                                        {formatCurrency(equipment.pricePerHour)}/hr
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center">
+                                                                    <span className={`mr-3 px-2 py-0.5 text-xs rounded-full ${
+                                                                        equipment.available > 5 ? 'bg-emerald-800/60 text-emerald-200' :
+                                                                        equipment.available > 0 ? 'bg-amber-800/60 text-amber-200' :
+                                                                        'bg-red-800/60 text-red-200'
+                                                                    }`}>
+                                                                        {equipment.available} left
+                                                                    </span>
+                                                                    <select 
+                                                                        className="rounded-lg border-emerald-800 text-sm py-1.5 shadow-sm focus:ring-emerald-500 focus:border-emerald-500 bg-emerald-900/70 text-white" 
+                                                                        value={equipmentSelection[equipment.name] || 0} 
+                                                                        onChange={(e) => handleEquipmentChange({ ...equipmentSelection, [equipment.name]: parseInt(e.target.value) })} 
+                                                                        disabled={equipment.available === 0}
+                                                                        style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2334d399' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")` }}
+                                                                    >
+                                                                        {[...Array(Math.max(0, equipment.available ?? 0) + 1).keys()].map((num) => (
+                                                                            <option key={num} value={num}>{num}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Booking Summary (Conditional) */}
+                                            {(selectedDate && selectedTimeSlot) && (
+                                                <div className="border-t-2 border-white/10 pt-5 mt-6 animate-fade-in space-y-3">
+                                                    <h4 className="text-sm font-bold text-white mb-2 flex items-center"><CurrencyDollarIcon className="w-5 h-5 mr-1.5 text-emerald-400"/> Booking Summary</h4>
+                                                    <div className="bg-gradient-to-r from-emerald-900/50 to-green-900/40 rounded-xl p-4 shadow-inner border border-white/20">
+                                                        <div className="flex justify-between text-sm border-b border-white/10 pb-2 mb-2"><span className="text-gray-300">Facility Fee ({selectedTimeSlot})</span><span className="text-white font-medium">{formatCurrency(facility.pricePerHourValue * 2)}</span></div>
+                                                        {Object.entries(equipmentSelection).map(([name, quantity]) => { if (quantity > 0) { const equipment = facility.equipmentForRent?.find(e => e.name === name); if (equipment) { return ( <div key={name} className="flex justify-between text-sm border-b border-white/10 pb-2 mb-2"><span className="text-gray-300">{name} (x{quantity})</span><span className="text-white font-medium">{formatCurrency((equipment.pricePerHour || 0) * quantity * 2)}</span></div> ); } } return null; })}
+                                                        <div className="flex justify-between font-bold text-lg mt-4 pt-1"><span className="text-white">Total Estimate</span><span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-green-200">{formatCurrency(calculateTotal)}</span></div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Proceed Button */}
+                                            <Button className={`w-full mt-6`} size="lg" variant="gradient" disabled={!(selectedDate && selectedTimeSlot)} onClick={handleProceedToBooking}>
+                                                <CheckIconSolid className="w-5 h-5 mr-2"/> Proceed to Book
+                                            </Button>
+                                            <p className="text-xs text-gray-300 text-center mt-3"> Confirm details & proceed to payment. </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -423,19 +916,138 @@ useEffect(() => {
                 </div>
             </div>
 
-            {/* Similar facilities section */}
-            <section className="bg-gradient-to-r from-emerald-900/60 to-green-900/50 py-16 border-t border-white/10 relative backdrop-blur-sm">
-                {/* ... (similar facilities content) ... */}
-            </section>
-
-            {/* FAQ Section */}
+            {/* FAQ Section - Enhanced Styles */}
             <section className="my-12 relative">
-                {/* ... (FAQ content) ... */}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
+                    {/* Cricket field decorative elements */}
+                    <div className="absolute inset-0 pointer-events-none opacity-10">
+                        <div className="absolute top-1/4 left-1/4 w-32 h-64 bg-white/20 rounded-full transform -rotate-45"></div>
+                        <div className="absolute bottom-1/4 right-1/4 w-32 h-64 bg-white/20 rounded-full transform rotate-45"></div>
+                        <div className="absolute top-1/2 left-1/2 w-32 h-32 bg-white/20 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+                    </div>
+                    
+                    <div className="text-center mb-12">
+                        <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-emerald-500/30 to-green-500/30 text-emerald-300 backdrop-blur-sm animate-pulse-slow">
+                            <QuestionMarkCircleIcon className="h-5 w-5 mr-2 text-emerald-400"/> FREQUENTLY ASKED
+                        </span>
+                        <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">Common <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300">Questions</span></h2>
+                        <div className="flex justify-center items-center my-4">
+                            <div className="w-16 h-1 bg-emerald-800 rounded-l-full"></div>
+                            <div className="w-10 h-1 bg-emerald-600 animate-pulse-slow"></div>
+                            <div className="w-16 h-1 bg-emerald-400 rounded-r-full"></div>
+                        </div>
+                        <p className="max-w-2xl mx-auto text-lg text-white/80">Everything you need to know about booking this facility</p>
+                    </div>
+                    
+                    <div className="max-w-3xl mx-auto space-y-5">
+                        {/* Dynamic FAQ generation based on facility data */}
+                        {[
+                            { 
+                                q: "What is the cancellation policy?", 
+                                a: "Full refund up to 24 hours before booking. 50% charge if cancelled within 24 hours. No refunds for no-shows or cancellations after the start time.",
+                                icon: <BanknotesIcon className="h-5 w-5 text-emerald-400" />
+                            },
+                            { 
+                                q: "What equipment is available for rent?", 
+                                a: facility.equipmentForRent?.length > 0
+                                    ? `Yes, equipment like ${facility.equipmentForRent?.slice(0, 3).map(e => e.name).join(', ')} ${facility.equipmentForRent && facility.equipmentForRent.length > 3 ? 'and more' : ''} is available. See the 'Equipment' tab for details and rental options.`
+                                    : "No equipment is currently listed for rent at this facility.",
+                                icon: <WrenchScrewdriverIcon className="h-5 w-5 text-emerald-400" />
+                            },
+                            { 
+                                q: "Is parking available?", 
+                                a: facility.amenities?.some(a => a.toLowerCase().includes('parking')) 
+                                    ? "Yes, parking is available." 
+                                    : "Parking availability is not explicitly listed. Please contact the facility for details.",
+                                icon: <MapPinIcon className="h-5 w-5 text-emerald-400" />
+                            },
+                            { 
+                                q: "Are coaches available at this facility?", 
+                                a: facility.associatedCoaches && facility.associatedCoaches.length > 0 
+                                    ? `Yes, ${facility.associatedCoaches.length} associated coaches are listed under the 'Coaches' tab. You can book sessions with them directly.` 
+                                    : "No coaches are directly associated with this facility listing. You can browse all trainers separately.",
+                                icon: <AcademicCapIcon className="h-5 w-5 text-emerald-400" />
+                            },
+                            { 
+                                q: "What is the weather policy?", 
+                                a: "For outdoor facilities, bookings may be rescheduled or refunded in case of severe weather. Please check specific terms or contact support.",
+                                icon: <CloudIcon className="h-5 w-5 text-emerald-400" />
+                            }
+                        ].map((faq, index) => (
+                            <div 
+                                key={index} 
+                                className="bg-gradient-to-r from-emerald-900/40 to-green-900/30 rounded-xl shadow-md overflow-hidden border border-white/20 transition-all duration-300 hover:shadow-xl transform hover:scale-[1.02]"
+                            >
+                                <button 
+                                    onClick={() => toggleFaq(index)} 
+                                    className="w-full flex justify-between items-center p-5 md:p-6 text-left"
+                                >
+                                    <span className="flex items-center text-base md:text-lg font-medium text-white">
+                                        <span className="mr-3 p-2 bg-emerald-900/60 rounded-full flex-shrink-0">{faq.icon}</span>
+                                        {faq.q}
+                                    </span>
+                                    <ChevronDownIcon 
+                                        className={`h-6 w-6 text-emerald-400 transition-transform duration-300 flex-shrink-0 ${activeFaq === index ? 'rotate-180' : ''}`}
+                                    />
+                                </button>
+                                <div 
+                                    className={`transition-all duration-500 ease-in-out overflow-hidden ${
+                                        activeFaq === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                                    }`}
+                                >
+                                    <div className="px-5 md:px-6 pb-6 pt-0 border-t border-white/10">
+                                        <p className="text-white/80 text-sm md:text-base">{faq.a}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    
+                    <div className="mt-12 text-center">
+                        <p className="text-white/80 mb-6">Still have questions?</p>
+                        <Button variant="outline" size="lg" className="shadow-lg hover:shadow-xl transition-all">
+                            <ChatBubbleBottomCenterTextIcon className="h-5 w-5 mr-2 text-emerald-400"/> 
+                            Contact Support 
+                        </Button>
+                    </div>
+                </div>
             </section>
 
-            {/* Call to Action */}
+            {/* Call to Action - Enhanced Styles */}
             <section className="relative py-16 bg-gradient-to-r from-emerald-700 via-emerald-800 to-green-900 overflow-hidden">
-                {/* ... (call to action content) ... */}
+                <div className="absolute inset-0 overflow-hidden opacity-20">
+                    <div className="absolute -left-32 -top-32 w-96 h-96 rounded-full bg-emerald-500/50"></div>
+                    <div className="absolute -right-32 -bottom-32 w-96 h-96 rounded-full bg-green-500/50"></div>
+                </div>
+                
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="max-w-3xl mx-auto text-center">
+                        <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4 drop-shadow-lg"> 
+                            Ready to Book Your Session? 
+                        </h2>
+                        <p className="mt-4 text-xl text-emerald-100 mb-8"> 
+                            Secure your preferred time slot at {facility.name} today!
+                        </p>
+                        <div className="flex flex-col sm:flex-row justify-center gap-6">
+                            <Button 
+                                onClick={handleProceedToBooking} 
+                                disabled={!(selectedDate && selectedTimeSlot)} 
+                                variant="primary" 
+                                size="xl" 
+                                className={`${selectedDate && selectedTimeSlot ? 'bg-white text-emerald-700 hover:bg-gray-100 shadow-xl hover:shadow-2xl' : 'bg-gray-300/50 text-gray-200 cursor-not-allowed'} transform transition-all duration-300 hover:-translate-y-1`}
+                            > 
+                                Book Now <ArrowRightIcon className="ml-2 -mr-1 h-5 w-5"/> 
+                            </Button>
+                            <Button 
+                                variant="outline" 
+                                size="xl" 
+                                className="border-2 border-white text-white hover:bg-white/10 shadow-lg hover:shadow-xl transform transition-all duration-300 hover:-translate-y-1"
+                            >
+                                <ShareIconOutline className="mr-2 h-5 w-5"/> Share Facility 
+                            </Button>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             {/* Image lightbox */}
@@ -452,7 +1064,52 @@ useEffect(() => {
             {/* --- Review Modal --- */}
             <Transition appear show={isReviewModalOpen} as={Fragment}>
                 <Dialog as="div" className="relative z-[100]" onClose={() => setIsReviewModalOpen(false)}>
-                    {/* ... (review modal content) ... */}
+                    {/* Backdrop */}
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+                    </Transition.Child>
+
+                    {/* Modal Content */}
+                    <div className="fixed inset-0 overflow-y-auto">
+                    <div className="flex min-h-full items-center justify-center p-4 text-center">
+                            <Transition.Child
+                                as={Fragment}
+                                enter="ease-out duration-300"
+                                enterFrom="opacity-0 scale-95"
+                                enterTo="opacity-100 scale-100"
+                                leave="ease-in duration-200"
+                                leaveFrom="opacity-100 scale-100"
+                                leaveTo="opacity-0 scale-95"
+                            >
+                                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                                    <Dialog.Title
+                                        as="h3"
+                                        className="text-lg font-semibold leading-6 text-gray-900 mb-4 flex justify-between items-center"
+                                    >
+                                        <span>Write a Review for {facility.name}</span>
+                                        <button onClick={() => setIsReviewModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                                            <XMarkIcon className="w-6 h-6" />
+                                        </button>
+                                    </Dialog.Title>
+                                    {/* Render the ReviewForm component */}
+                                    <ReviewForm
+                                        targetId={facility._id}
+                                        targetType="facility"
+                                        onSubmitSuccess={handleReviewSubmitSuccess}
+                                        onCancel={() => setIsReviewModalOpen(false)}
+                                    />
+                                </Dialog.Panel>
+                            </Transition.Child>
+                        </div>
+                    </div>
                 </Dialog>
             </Transition>
             {/* --- End Review Modal --- */}
@@ -477,7 +1134,138 @@ useEffect(() => {
                     animation: fielder-move 12s ease-in-out infinite;
                 }
                 
-                /* ... (remaining animation keyframes) ... */
+                @keyframes batsman-ready {
+                    0%, 100% { transform: rotate(-5deg); }
+                    50% { transform: rotate(5deg); }
+                }
+                .animate-batsman-ready {
+                    animation: batsman-ready 3s ease-in-out infinite;
+                }
+                
+                @keyframes wicketkeeper-ready {
+                    0%, 100% { transform: translateY(0) rotate(0deg); }
+                    50% { transform: translateY(-5px) rotate(5deg); }
+                }
+                .animate-wicketkeeper-ready {
+                    animation: wicketkeeper-ready 2s ease-in-out infinite;
+                }
+                
+                @keyframes bowler-run {
+                    0% { transform: translateY(0); }
+                    100% { transform: translateY(-100px); }
+                }
+                .animate-bowler-run {
+                    animation: bowler-run 5s ease-in-out infinite alternate;
+                }
+                
+                @keyframes cricket-ball {
+                    0% { transform: translate(0, 0); }
+                    100% { transform: translate(-80px, -100px); }
+                }
+                .animate-cricket-ball {
+                    animation: cricket-ball 5s ease-in infinite alternate;
+                }
+                
+                @keyframes bat-swing {
+                    0%, 70%, 100% { transform: rotate(45deg); }
+                    80%, 90% { transform: rotate(-45deg); }
+                }
+                .animate-bat-swing {
+                    animation: bat-swing 5s ease-in-out infinite;
+                }
+                
+                @keyframes ball-trajectory {
+                    0% { width: 0; opacity: 0.7; }
+                    100% { width: 100%; opacity: 0; }
+                }
+                .animate-ball-trajectory {
+                    animation: ball-trajectory 5s ease-in infinite alternate;
+                    transform-origin: left;
+                }
+                
+                @keyframes ken-burns {
+                    0% { transform: scale(1); }
+                    100% { transform: scale(1.1); }
+                }
+                .animate-ken-burns {
+                    animation: ken-burns 20s ease-in-out infinite alternate;
+                }
+                
+                @keyframes pulse-slow {
+                    50% { opacity: .7; }
+                }
+                .animate-pulse-slow {
+                    animation: pulse-slow 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+                }
+                
+                @keyframes fade-in-up {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fade-in-up {
+                    animation: fade-in-up 0.8s ease-out forwards;
+                }
+                
+                @keyframes fade-in {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                .animate-fade-in {
+                    animation: fade-in 0.5s ease-out forwards;
+                }
+                
+                @keyframes bounce-subtle {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-10px); }
+                }
+                .animate-bounce-subtle {
+                    animation: bounce-subtle 3s ease-in-out infinite;
+                }
+                
+                @keyframes nonstriker-ready {
+                    0% { transform: translateX(0); }
+                    50% { transform: translateX(10px); }
+                    100% { transform: translateX(0); }
+                }
+                .animate-nonstriker-ready {
+                    animation: nonstriker-ready 5s ease-in-out infinite;
+                }
+                
+                @keyframes umpire-movement {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-3px); }
+                }
+                .animate-umpire-movement {
+                    animation: umpire-movement 3s ease-in-out infinite;
+                }
+                
+                .animation-delay-200 {
+                    animation-delay: 0.2s;
+                }
+                
+                .animation-delay-300 {
+                    animation-delay: 0.3s;
+                }
+                
+                .animation-delay-500 {
+                    animation-delay: 0.5s;
+                }
+                
+                .animation-delay-600 {
+                    animation-delay: 0.6s;
+                }
+                
+                .animation-delay-700 {
+                    animation-delay: 0.7s;
+                }
+                
+                .animation-delay-1000 {
+                    animation-delay: 1s;
+                }
+                
+                .animation-delay-1200 {
+                    animation-delay: 1.2s;
+                }
             `}</style>
         </div>
     );
