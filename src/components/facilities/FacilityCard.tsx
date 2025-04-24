@@ -1,7 +1,6 @@
-// src/components/facilities/FacilityCard.tsx (or wherever it lives)
-
+import { useState } from 'react';
 import Link from 'next/link';
-import { StarIcon, MapPinIcon } from '@heroicons/react/24/solid'; // Assuming you use these
+import { StarIcon, MapPinIcon } from '@heroicons/react/24/solid';
 
 // --- Get Base URL & Fallback Image ---
 const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
@@ -28,8 +27,11 @@ interface FacilityCardProps {
 }
 
 export default function FacilityCard({ facility }: FacilityCardProps) {
+  // State to track image loading errors
+  const [imageError, setImageError] = useState(false);
+  
   // Construct the primary image URL
-  const imageUrl = (facility.images && facility.images.length > 0)
+  const imageUrl = !imageError && facility.images && facility.images.length > 0
     ? `${BACKEND_BASE_URL}${facility.images[0]}`
     : FALLBACK_IMAGE;
 
@@ -38,14 +40,16 @@ export default function FacilityCard({ facility }: FacilityCardProps) {
   const displayReviewCount = facility.reviewCount ?? 0;
 
   return (
-    <Link href={`/facilities/${facility._id}`} className="block group h-full"> {/* Ensure link takes full height */}
+    <Link href={`/facilities/${facility._id}`} className="block group h-full">
       <div className="relative flex flex-col h-full overflow-hidden rounded-xl bg-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-200/50">
         {/* Image container */}
         <div className="relative h-56 overflow-hidden flex-shrink-0">
-          <div
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-            style={{ backgroundImage: `url(${imageUrl})` }}
-            // Add onError directly to the style's element if needed, though background fallback is harder
+          {/* Use an actual img element with onError instead of background image */}
+          <img
+            src={imageUrl}
+            alt={facility.name}
+            className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+            onError={() => setImageError(true)}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-50 group-hover:opacity-70 transition-opacity duration-300"></div>
 
@@ -65,7 +69,7 @@ export default function FacilityCard({ facility }: FacilityCardProps) {
 
           {/* Sport tags */}
           <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5 z-10">
-            {facility.sportTypes?.slice(0, 2).map((sport) => ( // Show max 2 sports
+            {facility.sportTypes?.slice(0, 2).map((sport) => (
               <span
                 key={sport}
                 className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-white/80 backdrop-blur-sm text-primary-700 shadow-sm border border-primary-100"
@@ -77,7 +81,7 @@ export default function FacilityCard({ facility }: FacilityCardProps) {
         </div>
 
         {/* Content section */}
-        <div className="p-4 flex flex-col flex-grow"> {/* Use flex-grow */}
+        <div className="p-4 flex flex-col flex-grow">
           {/* Heading and rating */}
           <div className="flex items-start justify-between mb-1">
             <h3 className="text-base font-semibold text-gray-900 group-hover:text-primary-600 transition-colors duration-300 truncate pr-2">
