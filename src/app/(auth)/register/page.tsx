@@ -92,12 +92,12 @@ export default function RegisterPage() {
     try {
       console.log('Registering with:', userData);
 
-      // Mock registration success with delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+     
+     
       
       // Uncomment this for actual API call
-      // const registeredUser = await authService.register(userData);
-      // console.log('Registration successful:', registeredUser);
+      const registeredUser = await authService.register(userData);
+      console.log('Registration successful:', registeredUser);
 
       // Success animation before redirect
       document.getElementById('register-form').classList.add('scale-95', 'opacity-0');
