@@ -28,7 +28,7 @@ import { CalendarDaysIcon, CreditCardIcon, UserIcon, BuildingStorefrontIcon, Bri
 
 
 // --- Constants ---
-const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
+const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001'; // Already present
 const FALLBACK_FACILITY_IMAGE = '/images/facility-placeholder.jpg';
 const CANCELLATION_HOURS_LIMIT = 24;
 
@@ -91,30 +91,30 @@ interface UserDonation {
 // --- Helper Functions ---
 function classNames(...classes: string[]) { return classes.filter(Boolean).join(' '); }
 
-const formatDate = (dateString: string | undefined, formatStr = 'PPP'): string => { 
-    if (!dateString) return 'N/A'; 
-    try { 
-        const date = parseISO(dateString); 
-        return isValid(date) ? format(date, formatStr) : 'Invalid Date'; 
-    } catch (e) { 
-        console.error("Date Format Error:", e); 
-        return 'Invalid Date'; 
-    } 
+const formatDate = (dateString: string | undefined, formatStr = 'PPP'): string => {
+    if (!dateString) return 'N/A';
+    try {
+        const date = parseISO(dateString);
+        return isValid(date) ? format(date, formatStr) : 'Invalid Date';
+    } catch (e) {
+        console.error("Date Format Error:", e);
+        return 'Invalid Date';
+    }
 };
 
-const formatCurrency = (amount: number | undefined | null): string => { 
-    if (amount === undefined || amount === null) return 'N/A'; 
-    return `Rs. ${amount.toLocaleString('en-LK')}`; 
+const formatCurrency = (amount: number | undefined | null): string => {
+    if (amount === undefined || amount === null) return 'N/A';
+    return `Rs. ${amount.toLocaleString('en-LK')}`;
 };
 
-const canCancelBooking = (bookingDate: string): boolean => { 
-    try { 
-        const now = new Date(); 
-        const bookingDT = parseISO(bookingDate); 
-        return isValid(bookingDT) && differenceInHours(bookingDT, now) > CANCELLATION_HOURS_LIMIT; 
-    } catch (e) { 
-        return false; 
-    } 
+const canCancelBooking = (bookingDate: string): boolean => {
+    try {
+        const now = new Date();
+        const bookingDT = parseISO(bookingDate);
+        return isValid(bookingDT) && differenceInHours(bookingDT, now) > CANCELLATION_HOURS_LIMIT;
+    } catch (e) {
+        return false;
+    }
 };
 
 // --- Helper Components ---
@@ -134,23 +134,23 @@ const ErrorMessage = ({ message }: { message: string | null }) => (
     ) : null
 );
 
-const EmptyState = ({ type, message, actionText, actionHref }: { type: string; message: string; actionText?: string; actionHref?: string }) => ( 
-    <div className="text-center py-12 px-4 rounded-lg bg-gradient-to-br from-emerald-50 via-white to-green-50 border border-emerald-100"> 
+const EmptyState = ({ type, message, actionText, actionHref }: { type: string; message: string; actionText?: string; actionHref?: string }) => (
+    <div className="text-center py-12 px-4 rounded-lg bg-gradient-to-br from-emerald-50 via-white to-green-50 border border-emerald-100">
         <div className="mx-auto h-16 w-16 rounded-full bg-emerald-100 flex items-center justify-center ring-4 ring-emerald-200/50">
-            {type === 'bookings' ? <CalendarDaysIcon className="h-8 w-8 text-emerald-600" /> : 
-             type === 'favorites' ? <StarIcon className="h-8 w-8 text-emerald-600" /> : 
-             type === 'financial' ? <CreditCardIcon className="h-8 w-8 text-emerald-600" /> : 
-             type === 'donations' ? <GiftIcon className="h-8 w-8 text-emerald-600" /> : 
+            {type === 'bookings' ? <CalendarDaysIcon className="h-8 w-8 text-emerald-600" /> :
+             type === 'favorites' ? <StarIcon className="h-8 w-8 text-emerald-600" /> :
+             type === 'financial' ? <CreditCardIcon className="h-8 w-8 text-emerald-600" /> :
+             type === 'donations' ? <GiftIcon className="h-8 w-8 text-emerald-600" /> :
              <QuestionMarkCircleIcon className="h-8 w-8 text-emerald-600" />}
-        </div> 
-        <h3 className="mt-3 text-lg font-medium text-gray-900">No {type} found</h3> 
-        <p className="mt-1 text-sm text-gray-500 max-w-md mx-auto">{message}</p> 
+        </div>
+        <h3 className="mt-3 text-lg font-medium text-gray-900">No {type} found</h3>
+        <p className="mt-1 text-sm text-gray-500 max-w-md mx-auto">{message}</p>
         {actionText && actionHref && (
-            <Link href={actionHref} className="mt-4 inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"> 
-                {actionText} 
-            </Link> 
-        )} 
-    </div> 
+            <Link href={actionHref} className="mt-4 inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
+                {actionText}
+            </Link>
+        )}
+    </div>
 );
 
 
@@ -204,8 +204,23 @@ function ProfilePageContent() {
     const [bookingToCancelId, setBookingToCancelId] = useState<string | null>(null);
     const [confirmAvatarRemoveModalOpen, setConfirmAvatarRemoveModalOpen] = useState(false);
 
+    // --- NEW: Fix Avatar Preview Function ---
+    const getAvatarUrl = (avatarPath: string | undefined | null): string | null => {
+      if (!avatarPath) return null;
+      // Handle both formats: with or without leading slash
+      if (avatarPath.startsWith('http')) {
+        return avatarPath; // Already a full URL
+      } else {
+        // Ensure base URL has a trailing slash and path doesn't have a leading one
+        const baseUrl = BACKEND_BASE_URL.endsWith('/') ? BACKEND_BASE_URL : `${BACKEND_BASE_URL}/`;
+        const cleanPath = avatarPath.startsWith('/') ? avatarPath.substring(1) : avatarPath;
+        return `${baseUrl}${cleanPath}`;
+      }
+    };
+
     // --- IMPROVED Fetch Functions (Memoized) ---
     // FIX 1: Improved error handling and logging in fetch functions
+    // --- UPDATED: fetchProfile function ---
     const fetchProfile = useCallback(async () => {
         setLoadingProfile(true);
         setProfileError(null);
@@ -222,7 +237,10 @@ function ProfilePageContent() {
             });
 
             if (data?.avatar) {
-                setAvatarPreview(`${BACKEND_BASE_URL}${data.avatar}`);
+                console.log("Avatar path from server:", data.avatar); // Added log
+                const avatarUrl = getAvatarUrl(data.avatar);          // Use helper
+                console.log("Resolved avatar URL:", avatarUrl);       // Added log
+                setAvatarPreview(avatarUrl);                         // Set preview
             } else {
                 setAvatarPreview(null);
             }
@@ -232,7 +250,8 @@ function ProfilePageContent() {
         } finally {
             setLoadingProfile(false);
         }
-    }, []);
+    }, []); // Removed getAvatarUrl from dependency array as it's defined inside
+
 
     // FIX 2: Improved bookings fetch function with better error handling and logging
     const fetchBookingsData = useCallback(async () => {
@@ -243,13 +262,13 @@ function ProfilePageContent() {
             console.log("Fetching user bookings...");
             const data = await bookingService.getUserBookings();
             console.log("Bookings data received:", data);
-            
+
             // Process the bookings data to ensure consistent structure
             const processedBookings = Array.isArray(data) ? data.map(b => ({
                 ...b,
                 bookingType: b.bookingType || (b.trainer ? 'trainer' : 'facility') // Use existing bookingType if available
             })) as Booking[] : [];
-            
+
             setBookings(processedBookings);
             setBookingsFetched(true);
         } catch (err: any) {
@@ -362,10 +381,10 @@ function ProfilePageContent() {
     // FIX 7: Improved tab data fetch effect with better logging
     useEffect(() => {
         if (!profile) return;
-        
+
         const fetchTabData = async () => {
             console.log(`Fetching data for tab index: ${selectedIndex}`);
-            
+
             switch(selectedIndex) {
                 case 0: // Bookings Tab
                     if (!bookingsFetched) {
@@ -394,10 +413,10 @@ function ProfilePageContent() {
                 // case 4 is settings, no initial fetch needed
             }
         };
-        
+
         fetchTabData();
     }, [
-        selectedIndex, profile, 
+        selectedIndex, profile,
         bookingsFetched, favoritesFetched, aidFetched, donationsFetched,
         fetchBookingsData, fetchFavoritesData, fetchDonationsData, fetchAidData
     ]);
@@ -406,27 +425,27 @@ function ProfilePageContent() {
     useEffect(() => {
         const tab = searchParams.get('tab');
         console.log(`URL tab parameter: ${tab}`);
-        
+
         switch (tab) {
-            case 'bookings': 
+            case 'bookings':
                 console.log("Setting tab to bookings (0)");
-                setSelectedIndex(0); 
+                setSelectedIndex(0);
                 break;
-            case 'favorites': 
+            case 'favorites':
                 console.log("Setting tab to favorites (1)");
-                setSelectedIndex(1); 
+                setSelectedIndex(1);
                 break;
-            case 'donations': 
+            case 'donations':
                 console.log("Setting tab to donations (2)");
-                setSelectedIndex(2); 
+                setSelectedIndex(2);
                 break;
-            case 'aid': 
+            case 'aid':
                 console.log("Setting tab to financial aid (3)");
-                setSelectedIndex(3); 
+                setSelectedIndex(3);
                 break;
-            case 'settings': 
+            case 'settings':
                 console.log("Setting tab to settings (4)");
-                setSelectedIndex(4); 
+                setSelectedIndex(4);
                 break;
             default:
                 // If no tab param or invalid, default to 0 (bookings) or keep current
@@ -459,8 +478,9 @@ function ProfilePageContent() {
                 const updatedData = await userService.updateUserProfile(dataToUpdate);
                 setProfile(updatedData);
 
+                // Use getAvatarUrl here as well, although profile update doesn't change avatar
                 if (updatedData.avatar) {
-                    setAvatarPreview(`${BACKEND_BASE_URL}${updatedData.avatar}`);
+                    setAvatarPreview(getAvatarUrl(updatedData.avatar));
                 } else {
                     setAvatarPreview(null);
                 }
@@ -524,10 +544,12 @@ function ProfilePageContent() {
             reader.readAsDataURL(file);
         } else {
             setSelectedAvatarFile(null);
-            setAvatarPreview(profile?.avatar ? `${BACKEND_BASE_URL}${profile.avatar}` : null);
+            // Reset preview to the current profile avatar using the helper function
+            setAvatarPreview(profile?.avatar ? getAvatarUrl(profile.avatar) : null);
         }
     };
 
+    // --- UPDATED: handleAvatarUpload function ---
     const handleAvatarUpload = async () => {
         if (!selectedAvatarFile) {
             toast.error("No file selected");
@@ -546,15 +568,24 @@ function ProfilePageContent() {
             setProfile(updatedProfile);
 
             if (updatedProfile.avatar) {
-                setAvatarPreview(`${BACKEND_BASE_URL}${updatedProfile.avatar}`);
+                console.log("New avatar path from server:", updatedProfile.avatar); // Added log
+                const avatarUrl = getAvatarUrl(updatedProfile.avatar);              // Use helper
+                console.log("Resolved new avatar URL:", avatarUrl);                 // Added log
+                setAvatarPreview(avatarUrl);                                        // Set preview
             } else {
                 setAvatarPreview(null);
             }
 
-            setSelectedAvatarFile(null);
+            setSelectedAvatarFile(null); // Clear selected file after successful upload
+
+            // Reset file input value
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
 
             try {
                 if(authService.updateLocalUserInfo) {
+                    // Pass only the relevant updated info (avatar path)
                     authService.updateLocalUserInfo({ avatar: updatedProfile.avatar });
                 }
             } catch (lsErr) {
@@ -565,10 +596,12 @@ function ProfilePageContent() {
             const msg = err?.message || "Upload failed";
             setAvatarError(msg);
             toast.error(msg);
+            // Don't reset the preview on error, allow user to retry or cancel
         } finally {
             setLoadingAvatar(false);
         }
     };
+
 
     // Function to remove avatar
     const handleRemoveAvatar = async () => {
@@ -581,11 +614,11 @@ function ProfilePageContent() {
             toast.success("Avatar removed!");
 
             setProfile(updatedProfile);
-            setAvatarPreview(null);
+            setAvatarPreview(null); // Avatar is removed, so preview is null
 
             try {
                 if(authService.updateLocalUserInfo) {
-                    authService.updateLocalUserInfo({ avatar: undefined });
+                    authService.updateLocalUserInfo({ avatar: undefined }); // Update local storage
                 }
             } catch (lsErr) {
                 console.error("LS update error:", lsErr);
@@ -627,14 +660,14 @@ function ProfilePageContent() {
         setBookingToCancelId(bookingId);
         setCancelBookingModalOpen(true);
     };
-    
+
     const closeCancelModal = () => {
         if(!isCancellingBooking) {
             setBookingToCancelId(null);
             setCancelBookingModalOpen(false);
         }
     };
-    
+
     const confirmBookingCancel = async () => {
         if (!bookingToCancelId) return;
         setIsCancellingBooking(true);
@@ -643,7 +676,7 @@ function ProfilePageContent() {
             await bookingService.cancelBooking(bookingToCancelId);
             toast.dismiss(cancelToast);
             toast.success("Booking cancelled!");
-            setBookings(prev => prev.map(b => 
+            setBookings(prev => prev.map(b =>
                 b._id === bookingToCancelId ? {...b, status: 'cancelled'} : b
             ));
         } catch (err: any) {
@@ -661,20 +694,15 @@ function ProfilePageContent() {
         setSelectedAidApp(null);
         setAidDetailModalOpen(true);
         try {
-            // FIX 8: We should be using proper function to get application details
-            // This was likely using the wrong function before
+            // FIX 8: Use getApplicationDetails for fetching details
             console.log(`Fetching financial aid application details for ID: ${appId}`);
-            
-            // This is a guess at the correct function - we may need another service function
-            // if this is incorrect or doesn't exist
             const details = await financialAidService.getApplicationDetails(appId);
             console.log("Financial aid application details received:", details);
-            
             setSelectedAidApp(details);
         } catch (err: any) {
             console.error("Error fetching financial aid details:", err);
             toast.error(`Error loading details: ${err.message}`);
-            setAidDetailModalOpen(false);
+            setAidDetailModalOpen(false); // Close modal on error
         } finally {
             setIsFetchingAidDetails(false);
         }
@@ -700,43 +728,52 @@ function ProfilePageContent() {
     };
 
     // --- Loading / Error / Main Render ---
-    if (loadingProfile) {
+    if (loadingProfile && !profile) { // Show initial load spinner only if profile isn't loaded yet
         return (
             <div className="flex justify-center items-center min-h-screen bg-emerald-900/10 backdrop-blur-sm">
                 <Spinner message="Loading Profile..." />
             </div>
         );
     }
-    
-    if (profileError && !profile) {
+
+    if (profileError && !profile) { // Show error only if profile failed to load initially
         return (
             <div className="flex justify-center items-center min-h-screen bg-red-100">
                 <ErrorMessage message={profileError} />
             </div>
         );
     }
-    
-    if (!profile) {
+
+    if (!profile) { // Fallback if profile is still null after loading attempts
         return (
             <div className="flex justify-center items-center min-h-screen bg-gray-100">
-                <p>Not logged in or profile unavailable.</p>
+                <p>Not logged in or profile unavailable. Please try logging in.</p>
+                <Link href="/login" className="ml-2 text-emerald-600 hover:underline">Login</Link>
             </div>
         );
     }
 
+    // --- Main Render ---
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50 to-green-50">
             {/* Profile Header */}
             <div className="bg-gradient-to-r from-emerald-700 via-emerald-600 to-green-600 shadow-lg border-b-4 border-emerald-800/50">
                 <div className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
                     <div className="flex flex-col md:flex-row items-center">
-                        {/* Avatar */}
+
+                        {/* --- UPDATED: Avatar JSX with onError --- */}
                         <div className="relative group rounded-full overflow-hidden h-24 w-24 md:h-32 md:w-32 border-4 border-white/50 shadow-xl mb-4 md:mb-0 md:mr-8 flex-shrink-0 bg-gray-200 flex items-center justify-center">
                             {avatarPreview ? (
                                 <img
                                     src={avatarPreview}
                                     alt={profile.name || 'User'}
                                     className="h-full w-full object-cover"
+                                    onError={(e) => {
+                                        console.error("Avatar image failed to load:", avatarPreview);
+                                        const target = e.target as HTMLImageElement;
+                                        target.onerror = null; // Prevent infinite error loop
+                                        target.src = "/images/default-avatar.png"; // Fallback image - MAKE SURE THIS EXISTS
+                                    }}
                                 />
                             ) : (
                                 <UserIcon className="h-16 w-16 text-gray-400" />
@@ -757,6 +794,7 @@ function ProfilePageContent() {
                                 aria-label="Profile picture upload"
                             />
                         </div>
+                        {/* --- End of Updated Avatar JSX --- */}
 
                         {/* User Info */}
                         <div className="text-center md:text-left flex-grow">
@@ -798,9 +836,13 @@ function ProfilePageContent() {
                                     <button
                                         onClick={handleAvatarUpload}
                                         disabled={loadingAvatar}
-                                        className="btn-primary bg-white text-emerald-700 hover:bg-gray-100 text-sm py-1.5 px-3"
+                                        className="btn-primary bg-white text-emerald-700 hover:bg-gray-100 text-sm py-1.5 px-3 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        {loadingAvatar ? 'Uploading...' : (
+                                        {loadingAvatar ? (
+                                            <>
+                                              <Spinner message="" /> Uploading... {/* Smaller spinner */}
+                                            </>
+                                         ) : (
                                             <>
                                                 <ArrowUpTrayIcon className="h-4 w-4 mr-1"/>
                                                 Upload Avatar
@@ -810,7 +852,8 @@ function ProfilePageContent() {
                                     <button
                                         onClick={() => {
                                             setSelectedAvatarFile(null);
-                                            setAvatarPreview(profile?.avatar ? `${BACKEND_BASE_URL}${profile.avatar}` : null);
+                                            // Reset preview using helper function
+                                            setAvatarPreview(profile?.avatar ? getAvatarUrl(profile.avatar) : null);
                                             setAvatarError(null);
                                             if (fileInputRef.current) {
                                                 fileInputRef.current.value = "";
@@ -828,7 +871,7 @@ function ProfilePageContent() {
                                 <button
                                     onClick={() => setConfirmAvatarRemoveModalOpen(true)}
                                     disabled={isRemovingAvatar}
-                                    className="btn-secondary bg-red-500/90 text-white hover:bg-red-600 text-sm py-1.5 px-3"
+                                    className="btn-secondary bg-red-500/90 text-white hover:bg-red-600 text-sm py-1.5 px-3 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isRemovingAvatar ? 'Removing...' : (
                                         <>
@@ -840,11 +883,18 @@ function ProfilePageContent() {
                             )}
                         </div>
 
+                        {/* Display Avatar Errors Correctly */}
                         {avatarError && (
-                            <p className="text-red-200 text-xs mt-2 text-center md:text-right w-full md:w-auto absolute bottom-2 right-8">
+                            <p className="text-red-200 text-xs mt-2 text-center md:text-left w-full md:w-auto absolute bottom-2 right-8">
                                 {avatarError}
                             </p>
                         )}
+                        {/* Display Profile Save Errors (distinct from avatar errors) */}
+                         {profileError && !avatarError && ( // Only show profile error if not avatar error
+                            <p className="text-red-200 text-xs mt-2 text-center md:text-left w-full md:w-auto absolute bottom-2 right-8">
+                                {profileError}
+                            </p>
+                         )}
                     </div>
                 </div>
             </div>
@@ -888,10 +938,10 @@ function ProfilePageContent() {
                                     ) : bookingsError ? (
                                         <ErrorMessage message={bookingsError} />
                                     ) : bookings.length === 0 ? (
-                                        <EmptyState 
-                                            type="bookings" 
-                                            message="View your upcoming and past sessions." 
-                                            actionText="Browse Facilities" 
+                                        <EmptyState
+                                            type="bookings"
+                                            message="View your upcoming and past sessions."
+                                            actionText="Browse Facilities"
                                             actionHref="/facilities"
                                         />
                                     ) : (
@@ -972,10 +1022,10 @@ function ProfilePageContent() {
                                     ) : favoritesError ? (
                                         <ErrorMessage message={favoritesError} />
                                     ) : favorites.length === 0 ? (
-                                        <EmptyState 
-                                            type="favorites" 
-                                            message="Browse facilities and mark your favorites." 
-                                            actionText="Browse Facilities" 
+                                        <EmptyState
+                                            type="favorites"
+                                            message="Browse facilities and mark your favorites."
+                                            actionText="Browse Facilities"
                                             actionHref="/facilities"
                                         />
                                     ) : (
@@ -987,12 +1037,13 @@ function ProfilePageContent() {
                                                             <div className="h-32 w-full bg-gray-200">
                                                                 {facility.images?.length ? (
                                                                     <img
-                                                                        src={`${BACKEND_BASE_URL}${facility.images[0]}`}
+                                                                        src={`${BACKEND_BASE_URL}${facility.images[0]}`} // Assuming facility images also need base URL
                                                                         alt={facility.name}
                                                                         className="h-full w-full object-cover"
                                                                         onError={(e) => {
-                                                                            (e.target as HTMLImageElement).onerror = null;
-                                                                            (e.target as HTMLImageElement).src = FALLBACK_FACILITY_IMAGE;
+                                                                            const target = e.target as HTMLImageElement;
+                                                                            target.onerror = null;
+                                                                            target.src = FALLBACK_FACILITY_IMAGE;
                                                                         }}
                                                                     />
                                                                 ) : (
@@ -1039,10 +1090,10 @@ function ProfilePageContent() {
                                     ) : donationError ? (
                                         <ErrorMessage message={donationError} />
                                     ) : donationHistory.length === 0 ? (
-                                        <EmptyState 
-                                            type="donations" 
-                                            message="Your contributions help athletes succeed." 
-                                            actionText="Support an Athlete" 
+                                        <EmptyState
+                                            type="donations"
+                                            message="Your contributions help athletes succeed."
+                                            actionText="Support an Athlete"
                                             actionHref='/donations'
                                         />
                                     ) : (
@@ -1093,10 +1144,10 @@ function ProfilePageContent() {
                                     ) : aidError ? (
                                         <ErrorMessage message={aidError} />
                                     ) : financialAidApps.length === 0 ? (
-                                        <EmptyState 
-                                            type="financial" 
-                                            message="Apply for assistance to access facilities." 
-                                            actionText="Apply Now" 
+                                        <EmptyState
+                                            type="financial"
+                                            message="Apply for assistance to access facilities."
+                                            actionText="Apply Now"
                                             actionHref='/financial-aid/apply'
                                         />
                                     ) : (
@@ -1125,17 +1176,18 @@ function ProfilePageContent() {
                                                                                 ? 'bg-yellow-100 text-yellow-800'
                                                                                 : app.status === 'rejected'
                                                                                     ? 'bg-red-100 text-red-800'
-                                                                                    : 'bg-blue-100 text-blue-800'
+                                                                                    : 'bg-blue-100 text-blue-800' // Example for other statuses
                                                                     }`}>
-                                                                        {app.status.replace('_',' ')}
+                                                                        {app.status.replace(/_/g, ' ')} {/* Replace underscores too */}
                                                                     </span>
                                                                 </td>
                                                                 <td className="td-profile">
                                                                     <button
                                                                         onClick={() => openAidDetailModal(app._id)}
                                                                         className="font-medium text-emerald-600 hover:text-emerald-900 hover:underline"
+                                                                        disabled={isFetchingAidDetails && selectedAidApp?._id === app._id} // Disable button while fetching for this app
                                                                     >
-                                                                        View Details
+                                                                        {isFetchingAidDetails && selectedAidApp?._id === app._id ? 'Loading...' : 'View Details'}
                                                                     </button>
                                                                 </td>
                                                             </tr>
@@ -1149,14 +1201,18 @@ function ProfilePageContent() {
 
                                 {/* Account Settings Panel */}
                                 <Tab.Panel className="focus:outline-none">
-                                    {profileError && <ErrorMessage message={profileError} />}
+                                    {/* Show non-avatar profile errors here */}
+                                    {profileError && !avatarError && <ErrorMessage message={profileError} />}
                                     <div className="max-w-2xl mx-auto">
                                         <div className="flex justify-between items-center mb-6">
                                             <h3 className="text-lg font-medium text-emerald-800">Account Settings</h3>
                                             {/* Edit/Save/Cancel Buttons */}
                                             {!isEditingProfile ? (
                                                 <button
-                                                    onClick={() => setIsEditingProfile(true)}
+                                                    onClick={() => {
+                                                        setIsEditingProfile(true);
+                                                        setProfileError(null); // Clear errors when entering edit mode
+                                                    }}
                                                     className="btn-secondary-outline text-sm"
                                                 >
                                                     <PencilIcon className="h-4 w-4 mr-1.5" />
@@ -1166,6 +1222,7 @@ function ProfilePageContent() {
                                                 <div className="flex items-center gap-2">
                                                     <button
                                                         onClick={handleCancelEdit}
+                                                        disabled={loadingProfile} // Disable if saving
                                                         className="btn-secondary-outline text-sm"
                                                     >
                                                         Cancel
@@ -1195,6 +1252,7 @@ function ProfilePageContent() {
                                                                     onChange={handleProfileChange}
                                                                     className="input-field"
                                                                     aria-label="Full Name Input"
+                                                                    disabled={loadingProfile}
                                                                 />
                                                             ) : profile.name || '-'}
                                                         </dd>
@@ -1210,6 +1268,7 @@ function ProfilePageContent() {
                                                                     onChange={handleProfileChange}
                                                                     className="input-field"
                                                                     aria-label="Email Input"
+                                                                    disabled={loadingProfile}
                                                                 />
                                                             ) : profile.email || '-'}
                                                         </dd>
@@ -1225,6 +1284,7 @@ function ProfilePageContent() {
                                                                     onChange={handleProfileChange}
                                                                     className="input-field"
                                                                     aria-label="Phone Input"
+                                                                    disabled={loadingProfile}
                                                                 />
                                                             ) : profile.phone || '-'}
                                                         </dd>
@@ -1240,6 +1300,7 @@ function ProfilePageContent() {
                                                                     onChange={handleProfileChange}
                                                                     className="input-field"
                                                                     aria-label="Address Input"
+                                                                    disabled={loadingProfile}
                                                                 />
                                                             ) : profile.address || '-'}
                                                         </dd>
@@ -1319,16 +1380,25 @@ function ProfilePageContent() {
                      border-color: #059669;
                      --tw-ring-color: #059669;
                 }
+                .input-field:disabled {
+                    background-color: #f3f4f6; /* bg-gray-100 */
+                    cursor: not-allowed;
+                    opacity: 0.7;
+                }
+
 
                 /* Button Styles */
                 .btn-primary { display: inline-flex; align-items: center; padding: 0.5rem 1rem; border-width: 1px; border-color: transparent; border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem; font-weight: 500; color: #ffffff; background-color: #059669; }
-                .btn-primary:hover { background-color: #047857; }
+                .btn-primary:hover:not(:disabled) { background-color: #047857; }
                 .btn-primary:focus { outline: 2px solid transparent; outline-offset: 2px; --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 2px #ffffff; --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + 2px) #059669; box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); --tw-ring-color: #059669; }
                 .btn-secondary { display: inline-flex; align-items: center; padding: 0.5rem 1rem; border-width: 1px; border-color: #d1d5db; border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem; font-weight: 500; background-color: #ffffff; }
                 .btn-secondary:focus { outline: 2px solid transparent; outline-offset: 2px; --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 2px #ffffff; --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + 2px) #059669; box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); --tw-ring-color: #059669; }
                 .btn-secondary-outline { display: inline-flex; align-items: center; padding: 0.5rem 0.75rem; border-width: 1px; border-color: #6ee7b7; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; color: #047857; background-color: #ffffff; }
-                .btn-secondary-outline:hover { background-color: #f0fdf4; }
+                .btn-secondary-outline:hover:not(:disabled) { background-color: #f0fdf4; }
                 .btn-secondary-outline:focus { outline: 2px solid transparent; outline-offset: 2px; --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 2px #ffffff; --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + 2px) #059669; box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); --tw-ring-color: #059669; }
+
+                /* Spinner inside button */
+                .btn-primary .animate-spin { width: 1rem; height: 1rem; border-width: 2px; border-color: rgba(255,255,255,0.3); border-top-color: #ffffff; margin-right: 0.5rem; }
             `}</style>
         </div>
     );

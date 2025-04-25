@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Disclosure, Transition, Menu } from '@headlessui/react';
 import { motion } from 'framer-motion';
-import { isAuthenticated, getCurrentUser, logout } from '@/services/authService';
+import { isAuthenticated, getCurrentUser, logout, getFullAvatarUrl } from '@/services/authService';
 import * as AuthServiceModule from '@/services/authService';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 
@@ -52,6 +52,11 @@ export default function Header() {
             if (authStatus && typeof getCurrentUser === 'function') {
                 const userInfo = getCurrentUser();
                 setCurrentUser(userInfo);
+                console.log("Current user loaded:", userInfo);
+                if (userInfo?.avatar) {
+                  console.log("Avatar path:", userInfo.avatar);
+                  console.log("Full avatar URL:", getAvatarUrl(userInfo));
+                }
             } else {
                 setCurrentUser(null);
             }
@@ -85,12 +90,19 @@ export default function Header() {
       checkAuthState();
     };
     
+    const handleUserUpdated = () => {
+      console.log("User updated event detected");
+      checkAuthState();
+    };
+    
     window.addEventListener('user-login', handleUserLogin);
+    window.addEventListener('user-updated', handleUserUpdated);
     
     // Cleanup listener on component unmount
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('user-login', handleUserLogin);
+      window.removeEventListener('user-updated', handleUserUpdated);
     };
   }, []); // Empty dependency array ensures this runs once on mount
 
@@ -156,7 +168,16 @@ export default function Header() {
   // Helper function to get the avatar URL
   const getAvatarUrl = (user: UserInfo | null): string => {
     if (!user || !user.avatar) return DEFAULT_AVATAR;
-    return `${BACKEND_BASE_URL}${user.avatar}`;
+    
+    if (user.avatar.startsWith('http')) {
+      // Already a complete URL
+      return user.avatar;
+    }
+    
+    // Create proper URL from backend base and avatar path
+    const baseUrl = BACKEND_BASE_URL.endsWith('/') ? BACKEND_BASE_URL : `${BACKEND_BASE_URL}/`;
+    const avatarPath = user.avatar.startsWith('/') ? user.avatar.substring(1) : user.avatar;
+    return `${baseUrl}${avatarPath}`;
   };
 
   // --- Component Render ---
@@ -226,7 +247,10 @@ export default function Header() {
                       className="h-8 w-8 rounded-full object-cover" 
                       src={getAvatarUrl(currentUser)} 
                       alt={currentUser?.name || 'User avatar'} 
-                      onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_AVATAR }}
+                      onError={(e) => { 
+                        console.error("Avatar load error, falling back to default"); 
+                        (e.target as HTMLImageElement).src = DEFAULT_AVATAR; 
+                      }}
                     />
                   </Menu.Button>
                   <Transition 
@@ -371,7 +395,10 @@ export default function Header() {
                       className="h-10 w-10 rounded-full object-cover" 
                       src={getAvatarUrl(currentUser)} 
                       alt={currentUser.name} 
-                      onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_AVATAR }}
+                      onError={(e) => { 
+                        console.error("Mobile avatar load error, falling back to default"); 
+                        (e.target as HTMLImageElement).src = DEFAULT_AVATAR; 
+                      }}
                     />
                   </div>
                   <div className="ml-3"> 

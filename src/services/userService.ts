@@ -1,8 +1,10 @@
 // src/services/userService.ts
 import api from './api';
-import { updateLocalUserInfo } from './authService'; // Import the function to update localStorage
+import { updateLocalUserInfo } from './authService';
 
-// --- Interfaces (Define or import from a shared types file) ---
+const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
+
+// --- Interfaces ---
 interface UserProfile {
   _id: string;
   name: string;
@@ -68,6 +70,27 @@ interface UserDonation {
     isAnonymous: boolean;
 }
 
+// --- Helper Functions ---
+/**
+ * Helper function to get the full avatar URL
+ */
+export const getAvatarUrl = (avatarPath?: string): string | null => {
+  if (!avatarPath) return null;
+  
+  // Handle different avatar path formats
+  if (avatarPath.startsWith('http')) {
+    // Already a complete URL
+    return avatarPath;
+  } else {
+    // Ensure backend base URL has trailing slash
+    const baseUrl = BACKEND_BASE_URL.endsWith('/') ? BACKEND_BASE_URL : `${BACKEND_BASE_URL}/`;
+    // Remove leading slash from avatar path if exists
+    const cleanPath = avatarPath.startsWith('/') ? avatarPath.substring(1) : avatarPath;
+    // Construct full URL
+    return `${baseUrl}${cleanPath}`;
+  }
+};
+
 // --- Service Functions ---
 
 /**
@@ -124,50 +147,81 @@ export const updateUserProfile = async (profileData: Partial<UserProfile>): Prom
  * Uploads a new avatar image for the currently logged-in user.
  */
 export const uploadUserAvatar = async (avatarFile: File): Promise<UserProfile> => {
-    if (!avatarFile) { 
-        throw new Error("No avatar file provided."); 
-    }
+  if (!avatarFile) { 
+    throw new Error("No avatar file provided."); 
+  }
+  
+  // Basic client-side validation
+  if (avatarFile.size > 2 * 1024 * 1024) { // 2MB limit
+    throw new Error("Avatar file is too large. Maximum size is 2MB.");
+  }
+  
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (!allowedTypes.includes(avatarFile.type)) {
+    throw new Error("Invalid file type. Only JPEG, PNG, GIF, and WEBP images are allowed.");
+  }
+  
+  const formData = new FormData();
+  formData.append('avatar', avatarFile);
+  
+  try {
+    console.log("Service: Uploading user avatar...");
+    console.log("Service: Avatar file details:", {
+      name: avatarFile.name,
+      type: avatarFile.type,
+      size: `${(avatarFile.size / 1024).toFixed(2)} KB`
+    });
     
-    const formData = new FormData();
-    formData.append('avatar', avatarFile);
+    // Log the FormData (for debugging)
+    console.log("Service: FormData created with avatar field");
     
-    try {
-        console.log("Service: Uploading user avatar...");
-        const response = await api.put<UserProfile>('/users/profile/avatar', formData);
-        console.log("Service: Upload avatar response:", response.data);
-        
-        // Update localStorage with the new avatar
-        updateLocalUserInfo({
-            avatar: response.data.avatar
-        });
-        
-        return response.data;
-    } catch (error: any) {
-        console.error("Upload User Avatar Service Error:", error.response?.data || error.message);
-        throw new Error(error.response?.data?.message || 'Error uploading avatar');
+    const response = await api.put<UserProfile>('/users/profile/avatar', formData);
+    console.log("Service: Upload avatar response:", response.data);
+    
+    // Update localStorage with the new avatar
+    updateLocalUserInfo({
+      avatar: response.data.avatar
+    });
+    
+    return response.data;
+  } catch (error: any) {
+    console.error("Upload User Avatar Service Error:", error);
+    
+    // Provide more detailed error information
+    if (error.response) {
+      console.error("Server response status:", error.response.status);
+      console.error("Server response data:", error.response.data);
+      throw new Error(error.response.data?.message || `Error uploading avatar (${error.response.status})`);
+    } else if (error.request) {
+      console.error("No response received from server");
+      throw new Error("Server did not respond to avatar upload request");
+    } else {
+      console.error("Error message:", error.message);
+      throw new Error(error.message || 'Error uploading avatar');
     }
+  }
 };
 
 /**
  * Removes the avatar of the currently logged-in user.
  */
 export const removeUserAvatar = async (): Promise<UserProfile> => {
-    try {
-        console.log("Service: Removing user avatar...");
-        // Send a DELETE request to remove avatar
-        const response = await api.delete<UserProfile>('/users/profile/avatar');
-        console.log("Service: Remove avatar response:", response.data);
-        
-        // Update localStorage to remove the avatar
-        updateLocalUserInfo({
-            avatar: undefined
-        });
-        
-        return response.data;
-    } catch (error: any) {
-        console.error("Remove User Avatar Service Error:", error.response?.data || error.message);
-        throw new Error(error.response?.data?.message || 'Error removing avatar');
-    }
+  try {
+    console.log("Service: Removing user avatar...");
+    // Send a DELETE request to remove avatar
+    const response = await api.delete<UserProfile>('/users/profile/avatar');
+    console.log("Service: Remove avatar response:", response.data);
+    
+    // Update localStorage to remove the avatar
+    updateLocalUserInfo({
+      avatar: undefined
+    });
+    
+    return response.data;
+  } catch (error: any) {
+    console.error("Remove User Avatar Service Error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error removing avatar');
+  }
 };
 
 /**
@@ -297,4 +351,20 @@ export const deleteUserByAdmin = async (userId: string): Promise<{ message: stri
         console.error(`Admin Delete User Service Error (User ID: ${userId}):`, error.response?.data || error.message);
         throw new Error(error.response?.data?.message || 'Error deleting user');
     }
+};
+
+export default {
+  getUserProfile,
+  updateUserProfile,
+  uploadUserAvatar,
+  removeUserAvatar,
+  getUserFavorites,
+  addFavorite,
+  removeFavorite,
+  getUserFinancialAidApps,
+  getUserDonationHistory,
+  getAllAdminUsers,
+  updateUserByAdmin,
+  deleteUserByAdmin,
+  getAvatarUrl
 };

@@ -3,7 +3,7 @@
 import api from './api'; // Import the configured Axios instance
 
 // Define structure for user data stored/returned
-interface UserInfo {
+export interface UserInfo {
     _id: string;
     name: string;
     email: string;
@@ -23,17 +23,30 @@ interface AuthResponse {
     avatar?: string;
 }
 
-const USER_TOKEN_KEY = 'userToken'; // Key for storing token in localStorage
-const USER_INFO_KEY = 'user';     // Key for storing user info in localStorage
+export const USER_TOKEN_KEY = 'userToken'; // Key for storing token in localStorage
+export const USER_INFO_KEY = 'user';     // Key for storing user info in localStorage
 const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
 
 // Debug function to log user info
 const logUserInfo = (info: any, source: string) => {
   console.log(`[AUTH DEBUG - ${source}]`, {
     userInfo: info ? { ...info, token: info.token ? '**exists**' : '**missing**' } : null,
-    avatar: info?.avatar ? `${info.avatar} (full: ${BACKEND_BASE_URL}${info.avatar})` : 'none',
+    avatar: info?.avatar ? `${info.avatar} (full: ${getFullAvatarUrl(info.avatar)})` : 'none',
     backendBaseUrl: BACKEND_BASE_URL
   });
+};
+
+// Helper to get full avatar URL
+export const getFullAvatarUrl = (avatarPath?: string): string | null => {
+  if (!avatarPath) return null;
+  
+  if (avatarPath.startsWith('http')) {
+    return avatarPath;
+  } else {
+    const baseUrl = BACKEND_BASE_URL.endsWith('/') ? BACKEND_BASE_URL : `${BACKEND_BASE_URL}/`;
+    const cleanPath = avatarPath.startsWith('/') ? avatarPath.substring(1) : avatarPath;
+    return `${baseUrl}${cleanPath}`;
+  }
 };
 
 // Register a new user
@@ -240,4 +253,19 @@ export const resetPassword = async (
         console.error("Reset Password Service Error:", error.response?.data || error.message);
         throw new Error(error.response?.data?.message || 'Error resetting password. OTP might be invalid or expired.');
     }
+};
+
+export default {
+  register,
+  login,
+  logout, 
+  getCurrentUser,
+  isAuthenticated,
+  updateLocalUserInfo,
+  getUserProfile,
+  forgotPassword,
+  resetPassword,
+  getFullAvatarUrl,
+  USER_TOKEN_KEY,
+  USER_INFO_KEY
 };
