@@ -19,10 +19,10 @@ import {
   ArrowPathIcon,
   BuildingOffice2Icon,
   SparklesIcon,
-  StarIcon, // Keep for potential future use, though not used for filtering now
+  StarIcon,
   FunnelIcon,
   XMarkIcon,
-  CurrencyDollarIcon // Keep for potential future use
+  CurrencyDollarIcon
 } from '@heroicons/react/24/outline';
 
 // --- Interfaces ---
@@ -30,11 +30,11 @@ interface FacilitySummary {
   _id: string;
   name: string;
   location: string;
-  rating?: number; // Rating might still be displayed on cards
+  rating?: number;
   reviewCount?: number;
   sportTypes: string[];
   images: string[];
-  pricePerHour: string; // Price might still be displayed on cards
+  pricePerHour: string;
   isNew?: boolean;
   isPremium?: boolean;
 }
@@ -74,11 +74,9 @@ export default function FacilitiesContent() {
   const [keyword, setKeyword] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [sportFilter, setSportFilter] = useState('');
-  // REMOVED: const [priceRange, setPriceRange] = useState('');
-  // REMOVED: const [ratingFilter, setRatingFilter] = useState('');
 
   // Filter Options State
-  const [sportCategories, setSportCategories] = useState<string[]>([]);
+  const [sportCategories, setSportCategories] = useState<Category[]>([]);
   const [popularLocations, setPopularLocations] = useState<string[]>([]);
 
   // Mobile Filter State
@@ -102,20 +100,9 @@ export default function FacilitiesContent() {
         }
       });
 
-      // Ensure proper parameter formatting for the backend
-      // REMOVED: PriceRange and Rating specific checks
-
-      // Ensure sportType is passed correctly
-      if (params.sportType) {
-        console.log("Using sport type filter:", params.sportType);
-      }
-
-      // Ensure location is passed correctly
-      if (params.location) {
-        console.log("Using location filter:", params.location);
-      }
-
+      // Debug log for filters
       console.log("Fetching facilities with params:", params);
+      
       const response = await api.get<FacilityListResponse>('/facilities', { params });
 
       if (response.data && Array.isArray(response.data.facilities)) {
@@ -136,7 +123,7 @@ export default function FacilitiesContent() {
     } finally {
       setLoading(false);
     }
-  }, []); // No dependencies here, fetch triggered by other effects/handlers
+  }, []);
 
   // --- Fetch Filter Options ---
   useEffect(() => {
@@ -144,9 +131,10 @@ export default function FacilitiesContent() {
       try {
         // Fetch categories for sport types dropdown
         const categoriesData = await categoryService.getCategories();
-        // Extract unique sport types from category names
-        const sportsList = categoriesData.map(cat => cat.name);
-        setSportCategories(sportsList);
+        console.log("Fetched categories:", categoriesData);
+        
+        // Use the full category objects to retain all information
+        setSportCategories(categoriesData);
 
         // Set common locations in Sri Lanka
         setPopularLocations([
@@ -162,7 +150,13 @@ export default function FacilitiesContent() {
       } catch (error) {
         console.error("Error fetching filter options:", error);
         // Set some default values in case of error
-        setSportCategories(['Cricket', 'Football', 'Swimming', 'Tennis', 'Basketball']);
+        setSportCategories([
+          { _id: 'cricket', name: 'Cricket', slug: 'cricket', description: '', imageSrc: '' },
+          { _id: 'football', name: 'Football', slug: 'football', description: '', imageSrc: '' },
+          { _id: 'swimming', name: 'Swimming', slug: 'swimming', description: '', imageSrc: '' },
+          { _id: 'tennis', name: 'Tennis', slug: 'tennis', description: '', imageSrc: '' },
+          { _id: 'basketball', name: 'Basketball', slug: 'basketball', description: '', imageSrc: '' }
+        ]);
       }
     };
 
@@ -195,26 +189,31 @@ export default function FacilitiesContent() {
   useEffect(() => {
     const pageQuery = parseInt(searchParams.get('page') || '1', 10);
     const keywordQuery = searchParams.get('keyword') || '';
+    
+    // Get location from URL parameter
     const locationQuery = searchParams.get('location') || '';
-    const sportQuery = searchParams.get('sportType') || '';
-    // REMOVED: const priceRangeQuery = searchParams.get('priceRange') || '';
-    // REMOVED: const ratingQuery = searchParams.get('rating') || '';
+    
+    // IMPORTANT: Check for both sportType and sport parameters
+    // This handles both direct facilities page filters and redirects from Hero component
+    const sportQuery = searchParams.get('sportType') || searchParams.get('sport') || '';
+    
+    console.log("Reading URL parameters:", {
+      location: locationQuery,
+      sportType: sportQuery,
+      keyword: keywordQuery
+    });
 
-    // Update state based on URL
+    // Update state based on URL - this will update the dropdown selections
     setCurrentPage(pageQuery);
     setKeyword(keywordQuery);
     setLocationFilter(locationQuery);
     setSportFilter(sportQuery);
-    // REMOVED: setPriceRange(priceRangeQuery);
-    // REMOVED: setRatingFilter(ratingQuery);
 
     // Fetch data using current query params
     fetchFacilities(pageQuery, {
       keyword: keywordQuery,
       location: locationQuery,
       sportType: sportQuery,
-      // REMOVED: priceRange: priceRangeQuery,
-      // REMOVED: rating: ratingQuery
     });
 
   }, [searchParams, fetchFacilities]); // Re-fetch when URL search params change
@@ -230,14 +229,7 @@ export default function FacilitiesContent() {
       keyword,
       location: locationFilter,
       sportType: value, // Use the new value
-      // REMOVED: priceRange,
-      // REMOVED: rating: ratingFilter
     };
-
-    // Clean params (optional - fetchFacilities already does this)
-    // Object.keys(params).forEach(key => {
-    //   if (!params[key as keyof typeof params]) delete params[key as keyof typeof params];
-    // });
 
     // Update URL and force a refetch (page 1)
     updateURLAndFetch(params, 1);
@@ -252,18 +244,11 @@ export default function FacilitiesContent() {
       keyword,
       location: value, // Use the new value
       sportType: sportFilter,
-      // REMOVED: priceRange,
-      // REMOVED: rating: ratingFilter
     };
-
-    // Clean params (optional)
 
     // Update URL and force a refetch (page 1)
     updateURLAndFetch(params, 1);
   };
-
-  // REMOVED: handlePriceRangeChange function
-  // REMOVED: handleRatingFilterChange function
 
   const updateURLAndFetch = (params: Record<string, string>, page: number) => {
     console.log("Updating URL and fetching with params:", params, "page:", page);
@@ -275,7 +260,6 @@ export default function FacilitiesContent() {
         cleanedParams[key] = value;
       }
     });
-
 
     // First, fetch directly without relying on URL change
     fetchFacilities(page, cleanedParams);
@@ -300,8 +284,6 @@ export default function FacilitiesContent() {
       keyword,
       locationFilter,
       sportFilter,
-      // REMOVED: priceRange,
-      // REMOVED: ratingFilter
     });
 
     // Close mobile filter if open
@@ -312,14 +294,7 @@ export default function FacilitiesContent() {
       keyword,
       location: locationFilter,
       sportType: sportFilter,
-      // REMOVED: priceRange,
-      // REMOVED: rating: ratingFilter
     };
-
-    // Clean params (optional - updateURLAndFetch does it)
-    // Object.keys(params).forEach(key => {
-    //   if (!params[key as keyof typeof params]) delete params[key as keyof typeof params];
-    // });
 
     // Update URL and force a refetch (page 1)
     updateURLAndFetch(params, 1);
@@ -329,8 +304,6 @@ export default function FacilitiesContent() {
     setKeyword('');
     setLocationFilter('');
     setSportFilter('');
-    // REMOVED: setPriceRange('');
-    // REMOVED: setRatingFilter('');
 
     // Update URL to trigger refetch (will fetch with no filters)
     router.push('/facilities');
@@ -338,18 +311,26 @@ export default function FacilitiesContent() {
 
   // --- Pagination Handler ---
   const handlePageChange = (newPage: number) => {
-      if (newPage >= 1 && newPage <= totalPages) {
-          // Prepare current filters
-          const params = {
-              keyword,
-              location: locationFilter,
-              sportType: sportFilter,
-              // REMOVED price/rating filters
-          };
-          updateURLAndFetch(params, newPage);
-      }
+    if (newPage >= 1 && newPage <= totalPages) {
+        // Prepare current filters
+        const params = {
+            keyword,
+            location: locationFilter,
+            sportType: sportFilter,
+        };
+        updateURLAndFetch(params, newPage);
+    }
   };
 
+  // Find the selected sport category from sportFilter value
+  const findSelectedSportCategory = () => {
+    if (!sportFilter) return null;
+    return sportCategories.find(category => 
+      category._id === sportFilter || 
+      category.slug === sportFilter ||
+      category.name === sportFilter
+    );
+  };
 
   // --- Render Logic ---
   return (
@@ -674,7 +655,7 @@ export default function FacilitiesContent() {
               id="location-filter"
               className="block w-full rounded-lg bg-white/90 border-emerald-400 pl-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm text-emerald-900 font-medium"
               value={locationFilter}
-              // MODIFIED: Use direct handler
+              // Use direct handler
               onChange={(e) => handleLocationFilterChange(e.target.value)}
               style={{
                 backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23047857' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")",
@@ -703,11 +684,11 @@ export default function FacilitiesContent() {
             <select
               name="sport-filter"
               id="sport-filter"
-               className="block w-full rounded-lg bg-white/90 border-emerald-400 pl-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm text-emerald-900 font-medium" // Adjusted style to match location
+               className="block w-full rounded-lg bg-white/90 border-emerald-400 pl-10 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm text-emerald-900 font-medium" 
               value={sportFilter}
-              // MODIFIED: Use direct handler
+              // Use direct handler
               onChange={(e) => handleSportFilterChange(e.target.value)}
-               style={{ // Added style to match location
+               style={{ 
                 backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23047857' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")",
                 backgroundPosition: "right 0.5rem center",
                 backgroundRepeat: "no-repeat",
@@ -717,8 +698,10 @@ export default function FacilitiesContent() {
               }}
             >
               <option value="">All Sports</option>
-              {sportCategories.map((sport) => (
-                <option key={sport} value={sport}>{sport}</option>
+              {sportCategories.map((category) => (
+                <option key={category._id} value={category._id}>
+                  {category.name}
+                </option>
               ))}
             </select>
           </div>
@@ -807,7 +790,6 @@ export default function FacilitiesContent() {
                       name="mobile-location"
                       className="block w-full pl-10 py-3 bg-white/90 border-emerald-400 rounded-md focus:ring-emerald-500 focus:border-emerald-500 text-emerald-900 font-medium"
                       value={locationFilter}
-                      // MODIFIED: Use state directly
                       onChange={(e) => setLocationFilter(e.target.value)}
                       style={{
                         backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23047857' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")",
@@ -838,7 +820,6 @@ export default function FacilitiesContent() {
                       name="mobile-sport"
                       className="block w-full pl-10 py-3 bg-white/90 border-emerald-400 rounded-md focus:ring-emerald-500 focus:border-emerald-500 text-emerald-900 font-medium"
                       value={sportFilter}
-                       // MODIFIED: Use state directly
                       onChange={(e) => setSportFilter(e.target.value)}
                       style={{
                         backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23047857' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")",
@@ -850,16 +831,12 @@ export default function FacilitiesContent() {
                       }}
                     >
                       <option value="">All Sports</option>
-                      {sportCategories.map((sport) => (
-                        <option key={sport} value={sport}>{sport}</option>
+                      {sportCategories.map((category) => (
+                        <option key={category._id} value={category._id}>{category.name}</option>
                       ))}
                     </select>
                   </div>
                 </div>
-
-                {/* REMOVED: Price Range Filter */}
-                {/* REMOVED: Rating Filter */}
-
               </form>
             </div>
 
@@ -873,7 +850,6 @@ export default function FacilitiesContent() {
                   Clear All
                 </button>
                 <button
-                  // MODIFIED: This now triggers the form submit logic
                   onClick={() => handleSearch()}
                   className="inline-flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
                 >
@@ -912,11 +888,9 @@ export default function FacilitiesContent() {
                   )}
                   {sportFilter && (
                     <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-800/60 text-emerald-100">
-                      Sport: {sportFilter}
+                      Sport: {findSelectedSportCategory()?.name || sportFilter}
                     </span>
                   )}
-                  {/* REMOVED: Price Range display */}
-                  {/* REMOVED: Rating display */}
                 </div>
               )}
 
@@ -950,7 +924,6 @@ export default function FacilitiesContent() {
                     keyword,
                     location: locationFilter,
                     sportType: sportFilter,
-                    // REMOVED: priceRange, rating
                   })}
                   className="inline-flex items-center rounded-lg border border-transparent bg-emerald-600 px-5 py-3 text-base font-medium text-white shadow-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transform hover:scale-105 transition-all duration-300"
                 >
@@ -965,7 +938,7 @@ export default function FacilitiesContent() {
               <div className="mt-12 text-center py-12 rounded-xl bg-emerald-900/30 backdrop-blur-sm border border-emerald-600/20 shadow-inner">
                 <h3 className="text-xl font-bold text-white mb-2">No Facilities Found</h3>
                 <p className="text-emerald-200 max-w-md mx-auto mb-8">
-                  {keyword || locationFilter || sportFilter // MODIFIED: Removed price/rating check
+                  {keyword || locationFilter || sportFilter
                     ? "Try adjusting your search or filter criteria."
                     : "There are no facilities available at the moment."}
                 </p>

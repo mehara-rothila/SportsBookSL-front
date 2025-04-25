@@ -1,9 +1,23 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { getCategories } from '@/services/categoryService';
+import { getFacilities } from '@/services/facilityService';
 
 const Hero = () => {
-  // Define the image sets for each position in the grid
+  const router = useRouter();
+  
+  // State for dropdown data
+  const [categories, setCategories] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // State for selected values
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [selectedSport, setSelectedSport] = useState('');
+  
+  // State for image positions (from original code)
   const imageSets = [
     [
       'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80',
@@ -24,7 +38,7 @@ const Hero = () => {
 
   // State to track current image index for each position
   const [currentIndices, setCurrentIndices] = useState([0, 0, 0]);
-
+  
   // Effect to rotate images every 3 seconds
   useEffect(() => {
     const interval = setInterval(() => {
@@ -37,8 +51,81 @@ const Hero = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Sport options for dropdown
-  const sportOptions = ["Cricket", "Tennis", "Swimming", "Basketball", "Football"];
+  // Fetch categories and extract unique locations from facilities
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch categories from the backend
+        const categoriesData = await getCategories();
+        setCategories(categoriesData || []);
+        
+        // Fetch facilities to extract unique locations
+        // Using limit=100 to get a good sample size without fetching all
+        const facilitiesData = await getFacilities({ limit: 100 });
+        
+        // Extract unique locations
+        const uniqueLocations = Array.from(
+          new Set(
+            facilitiesData.facilities
+              .map(facility => facility.location)
+              .filter(Boolean)
+          )
+        ).sort();
+        
+        setLocations(uniqueLocations);
+      } catch (error) {
+        console.error('Error fetching data for Hero component:', error);
+        // Fallback data in case of API errors
+        if (categories.length === 0) {
+          setCategories([
+            { _id: 'cricket', name: 'Cricket' },
+            { _id: 'tennis', name: 'Tennis' },
+            { _id: 'swimming', name: 'Swimming' },
+            { _id: 'basketball', name: 'Basketball' },
+            { _id: 'football', name: 'Football' }
+          ]);
+        }
+        
+        if (locations.length === 0) {
+          setLocations([
+            'Colombo',
+            'Kandy',
+            'Galle',
+            'Negombo',
+            'Jaffna',
+            'Matara',
+            'Nuwara Eliya'
+          ]);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
+  
+  // Handle search button click
+  const handleSearch = () => {
+    // Get the slug from the selected category
+    const selectedCategory = categories.find(cat => cat._id === selectedSport);
+    const sportParam = selectedCategory?.slug || selectedSport;
+    
+    // Create query parameters
+    const queryParams = new URLSearchParams();
+    
+    if (selectedLocation) {
+      queryParams.set('location', selectedLocation);
+    }
+    
+    if (sportParam) {
+      queryParams.set('sport', sportParam);
+    }
+    
+    // Navigate to facilities page with filters
+    router.push(`/facilities${queryParams.toString() ? `?${queryParams.toString()}` : ''}`);
+  };
 
   return (
     <section className="relative w-full overflow-hidden bg-gray-900">
@@ -119,36 +206,25 @@ const Hero = () => {
           Discover and book the best sports facilities, equipment, and trainers for your next training session or match.
         </p>
         
-        {/* Enhanced search box with glass effect */}
+        {/* Enhanced search box with glass effect - UPDATED with Backend data */}
         <div className="w-full max-w-3xl glass-effect rounded-xl p-2 sm:p-3 md:p-4 mb-8 backdrop-blur-md bg-white/10 animate-fade-in-up">
           <div className="flex flex-col md:flex-row items-stretch gap-3">
-            {/* Location input */}
+            {/* Location dropdown - UPDATED from input to select */}
             <div className="flex-1 relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-300" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                 </svg>
               </div>
-              <input 
-                type="text" 
-                placeholder="Location" 
-                className="block w-full bg-transparent border border-gray-300 rounded-lg pl-10 py-3 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-              />
-            </div>
-            
-            {/* Sport type selection */}
-            <div className="flex-1 relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-300" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <select 
+              <select
+                value={selectedLocation}
+                onChange={(e) => setSelectedLocation(e.target.value)}
                 className="block w-full appearance-none bg-transparent border border-gray-300 rounded-lg pl-10 pr-10 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                disabled={isLoading}
               >
-                <option value="" className="bg-gray-900">Sport Type</option>
-                {sportOptions.map((sport, index) => (
-                  <option key={index} value={sport.toLowerCase()} className="bg-gray-900">{sport}</option>
+                <option value="" className="bg-gray-900">All Locations</option>
+                {locations.map((location) => (
+                  <option key={location} value={location} className="bg-gray-900">{location}</option>
                 ))}
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -158,14 +234,50 @@ const Hero = () => {
               </div>
             </div>
             
-            {/* Search button - updated to emerald */}
+            {/* Sport type selection - UPDATED with backend data */}
+            <div className="flex-1 relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-300" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <select 
+                value={selectedSport}
+                onChange={(e) => setSelectedSport(e.target.value)}
+                className="block w-full appearance-none bg-transparent border border-gray-300 rounded-lg pl-10 pr-10 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                disabled={isLoading}
+              >
+                <option value="" className="bg-gray-900">All Sports</option>
+                {categories.map((category) => (
+                  <option key={category._id} value={category._id} className="bg-gray-900">{category.name}</option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg className="h-5 w-5 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </div>
+            </div>
+            
+            {/* Search button - updated to handle click */}
             <button 
-              className="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors duration-300 flex items-center justify-center"
+              onClick={handleSearch}
+              disabled={isLoading}
+              className="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors duration-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-              </svg>
-              Search
+              {isLoading ? (
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                  </svg>
+                  Search
+                </>
+              )}
             </button>
           </div>
         </div>
