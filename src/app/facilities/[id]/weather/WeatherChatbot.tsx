@@ -1138,8 +1138,8 @@ const WeatherChatbot: React.FC<WeatherChatbotProps> = ({
             </div>
             
             <div className="flex overflow-x-auto space-x-3 pb-2 custom-scrollbar">
-              {weatherData.daily?.slice(0, 3).map((day: any, i: number) => {
-                const dayDate = dateUtils.fromUnixTime(day.dt);
+  {(weatherData as any).daily?.slice(0, 3).map((day: any, i: number) => {
+    const dayDate = dateUtils.fromUnixTime(day.dt);
                 return (
                   <div key={i} className="flex-shrink-0 bg-gradient-to-br from-emerald-900/50 to-green-800/40 backdrop-blur-sm rounded-lg p-3 text-center shadow-lg border border-white/10 transform transition hover:scale-105 hover:border-emerald-500/30 w-24 md:w-28">
                     <div className="text-xs font-medium text-emerald-300 mb-1 truncate">
