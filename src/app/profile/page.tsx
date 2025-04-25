@@ -135,16 +135,16 @@ const ErrorMessage = ({ message }: { message: string | null }) => (
 );
 
 const EmptyState = ({ type, message, actionText, actionHref }: { type: string; message: string; actionText?: string; actionHref?: string }) => (
-    <div className="text-center py-12 px-4 rounded-lg bg-gradient-to-br from-emerald-50 via-white to-green-50 border border-emerald-100">
-        <div className="mx-auto h-16 w-16 rounded-full bg-emerald-100 flex items-center justify-center ring-4 ring-emerald-200/50">
+    <div className="text-center py-12 px-4 rounded-lg bg-gradient-to-br from-emerald-50/90 via-emerald-100/80 to-green-50/90 border border-emerald-200/50 backdrop-blur-sm">
+        <div className="mx-auto h-16 w-16 rounded-full bg-emerald-100/80 flex items-center justify-center ring-4 ring-emerald-200/50">
             {type === 'bookings' ? <CalendarDaysIcon className="h-8 w-8 text-emerald-600" /> :
              type === 'favorites' ? <StarIcon className="h-8 w-8 text-emerald-600" /> :
              type === 'financial' ? <CreditCardIcon className="h-8 w-8 text-emerald-600" /> :
              type === 'donations' ? <GiftIcon className="h-8 w-8 text-emerald-600" /> :
              <QuestionMarkCircleIcon className="h-8 w-8 text-emerald-600" />}
         </div>
-        <h3 className="mt-3 text-lg font-medium text-gray-900">No {type} found</h3>
-        <p className="mt-1 text-sm text-gray-500 max-w-md mx-auto">{message}</p>
+        <h3 className="mt-3 text-lg font-medium text-emerald-900">No {type} found</h3>
+        <p className="mt-1 text-sm text-emerald-700/90 max-w-md mx-auto">{message}</p>
         {actionText && actionHref && (
             <Link href={actionHref} className="mt-4 inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
                 {actionText}
@@ -204,7 +204,7 @@ function ProfilePageContent() {
     const [bookingToCancelId, setBookingToCancelId] = useState<string | null>(null);
     const [confirmAvatarRemoveModalOpen, setConfirmAvatarRemoveModalOpen] = useState(false);
 
-    // --- NEW: Fix Avatar Preview Function ---
+    // --- Fixed Avatar Preview Function ---
     const getAvatarUrl = (avatarPath: string | undefined | null): string | null => {
       if (!avatarPath) return null;
       // Handle both formats: with or without leading slash
@@ -715,7 +715,7 @@ function ProfilePageContent() {
 
     // FIX 9: Add a reload button for troubleshooting
     const renderDebugControls = () => {
-        return (
+        return process.env.NODE_ENV !== 'production' ? (
             <div className="fixed bottom-4 right-4 z-50">
                 <button
                     onClick={forceRefetch}
@@ -724,7 +724,7 @@ function ProfilePageContent() {
                     Reload Current Tab
                 </button>
             </div>
-        );
+        ) : null;
     };
 
     // --- Loading / Error / Main Render ---
@@ -755,9 +755,9 @@ function ProfilePageContent() {
 
     // --- Main Render ---
     return (
-        <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-green-800 to-emerald-800">
+        <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-green-800 to-emerald-800 pt-20">
             {/* Basketball Court Background - Added from layout.tsx */}
-            <div className="absolute inset-0 overflow-hidden mt-28">
+            <div className="absolute inset-0 overflow-hidden mt-28 z-0">
                 {/* Full Court with enhanced styling */}
                 <div className="absolute top-[10%] left-[5%] right-[5%] bottom-[5%] rounded-lg bg-gradient-to-b from-emerald-700/30 to-emerald-600/20 border-2 border-white/10 shadow-inner"></div>
                 
@@ -823,7 +823,7 @@ function ProfilePageContent() {
             </div>
 
             {/* Profile Header */}
-            <div className="relative z-10 bg-gradient-to-r from-emerald-700 via-emerald-600 to-green-600 shadow-lg border-b-4 border-emerald-800/50">
+            <div className="relative z-10 bg-gradient-to-r from-emerald-700 via-emerald-600 to-green-600 shadow-lg border-b-4 border-emerald-800/50 mt-4">
                 <div className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
                     <div className="flex flex-col md:flex-row items-center">
 
@@ -937,7 +937,7 @@ function ProfilePageContent() {
                                 <button
                                     onClick={() => setConfirmAvatarRemoveModalOpen(true)}
                                     disabled={isRemovingAvatar}
-                                    className="btn-secondary bg-red-500/90 text-white hover:bg-red-600 text-sm py-1.5 px-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="btn-secondary bg-red-600 text-white hover:bg-red-700 text-sm py-1.5 px-3 rounded shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isRemovingAvatar ? 'Removing...' : (
                                         <>
@@ -967,10 +967,10 @@ function ProfilePageContent() {
 
             {/* Main Content */}
             <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-                <div className="bg-white/70 backdrop-blur-md shadow-xl rounded-xl overflow-hidden border border-gray-200/50">
+                <div className="bg-emerald-800/30 backdrop-blur-md shadow-xl rounded-xl overflow-hidden border border-emerald-500/20">
                     <div className="p-4 sm:p-6">
                         <Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
-                            <Tab.List className="flex flex-wrap p-1 space-x-1 bg-emerald-100/50 rounded-lg mb-6 sm:mb-8 shadow-inner border border-emerald-200/50">
+                            <Tab.List className="flex flex-wrap p-1 space-x-1 bg-emerald-700/50 rounded-lg mb-6 sm:mb-8 shadow-inner border border-emerald-500/30">
                                 {/* Tab titles */}
                                 {[
                                     { name: "My Bookings", icon: CalendarDaysIcon },
@@ -983,11 +983,11 @@ function ProfilePageContent() {
                                         key={category.name}
                                         className={({ selected }) => classNames(
                                             'flex-grow text-center px-3 py-2.5 text-xs sm:text-sm font-medium rounded-md transition-all duration-200',
-                                            'focus:outline-none focus:ring-2 ring-offset-1 ring-offset-emerald-50 ring-emerald-500',
+                                            'focus:outline-none focus:ring-2 ring-offset-1 ring-offset-emerald-700 ring-emerald-300',
                                             'flex items-center justify-center whitespace-nowrap',
                                             selected
-                                                ? 'bg-emerald-600 shadow-md text-white'
-                                                : 'text-emerald-700 hover:bg-emerald-200/60 hover:text-emerald-900'
+                                                ? 'bg-emerald-500 shadow-md text-white'
+                                                : 'text-emerald-100 hover:bg-emerald-600/60 hover:text-white'
                                         )}
                                     >
                                         <category.icon className="h-4 w-4 mr-1.5" />
@@ -1011,72 +1011,74 @@ function ProfilePageContent() {
                                             actionHref="/facilities"
                                         />
                                     ) : (
-                                        <div className="space-y-5">
-                                            {bookings.map((booking) => {
-                                                const isCancellable = booking.status === 'upcoming' && canCancelBooking(booking.date);
-                                                return (
-                                                    <div
-                                                        key={booking._id}
-                                                        className={`p-4 rounded-lg border ${
-                                                            booking.status === 'upcoming'
-                                                                ? 'bg-green-50 border-green-200'
-                                                                : booking.status === 'cancelled'
-                                                                    ? 'bg-red-50 border-red-200'
-                                                                    : 'bg-gray-50 border-gray-200'
-                                                        } shadow-sm flex flex-wrap md:flex-nowrap items-start gap-4`}
-                                                    >
-                                                        <div className="w-full md:w-40 flex-shrink-0 text-center md:text-left">
-                                                            <p className="font-semibold text-sm text-gray-800">
-                                                                {formatDate(booking.date, 'EEE, MMM d, yyyy')}
-                                                            </p>
-                                                            <p className="text-xs text-gray-500">{booking.timeSlot}</p>
-                                                            <span className={`mt-1.5 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                        <div className="max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                                            <div className="space-y-5">
+                                                {bookings.map((booking) => {
+                                                    const isCancellable = booking.status === 'upcoming' && canCancelBooking(booking.date);
+                                                    return (
+                                                        <div
+                                                            key={booking._id}
+                                                            className={`p-4 rounded-lg border backdrop-blur-md ${
                                                                 booking.status === 'upcoming'
-                                                                    ? 'bg-green-100 text-green-800'
-                                                                    : booking.status === 'completed'
-                                                                        ? 'bg-blue-100 text-blue-800'
-                                                                        : booking.status === 'cancelled'
-                                                                            ? 'bg-red-100 text-red-800'
-                                                                            : 'bg-gray-100 text-gray-800'
-                                                            }`}>
-                                                                {booking.status}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex-grow">
-                                                            <h3 className="font-medium text-gray-900 text-sm mb-1">
-                                                                {booking.bookingType === 'trainer'
-                                                                    ? `Training: ${typeof booking.trainer === 'object' ? booking.trainer?.name || 'N/A' : 'N/A'}`
-                                                                    : `Facility: ${typeof booking.facility === 'object' ? booking.facility?.name || 'N/A' : 'N/A'}`}
-                                                            </h3>
-                                                            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-600">
-                                                                <span className="inline-flex items-center">
-                                                                    <UserGroupIcon className="h-3 w-3 mr-1"/>
-                                                                    {booking.participants}p
-                                                                </span>
-                                                                <span className="inline-flex items-center">
-                                                                    <ClockIcon className="h-3 w-3 mr-1"/>
-                                                                    {booking.durationHours}h
-                                                                </span>
-                                                                <span className="inline-flex items-center">
-                                                                    <BanknotesIcon className="h-3 w-3 mr-1"/>
-                                                                    {formatCurrency(booking.totalCost)}
+                                                                    ? 'bg-emerald-600/20 border-emerald-400/30 shadow-lg shadow-emerald-900/20'
+                                                                    : booking.status === 'cancelled'
+                                                                        ? 'bg-red-500/20 border-red-400/30 shadow-lg shadow-red-900/20'
+                                                                        : 'bg-gray-700/20 border-gray-500/30 shadow-lg shadow-gray-900/20'
+                                                            } flex flex-wrap md:flex-nowrap items-start gap-4`}
+                                                        >
+                                                            <div className="w-full md:w-40 flex-shrink-0 text-center md:text-left">
+                                                                <p className="font-semibold text-sm text-white">
+                                                                    {formatDate(booking.date, 'EEE, MMM d, yyyy')}
+                                                                </p>
+                                                                <p className="text-xs text-emerald-100/80">{booking.timeSlot}</p>
+                                                                <span className={`mt-1.5 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                                                    booking.status === 'upcoming'
+                                                                        ? 'bg-emerald-400/30 text-emerald-100 border border-emerald-400/30'
+                                                                        : booking.status === 'completed'
+                                                                            ? 'bg-blue-400/30 text-blue-100 border border-blue-400/30'
+                                                                            : booking.status === 'cancelled'
+                                                                                ? 'bg-red-400/30 text-red-100 border border-red-400/30'
+                                                                                : 'bg-gray-400/30 text-gray-100 border border-gray-400/30'
+                                                                }`}>
+                                                                    {booking.status}
                                                                 </span>
                                                             </div>
+                                                            <div className="flex-grow">
+                                                                <h3 className="font-medium text-white text-sm mb-1">
+                                                                    {booking.bookingType === 'trainer'
+                                                                        ? `Training: ${typeof booking.trainer === 'object' ? booking.trainer?.name || 'N/A' : 'N/A'}`
+                                                                        : `Facility: ${typeof booking.facility === 'object' ? booking.facility?.name || 'N/A' : 'N/A'}`}
+                                                                </h3>
+                                                                <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-emerald-100/80">
+                                                                    <span className="inline-flex items-center">
+                                                                        <UserGroupIcon className="h-3 w-3 mr-1"/>
+                                                                        {booking.participants}p
+                                                                    </span>
+                                                                    <span className="inline-flex items-center">
+                                                                        <ClockIcon className="h-3 w-3 mr-1"/>
+                                                                        {booking.durationHours}h
+                                                                    </span>
+                                                                    <span className="inline-flex items-center">
+                                                                        <BanknotesIcon className="h-3 w-3 mr-1"/>
+                                                                        {formatCurrency(booking.totalCost)}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex-shrink-0 mt-2 md:mt-0">
+                                                                {isCancellable && (
+                                                                    <button
+                                                                        onClick={() => openCancelModal(booking._id)}
+                                                                        disabled={isCancellingBooking && bookingToCancelId === booking._id}
+                                                                        className="bg-red-600/90 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded shadow-sm disabled:opacity-50 transition-colors"
+                                                                    >
+                                                                        Cancel
+                                                                    </button>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        <div className="flex-shrink-0 mt-2 md:mt-0">
-                                                            {isCancellable && (
-                                                                <button
-                                                                    onClick={() => openCancelModal(booking._id)}
-                                                                    disabled={isCancellingBooking && bookingToCancelId === booking._id}
-                                                                    className="btn-secondary-outline border-red-300 text-red-600 hover:bg-red-50 text-xs px-2 py-1 disabled:opacity-50"
-                                                                >
-                                                                    Cancel
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                     )}
                                 </Tab.Panel>
@@ -1095,12 +1097,12 @@ function ProfilePageContent() {
                                             actionHref="/facilities"
                                         />
                                     ) : (
-                                        <div className="space-y-6">
+                                        <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                                 {favorites.map((facility) => (
-                                                    <div key={facility._id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 group relative">
+                                                    <div key={facility._id} className="bg-emerald-800/30 backdrop-blur-md rounded-lg shadow-lg overflow-hidden border border-emerald-500/20 group relative">
                                                         <Link href={`/facilities/${facility._id}`} className="block">
-                                                            <div className="h-32 w-full bg-gray-200">
+                                                            <div className="h-32 w-full bg-emerald-900/50">
                                                                 {facility.images?.length ? (
                                                                     <img
                                                                         src={`${BACKEND_BASE_URL}${facility.images[0]}`} // Assuming facility images also need base URL
@@ -1114,32 +1116,32 @@ function ProfilePageContent() {
                                                                     />
                                                                 ) : (
                                                                     <div className="h-full w-full flex items-center justify-center">
-                                                                        <BuildingStorefrontIcon className="h-16 w-16 text-gray-400" />
+                                                                        <BuildingStorefrontIcon className="h-16 w-16 text-emerald-400/50" />
                                                                     </div>
                                                                 )}
                                                             </div>
                                                         </Link>
                                                         <button
                                                             onClick={() => handleRemoveFavorite(facility._id)}
-                                                            className="absolute top-2 right-2 p-1.5 bg-white/80 hover:bg-white rounded-full text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 z-10"
+                                                            className="absolute top-2 right-2 p-1.5 bg-emerald-800/80 hover:bg-emerald-900 rounded-full text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 z-10"
                                                             aria-label={`Remove ${facility.name} from favorites`}
                                                         >
                                                             <XMarkIcon className="h-5 w-5" />
                                                         </button>
                                                         <div className="p-3">
                                                             <Link href={`/facilities/${facility._id}`} className="block hover:underline">
-                                                                <h3 className="font-medium text-gray-900 text-sm mb-1 truncate">{facility.name}</h3>
+                                                                <h3 className="font-medium text-white text-sm mb-1 truncate">{facility.name}</h3>
                                                             </Link>
-                                                            <p className="text-xs text-gray-500 flex items-center mb-2">
-                                                                <MapPinIcon className="h-3 w-3 mr-1 text-gray-400"/>
+                                                            <p className="text-xs text-emerald-200/80 flex items-center mb-2">
+                                                                <MapPinIcon className="h-3 w-3 mr-1 text-emerald-300/80"/>
                                                                 {facility.location}
                                                             </p>
                                                             <div className="flex justify-between items-center text-xs">
-                                                                <span className="flex items-center">
+                                                                <span className="flex items-center text-emerald-100">
                                                                     <StarIcon className="h-3.5 w-3.5 text-yellow-400 mr-0.5"/>
                                                                     {facility.rating?.toFixed(1) || 'N/A'}
                                                                 </span>
-                                                                <span className="font-medium text-emerald-600">{facility.pricePerHour}</span>
+                                                                <span className="font-medium text-emerald-300">{facility.pricePerHour}</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1163,37 +1165,37 @@ function ProfilePageContent() {
                                             actionHref='/donations'
                                         />
                                     ) : (
-                                        <div className="space-y-6">
-                                            <h3 className="text-lg font-medium text-emerald-800 mb-4">Your Donation History</h3>
-                                            <div className="overflow-x-auto">
-                                                <table className="min-w-full divide-y divide-gray-200 text-sm">
-                                                    <thead className="bg-gray-50/50">
+                                        <div className="space-y-6 text-white max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                                            <h3 className="text-lg font-medium text-emerald-200 mb-4">Your Donation History</h3>
+                                            <div className="overflow-x-auto bg-emerald-800/30 backdrop-blur-md rounded-lg border border-emerald-500/20 shadow-lg">
+                                                <table className="min-w-full divide-y divide-emerald-700/50 text-sm">
+                                                    <thead className="bg-emerald-900/50">
                                                         <tr>
-                                                            <th className="th-profile">Date</th>
-                                                            <th className="th-profile">Athlete</th>
-                                                            <th className="th-profile">Amount</th>
-                                                            <th className="th-profile">Status</th>
-                                                            <th className="th-profile">Anonymous</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-emerald-200 uppercase tracking-wider">Date</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-emerald-200 uppercase tracking-wider">Athlete</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-emerald-200 uppercase tracking-wider">Amount</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-emerald-200 uppercase tracking-wider">Status</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-emerald-200 uppercase tracking-wider">Anonymous</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody className="bg-white divide-y divide-gray-100">
+                                                    <tbody className="divide-y divide-emerald-700/30">
                                                         {donationHistory.map((donation) => (
-                                                            <tr key={donation._id}>
-                                                                <td className="td-profile">{formatDate(donation.donationDate, 'PP')}</td>
-                                                                <td className="td-profile font-medium text-gray-900">{donation.athlete?.name ?? 'N/A'}</td>
-                                                                <td className="td-profile font-medium">{formatCurrency(donation.amount)}</td>
-                                                                <td className="td-profile">
+                                                            <tr key={donation._id} className="hover:bg-emerald-700/30 transition-colors">
+                                                                <td className="px-4 py-3 whitespace-nowrap">{formatDate(donation.donationDate, 'PP')}</td>
+                                                                <td className="px-4 py-3 whitespace-nowrap font-medium">{donation.athlete?.name ?? 'N/A'}</td>
+                                                                <td className="px-4 py-3 whitespace-nowrap font-medium text-emerald-300">{formatCurrency(donation.amount)}</td>
+                                                                <td className="px-4 py-3 whitespace-nowrap">
                                                                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                                                                         donation.paymentStatus === 'succeeded'
-                                                                            ? 'bg-green-100 text-green-800'
+                                                                            ? 'bg-green-400/20 text-green-200 border border-green-400/30'
                                                                             : donation.paymentStatus === 'pending'
-                                                                                ? 'bg-yellow-100 text-yellow-800'
-                                                                                : 'bg-red-100 text-red-800'
+                                                                                ? 'bg-yellow-400/20 text-yellow-200 border border-yellow-400/30'
+                                                                                : 'bg-red-400/20 text-red-200 border border-red-400/30'
                                                                     }`}>
                                                                         {donation.paymentStatus}
                                                                     </span>
                                                                 </td>
-                                                                <td className="td-profile">{donation.isAnonymous ? 'Yes' : 'No'}</td>
+                                                                <td className="px-4 py-3 whitespace-nowrap">{donation.isAnonymous ? 'Yes' : 'No'}</td>
                                                             </tr>
                                                         ))}
                                                     </tbody>
@@ -1217,40 +1219,40 @@ function ProfilePageContent() {
                                             actionHref='/financial-aid/apply'
                                         />
                                     ) : (
-                                        <div className="space-y-6">
-                                            <h3 className="text-lg font-medium text-emerald-800 mb-4">Your Financial Aid Applications</h3>
-                                            <div className="overflow-x-auto">
-                                                <table className="min-w-full divide-y divide-gray-200 text-sm">
-                                                    <thead className="bg-gray-50/50">
+                                        <div className="space-y-6 text-white max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                                            <h3 className="text-lg font-medium text-emerald-200 mb-4">Your Financial Aid Applications</h3>
+                                            <div className="overflow-x-auto bg-emerald-800/30 backdrop-blur-md rounded-lg border border-emerald-500/20 shadow-lg">
+                                                <table className="min-w-full divide-y divide-emerald-700/50 text-sm">
+                                                    <thead className="bg-emerald-900/50">
                                                         <tr>
-                                                            <th className="th-profile">Submitted</th>
-                                                            <th className="th-profile">Sport</th>
-                                                            <th className="th-profile">Status</th>
-                                                            <th className="th-profile">Actions</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-emerald-200 uppercase tracking-wider">Submitted</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-emerald-200 uppercase tracking-wider">Sport</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-emerald-200 uppercase tracking-wider">Status</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-emerald-200 uppercase tracking-wider">Actions</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody className="bg-white divide-y divide-gray-100">
+                                                    <tbody className="divide-y divide-emerald-700/30">
                                                         {financialAidApps.map((app) => (
-                                                            <tr key={app._id}>
-                                                                <td className="td-profile">{formatDate(app.submittedDate)}</td>
-                                                                <td className="td-profile">{app.sportsInfo?.primarySport || 'N/A'}</td>
-                                                                <td className="td-profile">
+                                                            <tr key={app._id} className="hover:bg-emerald-700/30 transition-colors">
+                                                                <td className="px-4 py-3 whitespace-nowrap">{formatDate(app.submittedDate)}</td>
+                                                                <td className="px-4 py-3 whitespace-nowrap">{app.sportsInfo?.primarySport || 'N/A'}</td>
+                                                                <td className="px-4 py-3 whitespace-nowrap">
                                                                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize ${
                                                                         app.status === 'approved'
-                                                                            ? 'bg-green-100 text-green-800'
+                                                                            ? 'bg-green-400/20 text-green-200 border border-green-400/30'
                                                                             : app.status === 'pending'
-                                                                                ? 'bg-yellow-100 text-yellow-800'
+                                                                                ? 'bg-yellow-400/20 text-yellow-200 border border-yellow-400/30'
                                                                                 : app.status === 'rejected'
-                                                                                    ? 'bg-red-100 text-red-800'
-                                                                                    : 'bg-blue-100 text-blue-800' // Example for other statuses
+                                                                                    ? 'bg-red-400/20 text-red-200 border border-red-400/30'
+                                                                                    : 'bg-blue-400/20 text-blue-200 border border-blue-400/30' // Example for other statuses
                                                                     }`}>
                                                                         {app.status.replace(/_/g, ' ')} {/* Replace underscores too */}
                                                                     </span>
                                                                 </td>
-                                                                <td className="td-profile">
+                                                                <td className="px-4 py-3 whitespace-nowrap">
                                                                     <button
                                                                         onClick={() => openAidDetailModal(app._id)}
-                                                                        className="font-medium text-emerald-600 hover:text-emerald-900 hover:underline"
+                                                                        className="font-medium text-emerald-300 hover:text-emerald-200 hover:underline transition-colors"
                                                                         disabled={isFetchingAidDetails && selectedAidApp?._id === app._id} // Disable button while fetching for this app
                                                                     >
                                                                         {isFetchingAidDetails && selectedAidApp?._id === app._id ? 'Loading...' : 'View Details'}
@@ -1271,7 +1273,7 @@ function ProfilePageContent() {
                                     {profileError && !avatarError && <ErrorMessage message={profileError} />}
                                     <div className="max-w-2xl mx-auto">
                                         <div className="flex justify-between items-center mb-6">
-                                            <h3 className="text-lg font-medium text-emerald-800">Account Settings</h3>
+                                            <h3 className="text-lg font-medium text-emerald-200">Account Settings</h3>
                                             {/* Edit/Save/Cancel Buttons */}
                                             {!isEditingProfile ? (
                                                 <button
@@ -1279,7 +1281,7 @@ function ProfilePageContent() {
                                                         setIsEditingProfile(true);
                                                         setProfileError(null); // Clear errors when entering edit mode
                                                     }}
-                                                    className="btn-secondary-outline text-sm"
+                                                    className="inline-flex items-center px-3 py-1.5 border border-emerald-500 text-sm font-medium rounded-md text-emerald-200 bg-emerald-700/50 hover:bg-emerald-600/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors shadow-sm"
                                                 >
                                                     <PencilIcon className="h-4 w-4 mr-1.5" />
                                                     Edit Profile
@@ -1289,14 +1291,14 @@ function ProfilePageContent() {
                                                     <button
                                                         onClick={handleCancelEdit}
                                                         disabled={loadingProfile} // Disable if saving
-                                                        className="btn-secondary-outline text-sm"
+                                                        className="inline-flex items-center px-3 py-1.5 border border-emerald-500 text-sm font-medium rounded-md text-emerald-200 bg-emerald-700/50 hover:bg-emerald-600/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors shadow-sm"
                                                     >
                                                         Cancel
                                                     </button>
                                                     <button
                                                         onClick={handleSaveProfile}
                                                         disabled={loadingProfile}
-                                                        className="btn-primary text-sm disabled:opacity-50"
+                                                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors shadow-sm disabled:opacity-50"
                                                     >
                                                         {loadingProfile ? 'Saving...' : 'Save Changes'}
                                                     </button>
@@ -1304,12 +1306,12 @@ function ProfilePageContent() {
                                             )}
                                         </div>
                                         {/* Form Inputs */}
-                                        <div className="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-200">
+                                        <div className="bg-emerald-800/40 backdrop-blur-md shadow-lg rounded-lg overflow-hidden border border-emerald-500/20">
                                             <div className="px-4 py-5 sm:p-6">
                                                 <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                                                     <div className="sm:col-span-1">
-                                                        <dt className="text-sm font-medium text-gray-500">Full Name</dt>
-                                                        <dd className="mt-1 text-sm text-gray-900">
+                                                        <dt className="text-sm font-medium text-emerald-200">Full Name</dt>
+                                                        <dd className="mt-1 text-sm text-white">
                                                             {isEditingProfile ? (
                                                                 <input
                                                                     type="text"
@@ -1324,8 +1326,8 @@ function ProfilePageContent() {
                                                         </dd>
                                                     </div>
                                                     <div className="sm:col-span-1">
-                                                        <dt className="text-sm font-medium text-gray-500">Email</dt>
-                                                        <dd className="mt-1 text-sm text-gray-900">
+                                                        <dt className="text-sm font-medium text-emerald-200">Email</dt>
+                                                        <dd className="mt-1 text-sm text-white">
                                                             {isEditingProfile ? (
                                                                 <input
                                                                     type="email"
@@ -1340,8 +1342,8 @@ function ProfilePageContent() {
                                                         </dd>
                                                     </div>
                                                     <div className="sm:col-span-1">
-                                                        <dt className="text-sm font-medium text-gray-500">Phone</dt>
-                                                        <dd className="mt-1 text-sm text-gray-900">
+                                                        <dt className="text-sm font-medium text-emerald-200">Phone</dt>
+                                                        <dd className="mt-1 text-sm text-white">
                                                             {isEditingProfile ? (
                                                                 <input
                                                                     type="tel"
@@ -1356,8 +1358,8 @@ function ProfilePageContent() {
                                                         </dd>
                                                     </div>
                                                     <div className="sm:col-span-1">
-                                                        <dt className="text-sm font-medium text-gray-500">Address</dt>
-                                                        <dd className="mt-1 text-sm text-gray-900">
+                                                        <dt className="text-sm font-medium text-emerald-200">Address</dt>
+                                                        <dd className="mt-1 text-sm text-white">
                                                             {isEditingProfile ? (
                                                                 <input
                                                                     type="text"
@@ -1372,8 +1374,8 @@ function ProfilePageContent() {
                                                         </dd>
                                                     </div>
                                                     <div className="sm:col-span-2">
-                                                        <dt className="text-sm font-medium text-gray-500">Account Type</dt>
-                                                        <dd className="mt-1 text-sm text-gray-900 capitalize">{profile.role || 'User'}</dd>
+                                                        <dt className="text-sm font-medium text-emerald-200">Account Type</dt>
+                                                        <dd className="mt-1 text-sm text-emerald-300 capitalize">{profile.role || 'User'}</dd>
                                                     </div>
                                                 </dl>
                                             </div>
@@ -1415,10 +1417,30 @@ function ProfilePageContent() {
             />
 
             {/* Debug Controls */}
-            {process.env.NODE_ENV !== 'production' && renderDebugControls()}
+            {renderDebugControls()}
 
             {/* Global CSS Styles - UPDATED with basketball theme styles */}
             <style jsx global>{`
+                /* Custom Scrollbar Styling */
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 8px;
+                    height: 8px;
+                }
+                
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: rgba(16, 185, 129, 0.1);
+                    border-radius: 10px;
+                }
+                
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: rgba(16, 185, 129, 0.3);
+                    border-radius: 10px;
+                }
+                
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: rgba(16, 185, 129, 0.5);
+                }
+
                 /* Table Cell Padding */
                 .th-profile, .td-profile { padding: 0.75rem; font-size: 0.875rem; }
                 .th-profile { text-align: left; font-weight: 500; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -1429,13 +1451,15 @@ function ProfilePageContent() {
                     box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
                     appearance: none;
                     border-width: 1px;
-                    border-color: #d1d5db;
+                    border-color: rgba(16, 185, 129, 0.3);
                     border-radius: 0.375rem;
                     padding: 0.5rem 0.75rem;
                     font-size: 0.875rem;
                     line-height: 1.25rem;
                     width: 100%;
                     display: block;
+                    background-color: rgba(255, 255, 255, 0.1);
+                    color: white;
                 }
                 .input-field:focus {
                      outline: 2px solid transparent;
@@ -1443,13 +1467,17 @@ function ProfilePageContent() {
                      --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
                      --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);
                      box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
-                     border-color: #059669;
-                     --tw-ring-color: #059669;
+                     border-color: #10B981;
+                     --tw-ring-color: #10B981;
                 }
                 .input-field:disabled {
-                    background-color: #f3f4f6; /* bg-gray-100 */
+                    background-color: rgba(255, 255, 255, 0.05);
                     cursor: not-allowed;
                     opacity: 0.7;
+                }
+                
+                .input-field::placeholder {
+                    color: rgba(255, 255, 255, 0.5);
                 }
 
                 /* Button Styles */
