@@ -701,10 +701,10 @@ const generateResponse = async (
       };
     }
     
-    const data = await response.json() as GeminiResponse;
+    const apiResponse = await response.json() as GeminiResponse;
     
-    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content?.parts?.length > 0) {
-      const aiResponse = data.candidates[0].content.parts[0].text;
+    if (apiResponse.candidates && apiResponse.candidates.length > 0 && apiResponse.candidates[0].content?.parts?.length > 0) {
+        const aiResponse = apiResponse.candidates[0].content.parts[0].text;
       
       // Extract and clean the response
       const { data: extractedData, cleanedText } = extractWeatherDataFromResponse(aiResponse);
@@ -721,8 +721,7 @@ const generateResponse = async (
       
       return { response: finalResponse, structuredData: validatedData };
     } else {
-      console.error('Gemini API returned no valid candidates:', data);
-      // Fallback to direct data response
+        console.error('Gemini API returned no valid candidates:', apiResponse);      // Fallback to direct data response
       const fallbackResponse = generateFallbackResponse(query, weatherData, facilityName);
       const { data, cleanedText } = extractWeatherDataFromResponse(fallbackResponse);
       return { 

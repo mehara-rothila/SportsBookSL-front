@@ -135,8 +135,8 @@ export default function NotificationCenter() {
       case 'booking_status_update':
       case 'booking_reminder':
         return (
-          <div className="p-2 bg-blue-100/80 rounded-full shadow-sm border border-blue-200/50">
-            <CalendarIcon className="h-5 w-5 text-blue-600" />
+          <div className="p-2 bg-emerald-100/80 rounded-full shadow-sm border border-emerald-200/50">
+            <CalendarIcon className="h-5 w-5 text-emerald-600" />
           </div>
         );
       case 'transportation_update':
@@ -147,15 +147,15 @@ export default function NotificationCenter() {
         );
       case 'weather_alert':
         return (
-          <div className="p-2 bg-purple-100/80 rounded-full shadow-sm border border-purple-200/50">
-            <CloudIcon className="h-5 w-5 text-purple-600" />
+          <div className="p-2 bg-emerald-100/80 rounded-full shadow-sm border border-emerald-200/50">
+            <CloudIcon className="h-5 w-5 text-emerald-600" />
           </div>
         );
       case 'donation_received':
       case 'donation_thankyou':
         return (
-          <div className="p-2 bg-amber-100/80 rounded-full shadow-sm border border-amber-200/50">
-            <CurrencyDollarIcon className="h-5 w-5 text-amber-600" />
+          <div className="p-2 bg-emerald-100/80 rounded-full shadow-sm border border-emerald-200/50">
+            <CurrencyDollarIcon className="h-5 w-5 text-emerald-600" />
           </div>
         );
       case 'financial_aid_update':
@@ -163,21 +163,21 @@ export default function NotificationCenter() {
       case 'financial_aid_rejected':
       case 'financial_aid_needs_info':
         return (
-          <div className="p-2 bg-indigo-100/80 rounded-full shadow-sm border border-indigo-200/50">
-            <LifebuoyIcon className="h-5 w-5 text-indigo-600" />
+          <div className="p-2 bg-emerald-100/80 rounded-full shadow-sm border border-emerald-200/50">
+            <LifebuoyIcon className="h-5 w-5 text-emerald-600" />
           </div>
         );
       case 'system_announcement':
         return (
-          <div className="p-2 bg-red-100/80 rounded-full shadow-sm border border-red-200/50">
-            <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
+          <div className="p-2 bg-emerald-100/80 rounded-full shadow-sm border border-emerald-200/50">
+            <ExclamationTriangleIcon className="h-5 w-5 text-emerald-600" />
           </div>
         );
       default:
         // Provide a generic fallback icon
         return (
-          <div className="p-2 bg-gray-100/80 rounded-full shadow-sm border border-gray-200/50">
-            <BellIcon className="h-5 w-5 text-gray-600" />
+          <div className="p-2 bg-emerald-100/80 rounded-full shadow-sm border border-emerald-200/50">
+            <BellIcon className="h-5 w-5 text-emerald-600" />
           </div>
         );
     }
@@ -193,9 +193,10 @@ export default function NotificationCenter() {
 
   return (
     <div className="notification-center relative">
+      {/* Enhanced notification bell button with better hover effect */}
       <button
         type="button"
-        className="notification-bell-button relative rounded-full flex items-center justify-center h-8 w-8 focus:outline-none transition-all duration-300"
+        className="notification-bell-button relative rounded-full flex items-center justify-center h-10 w-10 focus:outline-none transition-all duration-300 hover:bg-emerald-700/30"
         onClick={(e) => {
           e.stopPropagation();
           setIsOpen(!isOpen);
@@ -203,16 +204,16 @@ export default function NotificationCenter() {
         aria-label="Notifications"
       >
         <span className="sr-only">View notifications</span>
-        <BellIcon className={`h-5 w-5 ${unreadCount > 0 ? 'text-white' : 'text-white/80'}`} />
+        <BellIcon className={`h-6 w-6 ${unreadCount > 0 ? 'text-white' : 'text-white/80'}`} />
         
-        {/* Unread badge with animation */}
+        {/* Enhanced unread badge with gradient styling */}
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center h-4 w-4 rounded-full bg-gradient-to-r from-red-500 to-rose-600 text-[10px] font-bold text-white transform animate-pulse-slow">
+          <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center h-5 w-5 rounded-full bg-gradient-to-r from-emerald-500 to-green-600 text-[10px] font-bold text-white transform animate-pulse-slow shadow-sm">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
         
-        {/* Subtle ping animation when there are unread notifications */}
+        {/* Enhanced ping animation */}
         {unreadCount > 0 && (
           <span className="absolute inset-0 rounded-full bg-emerald-400/30 animate-ping-slow opacity-75"></span>
         )}
@@ -231,30 +232,25 @@ export default function NotificationCenter() {
       >
         <div 
           ref={notificationPanelRef}
-          className="notification-panel absolute right-0 mt-2 w-full sm:w-80 md:w-96 origin-top-right rounded-xl overflow-hidden z-50 max-h-[70vh] flex flex-col backdrop-blur-md bg-white/90 shadow-xl border border-white/50 ring-1 ring-black/5"
-          style={{ 
-            maxWidth: '95vw',
-            right: window.innerWidth < 640 ? '50%' : 0,
-            transform: window.innerWidth < 640 ? 'translateX(50%)' : 'none'
-          }}
+          className="notification-panel absolute right-0 mt-2 w-full sm:w-80 md:w-96 origin-top-right rounded-xl overflow-hidden z-50 max-h-[80vh] flex flex-col backdrop-blur-lg bg-white/95 shadow-xl border border-emerald-200/50 ring-1 ring-black/5"
         >
-          {/* Header with glassmorphism */}
-          <div className="p-3 px-4 backdrop-blur-sm bg-gradient-to-r from-emerald-50/80 to-emerald-100/80 border-b border-emerald-200/50 flex justify-between items-center sticky top-0 z-10">
-            <h3 className="text-base font-semibold text-emerald-800 flex items-center">
-              <BellIcon className="w-4 h-4 mr-2 text-emerald-600" />
+          {/* Enhanced header with gradient similar to the main page */}
+          <div className="p-4 backdrop-blur-sm bg-gradient-to-r from-emerald-600/90 to-green-500/90 border-b border-emerald-400/30 flex justify-between items-center sticky top-0 z-10 shadow-sm">
+            <h3 className="text-base font-semibold text-white flex items-center">
+              <BellIcon className="w-5 h-5 mr-2 text-white/90" />
               Notifications
               {unreadCount > 0 && (
-                <span className="ml-2 text-xs font-medium py-0.5 px-1.5 bg-emerald-100 text-emerald-700 rounded-full">
+                <span className="ml-2 text-xs font-medium py-0.5 px-2 bg-white/20 text-white rounded-full backdrop-blur-sm">
                   {unreadCount} new
                 </span>
               )}
             </h3>
             
-            <div className="flex gap-1">
+            <div className="flex gap-2">
               {unreadCount > 0 && (
                 <button 
                   type="button" 
-                  className="text-xs font-medium text-emerald-600 hover:text-emerald-800 py-1 px-2 rounded hover:bg-emerald-50/80 transition-colors"
+                  className="text-xs font-medium text-white hover:text-white py-1 px-2.5 rounded-lg hover:bg-white/10 transition-colors"
                   onClick={handleMarkAllAsRead}
                 >
                   Mark all read
@@ -263,7 +259,7 @@ export default function NotificationCenter() {
               
               <button 
                 type="button" 
-                className="p-1 rounded-md text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50/80 transition-colors" 
+                className="p-1.5 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors" 
                 onClick={() => setIsOpen(false)}
               >
                 <span className="sr-only">Close</span>
@@ -272,19 +268,19 @@ export default function NotificationCenter() {
             </div>
           </div>
 
-          {/* Body */}
+          {/* Body with improved styling */}
           <div className="overflow-y-auto flex-grow">
             {isLoading && !hasLoadedOnce ? (
               <div className="p-8 text-center">
-                <div className="animate-spin h-8 w-8 border-4 border-emerald-200 border-t-emerald-600 rounded-full mx-auto mb-4"></div>
+                <div className="animate-spin h-10 w-10 border-4 border-emerald-200 border-t-emerald-600 rounded-full mx-auto mb-4"></div>
                 <p className="text-sm text-emerald-600">Loading notifications...</p>
               </div>
             ) : notifications.length === 0 ? (
               <div className="p-8 text-center">
-                <div className="h-16 w-16 mx-auto mb-4 rounded-full bg-emerald-50 flex items-center justify-center">
-                  <BellIcon className="h-8 w-8 text-emerald-400" />
+                <div className="h-20 w-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center shadow-inner">
+                  <BellIcon className="h-10 w-10 text-emerald-400" />
                 </div>
-                <p className="text-base font-medium text-emerald-700 mb-1">All caught up!</p>
+                <p className="text-lg font-medium text-emerald-700 mb-2">All caught up!</p>
                 <p className="text-sm text-emerald-600/80">You have no new notifications.</p>
               </div>
             ) : (
@@ -295,13 +291,13 @@ export default function NotificationCenter() {
                     className={`relative transition-all duration-200 group ${
                       notification.isRead 
                         ? 'hover:bg-emerald-50/80' 
-                        : 'bg-emerald-50/90 hover:bg-emerald-100/90'
+                        : 'bg-gradient-to-r from-emerald-50/80 to-green-50/80 hover:from-emerald-100/80 hover:to-green-100/80'
                     }`}
                   >
                     {/* Notification container with conditional link */}
                     <ConditionalLink 
                       href={notification.link} 
-                      className="block px-4 py-3 focus:outline-none focus:bg-emerald-50/90 relative" 
+                      className="block px-4 py-4 focus:outline-none focus:bg-emerald-50/90 relative" 
                       onClick={() => handleMarkAsRead(notification._id, notification.isRead)}
                     >
                       <div className="flex items-start gap-3">
@@ -311,11 +307,11 @@ export default function NotificationCenter() {
                         </div>
                         
                         {/* Content */}
-                        <div className="flex-1 min-w-0 pr-6"> {/* Added right padding for delete button */}
+                        <div className="flex-1 min-w-0 pr-8"> {/* Added right padding for delete button */}
                           <p className={`text-sm leading-5 ${notification.isRead ? 'text-gray-800' : 'text-emerald-900 font-medium'}`}>
                             {notification.message}
                           </p>
-                          <p className="text-xs text-emerald-600/80 mt-1 flex items-center">
+                          <p className="text-xs text-emerald-600/80 mt-1.5 flex items-center">
                             <span className="inline-block w-3 h-3">
                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clipRule="evenodd" />
@@ -326,10 +322,10 @@ export default function NotificationCenter() {
                         </div>
                       </div>
                       
-                      {/* Delete button (moved inside the link for mobile) */}
+                      {/* Enhanced delete button with better mobile touch target */}
                       <button 
                         type="button" 
-                        className="absolute top-2 right-2 p-1.5 rounded-full text-emerald-400 hover:text-red-500 hover:bg-red-50/80 transition-all duration-200 z-10" 
+                        className="absolute top-3 right-3 p-2 rounded-full text-emerald-400 hover:text-red-500 hover:bg-red-50/80 transition-all duration-200 z-10" 
                         onClick={(e) => handleDeleteNotification(notification._id, e)}
                         title="Delete notification"
                       >
@@ -338,7 +334,7 @@ export default function NotificationCenter() {
                       </button>
                     </ConditionalLink>
                     
-                    {/* Unread indicator */}
+                    {/* Enhanced unread indicator */}
                     {!notification.isRead && (
                       <span className="absolute left-1.5 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20 animate-pulse-slow"></span>
                     )}
@@ -348,16 +344,16 @@ export default function NotificationCenter() {
             )}
           </div>
 
-          {/* Footer */}
+          {/* Enhanced footer with gradient button matching main page style */}
           {notifications.length > 0 && (
-            <div className="p-2 bg-gradient-to-r from-emerald-50/80 to-emerald-100/80 border-t border-emerald-200/50 text-center sticky bottom-0 z-10">
+            <div className="p-3 bg-gradient-to-r from-emerald-50/90 to-green-50/90 border-t border-emerald-200/50 text-center sticky bottom-0 z-10 shadow-inner">
               <Link 
                 href="/notifications" 
-                className="text-sm font-medium text-emerald-600 hover:text-emerald-800 inline-flex items-center py-1 px-3 rounded-lg hover:bg-emerald-200/30 transition-all duration-200"
+                className="text-sm font-medium text-white bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 inline-flex items-center py-2 px-4 rounded-lg transition-all duration-300 shadow-sm hover:shadow-md"
                 onClick={() => setIsOpen(false)}
               >
-                View all
-                <svg className="ml-1 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                View all notifications
+                <svg className="ml-1.5 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
               </Link>
@@ -366,7 +362,7 @@ export default function NotificationCenter() {
         </div>
       </Transition>
       
-      {/* Custom animations */}
+      {/* Enhanced animations and mobile responsiveness */}
       <style jsx>{`
         @keyframes ping-slow {
           0% { transform: scale(1); opacity: 0.8; }
@@ -383,6 +379,28 @@ export default function NotificationCenter() {
         }
         .animate-pulse-slow {
           animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        /* Enhanced mobile responsiveness */
+        @media (max-width: 640px) {
+          .notification-panel {
+            position: fixed;
+            width: 94vw;
+            max-height: 80vh;
+            top: 20vh;
+            left: 50%;
+            right: auto;
+            transform: translateX(-50%) !important;
+            margin-top: 0;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .notification-panel {
+            width: 96vw;
+            top: 10vh;
+            max-height: 80vh;
+          }
         }
       `}</style>
     </div>
