@@ -756,8 +756,8 @@ const speakText = (text: string) => {
     .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold markdown
     .replace(/\*(.*?)\*/g, '$1')     // Remove italic markdown
     .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Remove links
-    .replace(/<weather_data>.*?<\/weather_data>/s, '') // Remove structured data
-    .replace(/\n+/g, ' ') // Replace newlines with spaces
+    .replace(/<weather_data>[\s\S]*?<\/weather_data>/, '') // Remove structured data
+        .replace(/\n+/g, ' ') // Replace newlines with spaces
     .replace(/\d+°C/g, match => match.replace('°C', ' degrees Celsius')) // Improve pronunciation of temperature
     .replace(/%/g, ' percent') // Improve pronunciation of percentages
     .replace(/km\/h/g, 'kilometers per hour'); // Improve pronunciation of speed
