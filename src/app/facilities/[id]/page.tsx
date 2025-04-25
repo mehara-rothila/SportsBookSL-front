@@ -117,75 +117,75 @@ const FALLBACK_AVATAR = '/images/default-avatar.png';
 
 // --- 360° View Component ---
 const GoogleMaps360View = ({ lat, lng, facilityName }) => {
-  const [showView, setShowView] = useState(false);
-  const [loading, setLoading] = useState(false);
-  
-  if (!lat || !lng) return (
-    <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-emerald-900/40 to-green-800/30">
-      <p className="text-white/70">Coordinates not available for 360° view</p>
-    </div>
-  );
-  
-  // Create URL for Google Maps Embed with Street View mode
-  const streetViewUrl = `https://www.google.com/maps/embed?pb=!4v1619961505757!6m8!1m7!1sCAoSLEFGMVFpcE1OUXE0cjczLWlvNDRVR2pGZFFtUUZxWTl0QUQ0Qk54bGxfOUIw!2m2!1d${lat}!2d${lng}!3f0!4f0!5f0.8`;
-  
-  const handleLoadView = () => {
-    setLoading(true);
-    setShowView(true);
-  };
-  
-  const handleIframeLoad = () => {
-    setLoading(false);
-  };
-  
-  return (
-    <div className="h-full w-full bg-gradient-to-br from-emerald-900/40 to-green-800/30 relative">
-      {!showView ? (
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 animate-fade-in">
-          <div className="w-16 h-16 bg-emerald-600/30 rounded-full flex items-center justify-center mb-4 animate-pulse">
-            <ViewfinderCircleIcon className="h-10 w-10 text-emerald-300" />
-          </div>
-          <h5 className="text-lg font-bold text-emerald-300 mb-1">Interactive 360° View</h5>
-          <p className="text-white/80 mb-3">Explore the area around {facilityName}</p>
-          <p className="text-xs text-white/60 mb-3">Coordinates: {lat?.toFixed(5)}, {lng?.toFixed(5)}</p>
-          <button
-            onClick={handleLoadView}
-            className="px-4 py-2 bg-white text-emerald-700 rounded-full font-medium shadow-lg transform hover:scale-105 transition-all duration-300"
-          >
-            Load 360° View
-          </button>
-        </div>
-      ) : (
-        <>
-          {loading && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-gradient-to-br from-emerald-900/70 to-green-800/70">
-              <div className="w-12 h-12 border-4 border-emerald-200/30 border-t-emerald-600 rounded-full animate-spin mb-3"></div>
-              <p className="text-emerald-200">Loading 360° view...</p>
+    const [showView, setShowView] = useState(false);
+    const [loading, setLoading] = useState(false);
+    
+    if (!lat || !lng) return (
+      <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-emerald-900/40 to-green-800/30">
+        <p className="text-white/70">Coordinates not available for 360° view</p>
+      </div>
+    );
+    
+    // Create URL for Google Maps Embed with Street View mode
+    const streetViewUrl = `https://www.google.com/maps/embed?pb=!4v1619961505757!6m8!1m7!1sCAoSLEFGMVFpcE1OUXE0cjczLWlvNDRVR2pGZFFtUUZxWTl0QUQ0Qk54bGxfOUIw!2m2!1d${lat}!2d${lng}!3f0!4f0!5f0.8`;
+    
+    const handleLoadView = () => {
+      setLoading(true);
+      setShowView(true);
+    };
+    
+    const handleIframeLoad = () => {
+      setLoading(false);
+    };
+    
+    return (
+      <div className="h-full w-full bg-gradient-to-br from-emerald-900/40 to-green-800/30 relative">
+        {!showView ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 animate-fade-in">
+            <div className="w-16 h-16 bg-emerald-600/30 rounded-full flex items-center justify-center mb-4 animate-pulse">
+              <ViewfinderCircleIcon className="h-10 w-10 text-emerald-300" />
             </div>
-          )}
-          <iframe
-            src={streetViewUrl}
-            width="100%"
-            height="100%"
-            style={{ border: 0 }}
-            allowFullScreen=""
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            title={`360° view of ${facilityName}`}
-            className="absolute inset-0"
-            onLoad={handleIframeLoad}
-          />
-          <button
-            onClick={() => setShowView(false)}
-            className="absolute top-2 right-2 p-2 bg-black/50 backdrop-blur-sm rounded-full text-white z-10 hover:bg-black/70 transition-colors"
-          >
-            <XMarkIcon className="w-5 h-5" />
-          </button>
-        </>
-      )}
-    </div>
-  );
-};
+            <h5 className="text-lg font-bold text-emerald-300 mb-1">Interactive 360° View</h5>
+            <p className="text-white/80 mb-3">Explore the area around {facilityName}</p>
+            <p className="text-xs text-white/60 mb-3">Coordinates: {lat?.toFixed(5)}, {lng?.toFixed(5)}</p>
+            <button
+              onClick={handleLoadView}
+              className="px-4 py-2 bg-white text-emerald-700 rounded-full font-medium shadow-lg transform hover:scale-105 transition-all duration-300"
+            >
+              Load 360° View
+            </button>
+          </div>
+        ) : (
+          <>
+            {loading && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-gradient-to-br from-emerald-900/70 to-green-800/70">
+                <div className="w-12 h-12 border-4 border-emerald-200/30 border-t-emerald-600 rounded-full animate-spin mb-3"></div>
+                <p className="text-emerald-200">Loading 360° view...</p>
+              </div>
+            )}
+            <iframe
+              src={streetViewUrl}
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen={true}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title={`360° view of ${facilityName}`}
+              className="absolute inset-0"
+              onLoad={handleIframeLoad}
+            />
+            <button
+              onClick={() => setShowView(false)}
+              className="absolute top-2 right-2 p-2 bg-black/50 backdrop-blur-sm rounded-full text-white z-10 hover:bg-black/70 transition-colors"
+            >
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+          </>
+        )}
+      </div>
+    );
+  };
 
 // --- Component ---
 export default function FacilityDetailPage() {
