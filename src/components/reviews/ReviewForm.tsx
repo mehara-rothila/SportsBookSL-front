@@ -2,29 +2,41 @@
 'use client';
 
 import { useState } from 'react';
-import { StarIcon } from '@heroicons/react/24/solid';
+import { StarIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { PencilIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/ui/Button';
 
 interface ReviewFormProps {
-  targetId: string; // Facility ID or Trainer ID
+  targetId: string;
   targetType: 'facility' | 'trainer';
-  onSubmitSuccess: (newReview: any) => void; // Callback after successful submission
-  onCancel: () => void; // Callback to close the form/modal
-  cricketTheme?: boolean; // Optional flag for cricket theme styling
+  onSubmitSuccess: (newReview: any) => void;
+  onCancel: () => void;
+  facilityName?: string; // Optional facility name to display
 }
 
-// Import the specific service functions
-import * as reviewService from '@/services/reviewService'; // Import the entire service
+import * as reviewService from '@/services/reviewService';
 
-export default function ReviewForm({ targetId, targetType, onSubmitSuccess, onCancel, cricketTheme = true }: ReviewFormProps) {
+export default function ReviewForm({ 
+  targetId, 
+  targetType, 
+  onSubmitSuccess, 
+  onCancel,
+  facilityName
+}: ReviewFormProps) {
   const [rating, setRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [content, setContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [charCount, setCharCount] = useState<number>(0);
 
   const handleRatingClick = (rate: number) => {
     setRating(rate);
+  };
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setContent(e.target.value);
+    setCharCount(e.target.value.length);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,24 +49,18 @@ export default function ReviewForm({ targetId, targetType, onSubmitSuccess, onCa
     setIsLoading(true);
 
     const reviewData = { rating, content };
-    console.log(`Submitting review for ${targetType} ID: ${targetId}`, reviewData);
 
     try {
-      let newReviewResponse; // Changed variable name for clarity
+      let newReviewResponse;
       if (targetType === 'facility') {
         newReviewResponse = await reviewService.addFacilityReview(targetId, reviewData);
-        console.log('Facility review submitted:', newReviewResponse);
-      } else { // targetType === 'trainer'
+      } else {
         newReviewResponse = await reviewService.addTrainerReview(targetId, reviewData);
-        console.log('Trainer review submitted:', newReviewResponse);
       }
       
-      // Check if the response contains the review object
       if (newReviewResponse && newReviewResponse.review) {
-        // Pass the actual review object from the response
         onSubmitSuccess(newReviewResponse.review);
       } else {
-        console.error('Review response missing review object:', newReviewResponse);
         throw new Error('Invalid response format from server');
       }
     } catch (err: any) {
@@ -66,102 +72,136 @@ export default function ReviewForm({ targetId, targetType, onSubmitSuccess, onCa
   };
 
   return (
-    <form onSubmit={handleSubmit} className={`space-y-6 p-1 ${cricketTheme ? 'bg-gradient-to-br from-emerald-900/30 to-green-900/20 p-4 rounded-xl border border-white/10' : ''}`}>
-      <div>
-        <label className={`block text-sm font-medium ${cricketTheme ? 'text-white' : 'text-gray-700'} mb-2`}>Your Rating *</label>
-        <div className="flex items-center space-x-1">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <button
-              key={star}
-              type="button"
-              onMouseEnter={() => setHoverRating(star)}
-              onMouseLeave={() => setHoverRating(0)}
-              onClick={() => handleRatingClick(star)}
-              className="focus:outline-none transition-transform duration-200 hover:scale-110"
-              aria-label={`Rate ${star} out of 5 stars`}
-            >
-              <StarIcon
-                className={`h-8 w-8 transition-colors duration-150 ${
-                  (hoverRating || rating) >= star 
-                    ? 'text-amber-400' 
-                    : cricketTheme ? 'text-gray-600' : 'text-gray-300'
-                } ${
-                  rating >= star ? 'animate-pulse-once' : ''
-                }`}
-              />
-            </button>
-          ))}
-          
-          {/* Rating text indicator */}
-          <span className={`ml-2 ${cricketTheme ? 'text-white' : 'text-gray-700'} text-sm font-medium min-w-[80px]`}>
-            {rating === 1 && "Poor"}
-            {rating === 2 && "Fair"}
-            {rating === 3 && "Good"}
-            {rating === 4 && "Very Good"}
-            {rating === 5 && "Excellent"}
-          </span>
-        </div>
-      </div>
-
-      <div>
-        <label htmlFor="review-content" className={`block text-sm font-medium ${cricketTheme ? 'text-white' : 'text-gray-700'} mb-1`}>
-          Your Review *
-        </label>
-        <textarea
-          id="review-content"
-          name="content"
-          rows={4}
-          className={`block w-full rounded-md ${
-            cricketTheme 
-              ? 'bg-white/10 text-white border-white/20 focus:border-emerald-500 focus:ring-emerald-500 placeholder-white/50' 
-              : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'
-          } shadow-sm sm:text-sm transition-colors duration-200`}
-          placeholder={`Share your experience with this ${targetType}...`}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          required
-        />
-      </div>
-
-      {error && (
-        <div className={`${
-          cricketTheme 
-            ? 'bg-red-900/30 text-red-200 border border-red-500/30' 
-            : 'bg-red-50 text-red-700'
-        } p-3 rounded-md text-sm`}>
-          {error}
-        </div>
-      )}
-
-      <div className="flex justify-end space-x-3 pt-2">
-        <Button 
-          type="button" 
-          variant={cricketTheme ? "glass" : "outline"} 
-          onClick={onCancel} 
-          disabled={isLoading}
+    <div className="bg-white rounded-lg shadow-xl overflow-hidden max-w-lg w-full mx-auto">
+      {/* Header */}
+      <div className="flex justify-between items-center bg-green-700 text-white px-6 py-4">
+        <h2 className="text-xl font-bold">
+          Write a Review {facilityName ? `for ${facilityName}` : ''}
+        </h2>
+        <button 
+          onClick={onCancel}
+          className="text-white hover:text-green-100 transition-colors"
+          aria-label="Close review form"
         >
-          Cancel
-        </Button>
-        <Button 
-          type="submit" 
-          variant={cricketTheme ? "gradient" : "primary"}
-          isLoading={isLoading} 
-          disabled={rating === 0 || !content.trim()}
-        >
-          Submit Review
-        </Button>
+          <XMarkIcon className="w-6 h-6" />
+        </button>
       </div>
-      
-      <style jsx global>{`
-        @keyframes pulse-once {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.2); }
-          100% { transform: scale(1); }
-        }
-        .animate-pulse-once {
-          animation: pulse-once 0.3s ease-in-out;
-        }
-      `}</style>
-    </form>
+
+      <form onSubmit={handleSubmit} className="p-6">
+        {/* Header Banner */}
+        <div className="bg-green-100 rounded-lg p-4 mb-6 flex items-center">
+          <div className="bg-green-600 rounded-full p-2 mr-3">
+            <PencilIcon className="h-5 w-5 text-white" />
+          </div>
+          <h3 className="text-green-800 font-semibold">Share Your Experience</h3>
+        </div>
+
+        {/* Star Rating */}
+        <div className="mb-6">
+          <label htmlFor="rating" className="block text-gray-800 font-medium mb-2">
+            Your Rating <span className="text-red-500">*</span>
+          </label>
+          <div className="flex space-x-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                onClick={() => handleRatingClick(star)}
+                onMouseEnter={() => setHoverRating(star)}
+                onMouseLeave={() => setHoverRating(0)}
+                className={`transition-transform duration-150 hover:scale-110 focus:outline-none`}
+                aria-label={`Rate ${star} out of 5 stars`}
+              >
+                <StarIcon 
+                  className={`w-10 h-10 ${
+                    (hoverRating || rating) >= star 
+                      ? 'text-green-500' 
+                      : 'text-gray-300'
+                  }`} 
+                />
+              </button>
+            ))}
+          </div>
+          {rating > 0 && (
+            <div className="mt-2">
+              <span className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${getRatingBadgeColor(rating)}`}>
+                {getRatingText(rating)}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Review Text */}
+        <div className="mb-6">
+          <label htmlFor="review-content" className="block text-gray-800 font-medium mb-2">
+            Your Review <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            id="review-content"
+            rows={4}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+            placeholder={`Share your experience with this ${targetType}...`}
+            value={content}
+            onChange={handleContentChange}
+            maxLength={500}
+          ></textarea>
+          <div className="flex justify-end mt-1 text-xs text-gray-500">
+            {charCount}/500 characters
+          </div>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start">
+            <XMarkIcon className="w-5 h-5 mr-2 flex-shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+            disabled={isLoading}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className={`px-6 py-2.5 rounded-lg bg-green-600 text-white font-medium 
+              ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-green-700'} 
+              transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-sm`}
+            disabled={isLoading || rating === 0 || !content.trim()}
+          >
+            {isLoading ? 'Submitting...' : 'Submit Review'}
+          </button>
+        </div>
+      </form>
+    </div>
   );
+}
+
+// Helper functions
+function getRatingText(rating: number): string {
+  switch(rating) {
+    case 1: return "Poor";
+    case 2: return "Fair";
+    case 3: return "Good";
+    case 4: return "Very Good";
+    case 5: return "Excellent";
+    default: return "";
+  }
+}
+
+function getRatingBadgeColor(rating: number): string {
+  switch(rating) {
+    case 1: return "bg-red-100 text-red-800";
+    case 2: return "bg-orange-100 text-orange-800";
+    case 3: return "bg-yellow-100 text-yellow-800";
+    case 4: return "bg-green-100 text-green-800";
+    case 5: return "bg-green-100 text-green-800";
+    default: return "bg-gray-100 text-gray-800";
+  }
 }
