@@ -1101,21 +1101,13 @@ const WeatherChatbot: React.FC<WeatherChatbotProps> = ({
     // For assistant messages, enhance with weather data if available
     const { weatherData } = message;
     
-    // Get current accurate data, ensuring we handle type conversion properly
-    const currentTemp = safeNumber(weatherData?.temperature !== undefined ? 
-      weatherData.temperature : 
-      weatherData?.current?.temp);
+    const currentTemp = safeNumber(weatherData?.temperature);
+  
+    const currentCondition = weatherData?.condition;
       
-    const currentCondition = weatherData?.condition || 
-      weatherData?.current?.weather?.[0]?.main?.toLowerCase();
+    const currentPrecip = safeNumber(weatherData?.precipitation);
       
-    const currentPrecip = safeNumber(weatherData?.precipitation !== undefined ? 
-      weatherData.precipitation : 
-      (weatherData?.hourly?.[0]?.pop !== undefined ? Math.round(Number(weatherData.hourly[0].pop) * 100) : undefined));
-      
-    const currentWind = safeNumber(weatherData?.wind !== undefined ? 
-      weatherData.wind : 
-      (weatherData?.current?.wind_speed !== undefined ? Math.round(Number(weatherData.current.wind_speed) * 3.6) : undefined));
+    const currentWind = safeNumber(weatherData?.wind);
     
     // If forecast visualization requested, add visual forecast elements
     if (weatherData?.visualType === 'forecast') {
