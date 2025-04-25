@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import * as facilityService from '@/services/facilityService';
 import * as weatherService from '@/services/weatherService';
+import WeatherChatbot from '@/app/facilities/[id]/weather/WeatherChatbot';
+
 import { 
   ArrowPathIcon, 
   ChevronLeftIcon, 
@@ -937,6 +939,7 @@ export default function WeatherAnalyticsPage() {
             Hourly Forecast
           </h3>
           
+
           <div className="overflow-x-auto pb-4">
             <div className="inline-flex space-x-4 min-w-full">
               {weatherData.hourly?.slice(0, 12).map((hour, index) => (
@@ -959,7 +962,14 @@ export default function WeatherAnalyticsPage() {
             </div>
           </div>
         </div>
-        
+        {/* Weather Chatbot Section */}
+<div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-xl mb-8">
+  <WeatherChatbot 
+    weatherData={weatherData} 
+    facilityName={facility?.name || 'this facility'} 
+  />
+</div>
+
         {/* Footer */}
         <div className="text-center text-sm text-gray-300">
           <p>Weather data provided by OpenWeatherMap</p>
