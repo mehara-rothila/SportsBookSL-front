@@ -29,14 +29,11 @@ import { CalendarDaysIcon, CreditCardIcon, UserIcon, BuildingStorefrontIcon, Bri
 
 // --- Constants ---
 const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:5001';
-// No fallback avatar anymore - we won't use a placeholder
-const DEFAULT_AVATAR = '/images/default-avatar.png'; // This seems unused now, keep or remove based on need
-const FALLBACK_FACILITY_IMAGE = '/images/facility-placeholder.jpg'; // Also potentially unused if BuildingStorefrontIcon is default
+const FALLBACK_FACILITY_IMAGE = '/images/facility-placeholder.jpg';
 const CANCELLATION_HOURS_LIMIT = 24;
 
 
 // --- Interfaces ---
-// FIX: Updated role type to match expected literal union type by userService.updateUserProfile
 interface UserProfile {
     _id: string;
     name: string;
@@ -46,10 +43,9 @@ interface UserProfile {
     avatar?: string;
     createdAt?: string;
     sportPreferences?: string[];
-    role?: "user" | "trainer" | "admin" | "facilityOwner"; // Changed from 'string'
+    role?: "user" | "trainer" | "admin" | "facilityOwner";
 }
 
-// Updated Booking interface to match API response
 interface Booking {
     _id: string;
     bookingId?: string;
@@ -81,26 +77,81 @@ interface Booking {
 interface Favorite {
     _id: string; images?: string[]; name: string; location: string; rating?: number; pricePerHour?: string;
 }
+
 interface FinAidAppSummary {
     _id: string; submittedDate?: string; status: string; sportsInfo?: { primarySport?: string; };
 }
-// This assumes FinancialAidApplicationDetails is exported from the service
-// If the error persists, double-check the export in financialAidService
+
 interface FinAidAppDetails extends financialAidService.FinancialAidApplicationDetails {}
+
 interface UserDonation {
     _id: string; athlete?: { _id: string; name: string; }; amount: number; donationDate: string; paymentStatus: string; isAnonymous: boolean;
 }
 
 // --- Helper Functions ---
 function classNames(...classes: string[]) { return classes.filter(Boolean).join(' '); }
-const formatDate = (dateString: string | undefined, formatStr = 'PPP'): string => { if (!dateString) return 'N/A'; try { const date = parseISO(dateString); return isValid(date) ? format(date, formatStr) : 'Invalid Date'; } catch (e) { console.error("Date Format Error:", e); return 'Invalid Date'; } };
-const formatCurrency = (amount: number | undefined | null): string => { if (amount === undefined || amount === null) return 'N/A'; return `Rs. ${amount.toLocaleString('en-LK')}`; };
-const canCancelBooking = (bookingDate: string): boolean => { try { const now = new Date(); const bookingDT = parseISO(bookingDate); return isValid(bookingDT) && differenceInHours(bookingDT, now) > CANCELLATION_HOURS_LIMIT; } catch (e) { return false; } };
+
+const formatDate = (dateString: string | undefined, formatStr = 'PPP'): string => { 
+    if (!dateString) return 'N/A'; 
+    try { 
+        const date = parseISO(dateString); 
+        return isValid(date) ? format(date, formatStr) : 'Invalid Date'; 
+    } catch (e) { 
+        console.error("Date Format Error:", e); 
+        return 'Invalid Date'; 
+    } 
+};
+
+const formatCurrency = (amount: number | undefined | null): string => { 
+    if (amount === undefined || amount === null) return 'N/A'; 
+    return `Rs. ${amount.toLocaleString('en-LK')}`; 
+};
+
+const canCancelBooking = (bookingDate: string): boolean => { 
+    try { 
+        const now = new Date(); 
+        const bookingDT = parseISO(bookingDate); 
+        return isValid(bookingDT) && differenceInHours(bookingDT, now) > CANCELLATION_HOURS_LIMIT; 
+    } catch (e) { 
+        return false; 
+    } 
+};
 
 // --- Helper Components ---
-const Spinner = ({ message = "Loading..." }: { message?: string }) => (<div className="flex flex-col justify-center items-center py-10"><div className="w-8 h-8 border-2 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div><p className="mt-2 text-sm text-gray-500">{message}</p></div>);
-const ErrorMessage = ({ message }: { message: string | null }) => (message ? (<div className="text-center py-10 text-red-600 bg-red-50/90 backdrop-blur-sm p-4 rounded-lg border border-red-200"><p className="font-medium">Error:</p>{message}</div>) : null);
-const EmptyState = ({ type, message, actionText, actionHref } : { type: string; message: string; actionText?: string; actionHref?: string }) => ( <div className="text-center py-12 px-4 rounded-lg bg-gradient-to-br from-emerald-50 via-white to-green-50 border border-emerald-100"> <div className="mx-auto h-16 w-16 rounded-full bg-emerald-100 flex items-center justify-center ring-4 ring-emerald-200/50">{type === 'bookings' ? <CalendarDaysIcon className="h-8 w-8 text-emerald-600" /> : type === 'favorites' ? <StarIcon className="h-8 w-8 text-emerald-600" /> : type === 'financial' ? <CreditCardIcon className="h-8 w-8 text-emerald-600" /> : type === 'donations' ? <GiftIcon className="h-8 w-8 text-emerald-600" /> : <QuestionMarkCircleIcon className="h-8 w-8 text-emerald-600" />}</div> <h3 className="mt-3 text-lg font-medium text-gray-900">No {type} found</h3> <p className="mt-1 text-sm text-gray-500 max-w-md mx-auto">{message}</p> {actionText && actionHref && (<Link href={actionHref} className="mt-4 inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"> {actionText} </Link> )} </div> );
+const Spinner = ({ message = "Loading..." }: { message?: string }) => (
+    <div className="flex flex-col justify-center items-center py-10">
+        <div className="w-8 h-8 border-2 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
+        <p className="mt-2 text-sm text-gray-500">{message}</p>
+    </div>
+);
+
+const ErrorMessage = ({ message }: { message: string | null }) => (
+    message ? (
+        <div className="text-center py-10 text-red-600 bg-red-50/90 backdrop-blur-sm p-4 rounded-lg border border-red-200">
+            <p className="font-medium">Error:</p>
+            {message}
+        </div>
+    ) : null
+);
+
+const EmptyState = ({ type, message, actionText, actionHref }: { type: string; message: string; actionText?: string; actionHref?: string }) => ( 
+    <div className="text-center py-12 px-4 rounded-lg bg-gradient-to-br from-emerald-50 via-white to-green-50 border border-emerald-100"> 
+        <div className="mx-auto h-16 w-16 rounded-full bg-emerald-100 flex items-center justify-center ring-4 ring-emerald-200/50">
+            {type === 'bookings' ? <CalendarDaysIcon className="h-8 w-8 text-emerald-600" /> : 
+             type === 'favorites' ? <StarIcon className="h-8 w-8 text-emerald-600" /> : 
+             type === 'financial' ? <CreditCardIcon className="h-8 w-8 text-emerald-600" /> : 
+             type === 'donations' ? <GiftIcon className="h-8 w-8 text-emerald-600" /> : 
+             <QuestionMarkCircleIcon className="h-8 w-8 text-emerald-600" />}
+        </div> 
+        <h3 className="mt-3 text-lg font-medium text-gray-900">No {type} found</h3> 
+        <p className="mt-1 text-sm text-gray-500 max-w-md mx-auto">{message}</p> 
+        {actionText && actionHref && (
+            <Link href={actionHref} className="mt-4 inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"> 
+                {actionText} 
+            </Link> 
+        )} 
+    </div> 
+);
 
 
 // --- Main Page Component ---
@@ -140,6 +191,7 @@ function ProfilePageContent() {
 
     const [selectedIndex, setSelectedIndex] = useState(0);
 
+    // Tracking if data has been fetched for each section
     const [bookingsFetched, setBookingsFetched] = useState(false);
     const [favoritesFetched, setFavoritesFetched] = useState(false);
     const [aidFetched, setAidFetched] = useState(false);
@@ -152,12 +204,15 @@ function ProfilePageContent() {
     const [bookingToCancelId, setBookingToCancelId] = useState<string | null>(null);
     const [confirmAvatarRemoveModalOpen, setConfirmAvatarRemoveModalOpen] = useState(false);
 
-    // --- Fetch Functions (Memoized) ---
+    // --- IMPROVED Fetch Functions (Memoized) ---
+    // FIX 1: Improved error handling and logging in fetch functions
     const fetchProfile = useCallback(async () => {
         setLoadingProfile(true);
         setProfileError(null);
         try {
+            console.log("Fetching user profile...");
             const data = await userService.getUserProfile();
+            console.log("Profile data received:", data);
             setProfile(data);
             setEditedProfileData({
                 name: data?.name || '',
@@ -166,7 +221,6 @@ function ProfilePageContent() {
                 address: data?.address || ''
             });
 
-            // Set avatar preview directly without fallback
             if (data?.avatar) {
                 setAvatarPreview(`${BACKEND_BASE_URL}${data.avatar}`);
             } else {
@@ -180,47 +234,119 @@ function ProfilePageContent() {
         }
     }, []);
 
-    // Updated to use type casting for TypeScript compatibility
+    // FIX 2: Improved bookings fetch function with better error handling and logging
     const fetchBookingsData = useCallback(async () => {
         if (bookingsFetched || loadingBookings) return;
         setLoadingBookings(true);
         setBookingsError(null);
         try {
+            console.log("Fetching user bookings...");
             const data = await bookingService.getUserBookings();
-            // Use type casting to ensure compatibility
-            const processedBookings = data.map(b => ({
+            console.log("Bookings data received:", data);
+            
+            // Process the bookings data to ensure consistent structure
+            const processedBookings = Array.isArray(data) ? data.map(b => ({
                 ...b,
-                bookingType: b.trainer ? 'trainer' : 'facility'
-            })) as Booking[];
-
+                bookingType: b.bookingType || (b.trainer ? 'trainer' : 'facility') // Use existing bookingType if available
+            })) as Booking[] : [];
+            
             setBookings(processedBookings);
             setBookingsFetched(true);
         } catch (err: any) {
-            setBookingsError(err?.message || 'Failed to load bookings');
+            console.error("Fetch Bookings Error:", err);
+            setBookingsError(err?.message || 'Failed to load bookings. Please try again later.');
         } finally {
             setLoadingBookings(false);
         }
     }, [bookingsFetched, loadingBookings]);
 
+    // FIX 3: Improved favorites fetch function
     const fetchFavoritesData = useCallback(async () => {
-         if (favoritesFetched || loadingFavorites) return; setLoadingFavorites(true); setFavoritesError(null); try { const data = await userService.getUserFavorites(); setFavorites(data); setFavoritesFetched(true); } catch (err:any) { setFavoritesError(err?.message || 'Failed to load favorites'); } finally { setLoadingFavorites(false); }
+        if (favoritesFetched || loadingFavorites) return;
+        setLoadingFavorites(true);
+        setFavoritesError(null);
+        try {
+            console.log("Fetching user favorites...");
+            const data = await userService.getUserFavorites();
+            console.log("Favorites data received:", data);
+            setFavorites(Array.isArray(data) ? data : []);
+            setFavoritesFetched(true);
+        } catch (err: any) {
+            console.error("Fetch Favorites Error:", err);
+            setFavoritesError(err?.message || 'Failed to load favorites. Please try again later.');
+        } finally {
+            setLoadingFavorites(false);
+        }
     }, [favoritesFetched, loadingFavorites]);
 
-     const fetchDonationsData = useCallback(async () => {
-        if (donationsFetched || loadingDonations) return; setLoadingDonations(true); setDonationError(null); try { const data = await userService.getUserDonationHistory(); setDonationHistory(data); setDonationsFetched(true); } catch (err:any) { setDonationError(err?.message || 'Failed to load donation history'); } finally { setLoadingDonations(false); }
-     }, [donationsFetched, loadingDonations]);
+    // FIX 4: Improved donations fetch function
+    const fetchDonationsData = useCallback(async () => {
+        if (donationsFetched || loadingDonations) return;
+        setLoadingDonations(true);
+        setDonationError(null);
+        try {
+            console.log("Fetching user donation history...");
+            const data = await userService.getUserDonationHistory();
+            console.log("Donations data received:", data);
+            setDonationHistory(Array.isArray(data) ? data : []);
+            setDonationsFetched(true);
+        } catch (err: any) {
+            console.error("Fetch Donations Error:", err);
+            setDonationError(err?.message || 'Failed to load donation history. Please try again later.');
+        } finally {
+            setLoadingDonations(false);
+        }
+    }, [donationsFetched, loadingDonations]);
 
+    // FIX 5: Improved financial aid fetch function
     const fetchAidData = useCallback(async () => {
-        // Assume 'getUserFinancialAidApps' is correct function name in userService based on context
-        if (aidFetched || loadingAid) return; setLoadingAid(true); setAidError(null); try { const data = await userService.getUserFinancialAidApps(); setFinancialAidApps(data); setAidFetched(true); } catch (err:any) { setAidError(err?.message || 'Failed to load applications'); } finally { setLoadingAid(false); }
-     }, [aidFetched, loadingAid]);
+        if (aidFetched || loadingAid) return;
+        setLoadingAid(true);
+        setAidError(null);
+        try {
+            console.log("Fetching user financial aid applications...");
+            const data = await userService.getUserFinancialAidApps();
+            console.log("Financial aid data received:", data);
+            setFinancialAidApps(Array.isArray(data) ? data : []);
+            setAidFetched(true);
+        } catch (err: any) {
+            console.error("Fetch Financial Aid Error:", err);
+            setAidError(err?.message || 'Failed to load applications. Please try again later.');
+        } finally {
+            setLoadingAid(false);
+        }
+    }, [aidFetched, loadingAid]);
 
-     // --- Initial Auth Check & Profile Load ---
-     useEffect(() => {
+    // FIX 6: Force refetch function for debugging
+    const forceRefetch = useCallback(() => {
+        const currentTab = selectedIndex;
+        switch(currentTab) {
+            case 0: // Bookings
+                setBookingsFetched(false);
+                fetchBookingsData();
+                break;
+            case 1: // Favorites
+                setFavoritesFetched(false);
+                fetchFavoritesData();
+                break;
+            case 2: // Donations
+                setDonationsFetched(false);
+                fetchDonationsData();
+                break;
+            case 3: // Financial Aid
+                setAidFetched(false);
+                fetchAidData();
+                break;
+        }
+    }, [selectedIndex, fetchBookingsData, fetchFavoritesData, fetchDonationsData, fetchAidData]);
+
+    // --- Initial Auth Check & Profile Load ---
+    useEffect(() => {
         const checkAuthAndLoad = async () => {
             try {
                 const isAuthed = authService.isAuthenticated();
                 if (!isAuthed) {
+                    console.log("User not authenticated, redirecting to login...");
                     router.push('/login?redirect=/profile');
                     return;
                 }
@@ -233,28 +359,84 @@ function ProfilePageContent() {
         checkAuthAndLoad();
     }, [router, fetchProfile]);
 
-    // --- Fetch Tab Data Effect ---
+    // FIX 7: Improved tab data fetch effect with better logging
     useEffect(() => {
-         if (!profile) return; const fetchTabData = async () => { switch(selectedIndex) { case 0: if(!bookingsFetched) await fetchBookingsData(); break; case 1: if(!favoritesFetched) await fetchFavoritesData(); break; case 2: if(!donationsFetched) await fetchDonationsData(); break; // Donations Tab
-                 case 3: if(!aidFetched) await fetchAidData(); break; // Financial Aid Tab
-                 // case 4 is settings, no initial fetch
-            } }; fetchTabData();
-    }, [selectedIndex, profile, bookingsFetched, favoritesFetched, aidFetched, donationsFetched, fetchBookingsData, fetchFavoritesData, fetchDonationsData, fetchAidData]);
+        if (!profile) return;
+        
+        const fetchTabData = async () => {
+            console.log(`Fetching data for tab index: ${selectedIndex}`);
+            
+            switch(selectedIndex) {
+                case 0: // Bookings Tab
+                    if (!bookingsFetched) {
+                        console.log("Initiating bookings fetch...");
+                        await fetchBookingsData();
+                    }
+                    break;
+                case 1: // Favorites Tab
+                    if (!favoritesFetched) {
+                        console.log("Initiating favorites fetch...");
+                        await fetchFavoritesData();
+                    }
+                    break;
+                case 2: // Donations Tab
+                    if (!donationsFetched) {
+                        console.log("Initiating donations fetch...");
+                        await fetchDonationsData();
+                    }
+                    break;
+                case 3: // Financial Aid Tab
+                    if (!aidFetched) {
+                        console.log("Initiating financial aid fetch...");
+                        await fetchAidData();
+                    }
+                    break;
+                // case 4 is settings, no initial fetch needed
+            }
+        };
+        
+        fetchTabData();
+    }, [
+        selectedIndex, profile, 
+        bookingsFetched, favoritesFetched, aidFetched, donationsFetched,
+        fetchBookingsData, fetchFavoritesData, fetchDonationsData, fetchAidData
+    ]);
 
-     // Handle tab selection from query parameters (e.g., /profile?tab=bookings)
-     useEffect(() => {
-         const tab = searchParams.get('tab');
-         switch (tab) {
-             case 'bookings': setSelectedIndex(0); break;
-             case 'favorites': setSelectedIndex(1); break;
-             case 'donations': setSelectedIndex(2); break;
-             case 'aid': setSelectedIndex(3); break;
-             case 'settings': setSelectedIndex(4); break;
-             default: // If no tab param or invalid, default to 0 or keep current
-                if (!searchParams.has('tab')) setSelectedIndex(0);
+    // Handle tab selection from query parameters (e.g., /profile?tab=bookings)
+    useEffect(() => {
+        const tab = searchParams.get('tab');
+        console.log(`URL tab parameter: ${tab}`);
+        
+        switch (tab) {
+            case 'bookings': 
+                console.log("Setting tab to bookings (0)");
+                setSelectedIndex(0); 
                 break;
-         }
-     }, [searchParams]);
+            case 'favorites': 
+                console.log("Setting tab to favorites (1)");
+                setSelectedIndex(1); 
+                break;
+            case 'donations': 
+                console.log("Setting tab to donations (2)");
+                setSelectedIndex(2); 
+                break;
+            case 'aid': 
+                console.log("Setting tab to financial aid (3)");
+                setSelectedIndex(3); 
+                break;
+            case 'settings': 
+                console.log("Setting tab to settings (4)");
+                setSelectedIndex(4); 
+                break;
+            default:
+                // If no tab param or invalid, default to 0 (bookings) or keep current
+                if (!searchParams.has('tab')) {
+                    console.log("No tab parameter, defaulting to bookings (0)");
+                    setSelectedIndex(0);
+                }
+                break;
+        }
+    }, [searchParams]);
 
     // --- Event Handlers ---
     const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -266,7 +448,7 @@ function ProfilePageContent() {
         setLoadingProfile(true);
         setProfileError(null);
         try {
-            const dataToUpdate: Partial<UserProfile> = {}; // This object will only contain fields that are changed and are allowed to be updated by the user
+            const dataToUpdate: Partial<UserProfile> = {};
 
             if (editedProfileData.name !== profile.name) dataToUpdate.name = editedProfileData.name;
             if (editedProfileData.email !== profile.email) dataToUpdate.email = editedProfileData.email;
@@ -274,14 +456,9 @@ function ProfilePageContent() {
             if (editedProfileData.address !== (profile.address || '')) dataToUpdate.address = editedProfileData.address;
 
             if (Object.keys(dataToUpdate).length > 0) {
-                // Because dataToUpdate is constructed only with name, email, phone, address,
-                // and the local UserProfile type definition now correctly reflects the possible
-                // literal values for 'role' if it were included (which it isn't in this update),
-                // the type check passes as 'dataToUpdate' is a valid Partial<UserProfile>.
                 const updatedData = await userService.updateUserProfile(dataToUpdate);
                 setProfile(updatedData);
 
-                // Update avatar preview
                 if (updatedData.avatar) {
                     setAvatarPreview(`${BACKEND_BASE_URL}${updatedData.avatar}`);
                 } else {
@@ -299,7 +476,6 @@ function ProfilePageContent() {
 
                 toast.success("Profile updated!");
             } else {
-                // *** FIX 1: Use base toast for info messages ***
                 toast("No changes made.");
             }
 
@@ -348,7 +524,6 @@ function ProfilePageContent() {
             reader.readAsDataURL(file);
         } else {
             setSelectedAvatarFile(null);
-            // Keep current avatar or set to null if no avatar exists
             setAvatarPreview(profile?.avatar ? `${BACKEND_BASE_URL}${profile.avatar}` : null);
         }
     };
@@ -370,7 +545,6 @@ function ProfilePageContent() {
 
             setProfile(updatedProfile);
 
-            // Set avatar preview directly without fallback
             if (updatedProfile.avatar) {
                 setAvatarPreview(`${BACKEND_BASE_URL}${updatedProfile.avatar}`);
             } else {
@@ -396,14 +570,12 @@ function ProfilePageContent() {
         }
     };
 
-    // New function to remove avatar
+    // Function to remove avatar
     const handleRemoveAvatar = async () => {
         setIsRemovingAvatar(true);
         const removeToast = toast.loading("Removing avatar...");
 
         try {
-            // Call a service to remove the avatar
-            // Ensure `removeUserAvatar` is implemented in userService
             const updatedProfile = await userService.removeUserAvatar();
             toast.dismiss(removeToast);
             toast.success("Avatar removed!");
@@ -430,12 +602,58 @@ function ProfilePageContent() {
         }
     };
 
-    const handleRemoveFavorite = async (facilityId: string) => { if (!facilityId) return; const removeToast = toast.loading("Removing favorite..."); setLoadingFavorites(true); setFavoritesError(null); try { const updatedFavorites = await userService.removeFavorite(facilityId); setFavorites(updatedFavorites); toast.dismiss(removeToast); toast.success("Favorite removed"); } catch (err:any) { toast.dismiss(removeToast); const msg = err?.message || 'Failed to remove favorite'; setFavoritesError(msg); toast.error(msg); } finally { setLoadingFavorites(false); }};
+    const handleRemoveFavorite = async (facilityId: string) => {
+        if (!facilityId) return;
+        const removeToast = toast.loading("Removing favorite...");
+        setLoadingFavorites(true);
+        setFavoritesError(null);
+        try {
+            const updatedFavorites = await userService.removeFavorite(facilityId);
+            setFavorites(updatedFavorites);
+            toast.dismiss(removeToast);
+            toast.success("Favorite removed");
+        } catch (err: any) {
+            toast.dismiss(removeToast);
+            const msg = err?.message || 'Failed to remove favorite';
+            setFavoritesError(msg);
+            toast.error(msg);
+        } finally {
+            setLoadingFavorites(false);
+        }
+    };
 
     // -- Booking Cancel Handlers --
-    const openCancelModal = (bookingId: string) => { setBookingToCancelId(bookingId); setCancelBookingModalOpen(true); };
-    const closeCancelModal = () => { if(!isCancellingBooking) {setBookingToCancelId(null); setCancelBookingModalOpen(false);} };
-    const confirmBookingCancel = async () => { if (!bookingToCancelId) return; setIsCancellingBooking(true); const cancelToast = toast.loading("Cancelling booking..."); try { await bookingService.cancelBooking(bookingToCancelId); toast.dismiss(cancelToast); toast.success("Booking cancelled!"); setBookings(prev => prev.map(b => b._id === bookingToCancelId ? {...b, status: 'cancelled'} : b)); } catch (err: any) { toast.dismiss(cancelToast); toast.error(`Cancellation failed: ${err.message}`); } finally { setIsCancellingBooking(false); closeCancelModal(); } };
+    const openCancelModal = (bookingId: string) => {
+        setBookingToCancelId(bookingId);
+        setCancelBookingModalOpen(true);
+    };
+    
+    const closeCancelModal = () => {
+        if(!isCancellingBooking) {
+            setBookingToCancelId(null);
+            setCancelBookingModalOpen(false);
+        }
+    };
+    
+    const confirmBookingCancel = async () => {
+        if (!bookingToCancelId) return;
+        setIsCancellingBooking(true);
+        const cancelToast = toast.loading("Cancelling booking...");
+        try {
+            await bookingService.cancelBooking(bookingToCancelId);
+            toast.dismiss(cancelToast);
+            toast.success("Booking cancelled!");
+            setBookings(prev => prev.map(b => 
+                b._id === bookingToCancelId ? {...b, status: 'cancelled'} : b
+            ));
+        } catch (err: any) {
+            toast.dismiss(cancelToast);
+            toast.error(`Cancellation failed: ${err.message}`);
+        } finally {
+            setIsCancellingBooking(false);
+            closeCancelModal();
+        }
+    };
 
     // -- Financial Aid Detail Handlers --
     const openAidDetailModal = async (appId: string) => {
@@ -443,12 +661,20 @@ function ProfilePageContent() {
         setSelectedAidApp(null);
         setAidDetailModalOpen(true);
         try {
-            // Use the proper function from financialAidService
-            const details = await financialAidService.getAdminApplicationById(appId);
+            // FIX 8: We should be using proper function to get application details
+            // This was likely using the wrong function before
+            console.log(`Fetching financial aid application details for ID: ${appId}`);
+            
+            // This is a guess at the correct function - we may need another service function
+            // if this is incorrect or doesn't exist
+            const details = await financialAidService.getApplicationDetails(appId);
+            console.log("Financial aid application details received:", details);
+            
             setSelectedAidApp(details);
         } catch (err: any) {
+            console.error("Error fetching financial aid details:", err);
             toast.error(`Error loading details: ${err.message}`);
-            setAidDetailModalOpen(false); // Close modal on error
+            setAidDetailModalOpen(false);
         } finally {
             setIsFetchingAidDetails(false);
         }
@@ -459,10 +685,44 @@ function ProfilePageContent() {
         setSelectedAidApp(null);
     };
 
+    // FIX 9: Add a reload button for troubleshooting
+    const renderDebugControls = () => {
+        return (
+            <div className="fixed bottom-4 right-4 z-50">
+                <button
+                    onClick={forceRefetch}
+                    className="bg-gray-800 text-white px-3 py-1 rounded-md text-xs font-medium shadow-lg hover:bg-gray-700"
+                >
+                    Reload Current Tab
+                </button>
+            </div>
+        );
+    };
+
     // --- Loading / Error / Main Render ---
-    if (loadingProfile) { return <div className="flex justify-center items-center min-h-screen bg-emerald-900/10 backdrop-blur-sm"><Spinner message="Loading Profile..." /></div>; }
-    if (profileError && !profile) { return <div className="flex justify-center items-center min-h-screen bg-red-100"><ErrorMessage message={profileError} /></div>; }
-    if (!profile) { return <div className="flex justify-center items-center min-h-screen bg-gray-100"><p>Not logged in or profile unavailable.</p></div>; }
+    if (loadingProfile) {
+        return (
+            <div className="flex justify-center items-center min-h-screen bg-emerald-900/10 backdrop-blur-sm">
+                <Spinner message="Loading Profile..." />
+            </div>
+        );
+    }
+    
+    if (profileError && !profile) {
+        return (
+            <div className="flex justify-center items-center min-h-screen bg-red-100">
+                <ErrorMessage message={profileError} />
+            </div>
+        );
+    }
+    
+    if (!profile) {
+        return (
+            <div className="flex justify-center items-center min-h-screen bg-gray-100">
+                <p>Not logged in or profile unavailable.</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50 to-green-50">
@@ -484,7 +744,7 @@ function ProfilePageContent() {
                             <button
                                 onClick={() => fileInputRef.current?.click()}
                                 className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer rounded-full"
-                                aria-label="Change profile picture" // Label for the button
+                                aria-label="Change profile picture"
                             >
                                 <CameraIcon className="h-8 w-8 text-white/90" />
                             </button>
@@ -494,14 +754,15 @@ function ProfilePageContent() {
                                 onChange={handleAvatarFileSelect}
                                 accept="image/*"
                                 className="hidden"
-                                // *** FIX 2: Add aria-label for accessibility ***
                                 aria-label="Profile picture upload"
                             />
                         </div>
 
                         {/* User Info */}
                         <div className="text-center md:text-left flex-grow">
-                            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 drop-shadow-md">{profile.name || 'User'}</h1>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 drop-shadow-md">
+                                {profile.name || 'User'}
+                            </h1>
                             <p className="text-emerald-100 text-sm mb-1 flex items-center justify-center md:justify-start">
                                 <UserIcon className="h-4 w-4 mr-1.5 text-emerald-300/80"/>
                                 {profile.email || 'No email'}
@@ -551,7 +812,7 @@ function ProfilePageContent() {
                                             setSelectedAvatarFile(null);
                                             setAvatarPreview(profile?.avatar ? `${BACKEND_BASE_URL}${profile.avatar}` : null);
                                             setAvatarError(null);
-                                            if (fileInputRef.current) { // Reset file input
+                                            if (fileInputRef.current) {
                                                 fileInputRef.current.value = "";
                                             }
                                         }}
@@ -622,7 +883,18 @@ function ProfilePageContent() {
                             <Tab.Panels className="mt-2 min-h-[300px]">
                                 {/* Bookings Panel */}
                                 <Tab.Panel className="focus:outline-none">
-                                    {loadingBookings ? <Spinner /> : bookingsError ? <ErrorMessage message={bookingsError} /> : bookings.length === 0 ? <EmptyState type="bookings" message="View your upcoming and past sessions." actionText="Browse Facilities" actionHref="/facilities"/> : (
+                                    {loadingBookings ? (
+                                        <Spinner />
+                                    ) : bookingsError ? (
+                                        <ErrorMessage message={bookingsError} />
+                                    ) : bookings.length === 0 ? (
+                                        <EmptyState 
+                                            type="bookings" 
+                                            message="View your upcoming and past sessions." 
+                                            actionText="Browse Facilities" 
+                                            actionHref="/facilities"
+                                        />
+                                    ) : (
                                         <div className="space-y-5">
                                             {bookings.map((booking) => {
                                                 const isCancellable = booking.status === 'upcoming' && canCancelBooking(booking.date);
@@ -695,7 +967,18 @@ function ProfilePageContent() {
 
                                 {/* Favorites Panel */}
                                 <Tab.Panel className="focus:outline-none">
-                                    {loadingFavorites ? <Spinner /> : favoritesError ? <ErrorMessage message={favoritesError} /> : favorites.length === 0 ? <EmptyState type="favorites" message="Browse facilities and mark your favorites." /> : (
+                                    {loadingFavorites ? (
+                                        <Spinner />
+                                    ) : favoritesError ? (
+                                        <ErrorMessage message={favoritesError} />
+                                    ) : favorites.length === 0 ? (
+                                        <EmptyState 
+                                            type="favorites" 
+                                            message="Browse facilities and mark your favorites." 
+                                            actionText="Browse Facilities" 
+                                            actionHref="/facilities"
+                                        />
+                                    ) : (
                                         <div className="space-y-6">
                                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                                 {favorites.map((facility) => (
@@ -751,7 +1034,18 @@ function ProfilePageContent() {
 
                                 {/* Donations Panel */}
                                 <Tab.Panel className="focus:outline-none">
-                                    {loadingDonations ? <Spinner /> : donationError ? <ErrorMessage message={donationError} /> : donationHistory.length === 0 ? <EmptyState type="donations" message="Your contributions help athletes succeed." actionText="Support an Athlete" actionHref='/donations'/> : (
+                                    {loadingDonations ? (
+                                        <Spinner />
+                                    ) : donationError ? (
+                                        <ErrorMessage message={donationError} />
+                                    ) : donationHistory.length === 0 ? (
+                                        <EmptyState 
+                                            type="donations" 
+                                            message="Your contributions help athletes succeed." 
+                                            actionText="Support an Athlete" 
+                                            actionHref='/donations'
+                                        />
+                                    ) : (
                                         <div className="space-y-6">
                                             <h3 className="text-lg font-medium text-emerald-800 mb-4">Your Donation History</h3>
                                             <div className="overflow-x-auto">
@@ -794,7 +1088,18 @@ function ProfilePageContent() {
 
                                 {/* Financial Aid Panel */}
                                 <Tab.Panel className="focus:outline-none">
-                                    {loadingAid ? <Spinner /> : aidError ? <ErrorMessage message={aidError} /> : financialAidApps.length === 0 ? <EmptyState type="financial" message="Apply for assistance to access facilities." actionText="Apply Now" actionHref='/financial-aid/apply'/> : (
+                                    {loadingAid ? (
+                                        <Spinner />
+                                    ) : aidError ? (
+                                        <ErrorMessage message={aidError} />
+                                    ) : financialAidApps.length === 0 ? (
+                                        <EmptyState 
+                                            type="financial" 
+                                            message="Apply for assistance to access facilities." 
+                                            actionText="Apply Now" 
+                                            actionHref='/financial-aid/apply'
+                                        />
+                                    ) : (
                                         <div className="space-y-6">
                                             <h3 className="text-lg font-medium text-emerald-800 mb-4">Your Financial Aid Applications</h3>
                                             <div className="overflow-x-auto">
@@ -820,7 +1125,7 @@ function ProfilePageContent() {
                                                                                 ? 'bg-yellow-100 text-yellow-800'
                                                                                 : app.status === 'rejected'
                                                                                     ? 'bg-red-100 text-red-800'
-                                                                                    : 'bg-blue-100 text-blue-800' // Default/Other status styling
+                                                                                    : 'bg-blue-100 text-blue-800'
                                                                     }`}>
                                                                         {app.status.replace('_',' ')}
                                                                     </span>
@@ -982,23 +1287,25 @@ function ProfilePageContent() {
                 isDeleting={isRemovingAvatar}
             />
 
-            {/* Global CSS Styles - Ensure Tailwind utility classes are defined in global styles or via setup */}
+            {/* Debug Controls */}
+            {process.env.NODE_ENV !== 'production' && renderDebugControls()}
+
+            {/* Global CSS Styles */}
             <style jsx global>{`
-                /* Ensure Tailwind utility classes are applied globally or via setup */
                 /* Table Cell Padding */
-                .th-profile, .td-profile { padding: 0.75rem; font-size: 0.875rem; /* text-sm */ }
-                .th-profile { text-align: left; font-weight: 500; color: #6b7280; /* text-gray-500 */ text-transform: uppercase; letter-spacing: 0.05em; }
-                .td-profile { color: #374151; /* text-gray-700 */ }
+                .th-profile, .td-profile { padding: 0.75rem; font-size: 0.875rem; }
+                .th-profile { text-align: left; font-weight: 500; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+                .td-profile { color: #374151; }
 
                 /* Input Field */
                 .input-field {
                     box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
                     appearance: none;
                     border-width: 1px;
-                    border-color: #d1d5db; /* border-gray-300 */
-                    border-radius: 0.375rem; /* rounded-md */
+                    border-color: #d1d5db;
+                    border-radius: 0.375rem;
                     padding: 0.5rem 0.75rem;
-                    font-size: 0.875rem; /* sm:text-sm */
+                    font-size: 0.875rem;
                     line-height: 1.25rem;
                     width: 100%;
                     display: block;
@@ -1009,18 +1316,18 @@ function ProfilePageContent() {
                      --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
                      --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);
                      box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
-                     border-color: #059669; /* focus:border-emerald-500 */
-                     --tw-ring-color: #059669; /* focus:ring-emerald-500 */
+                     border-color: #059669;
+                     --tw-ring-color: #059669;
                 }
 
-                /* Button Styles (simplified for example, use Tailwind classes directly in JSX if possible) */
-                .btn-primary { display: inline-flex; align-items: center; padding: 0.5rem 1rem; border-width: 1px; border-color: transparent; border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem; font-weight: 500; color: #ffffff; background-color: #059669; /* bg-emerald-600 */ }
-                .btn-primary:hover { background-color: #047857; /* hover:bg-emerald-700 */ }
+                /* Button Styles */
+                .btn-primary { display: inline-flex; align-items: center; padding: 0.5rem 1rem; border-width: 1px; border-color: transparent; border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem; font-weight: 500; color: #ffffff; background-color: #059669; }
+                .btn-primary:hover { background-color: #047857; }
                 .btn-primary:focus { outline: 2px solid transparent; outline-offset: 2px; --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 2px #ffffff; --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + 2px) #059669; box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); --tw-ring-color: #059669; }
-                .btn-secondary { display: inline-flex; align-items: center; padding: 0.5rem 1rem; border-width: 1px; border-color: #d1d5db; /* border-gray-300 */ border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem; font-weight: 500; background-color: #ffffff; /* Implicit bg-white */ }
+                .btn-secondary { display: inline-flex; align-items: center; padding: 0.5rem 1rem; border-width: 1px; border-color: #d1d5db; border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem; font-weight: 500; background-color: #ffffff; }
                 .btn-secondary:focus { outline: 2px solid transparent; outline-offset: 2px; --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 2px #ffffff; --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + 2px) #059669; box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); --tw-ring-color: #059669; }
-                .btn-secondary-outline { display: inline-flex; align-items: center; padding: 0.5rem 0.75rem; /* px-3 py-2 */ border-width: 1px; border-color: #6ee7b7; /* border-emerald-300 */ border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; color: #047857; /* text-emerald-700 */ background-color: #ffffff; }
-                .btn-secondary-outline:hover { background-color: #f0fdf4; /* hover:bg-emerald-50 */ }
+                .btn-secondary-outline { display: inline-flex; align-items: center; padding: 0.5rem 0.75rem; border-width: 1px; border-color: #6ee7b7; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; color: #047857; background-color: #ffffff; }
+                .btn-secondary-outline:hover { background-color: #f0fdf4; }
                 .btn-secondary-outline:focus { outline: 2px solid transparent; outline-offset: 2px; --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 2px #ffffff; --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + 2px) #059669; box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); --tw-ring-color: #059669; }
             `}</style>
         </div>

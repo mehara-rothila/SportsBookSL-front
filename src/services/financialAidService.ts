@@ -109,6 +109,21 @@ export const getUserApplications = async (): Promise<FinancialAidApplicationSumm
   }
 };
 
+/**
+ * Function to get application details.
+ * This is used by the profile page to show details of a financial aid application.
+ */
+export const getApplicationDetails = async (applicationId: string): Promise<FinancialAidApplicationDetails> => {
+  try {
+    console.log(`Service: Getting financial aid application details for ID: ${applicationId}`);
+    const response = await api.get<FinancialAidApplicationDetails>(`/financial-aid/applications/${applicationId}`);
+    console.log('Service: Get financial aid application details response:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error(`Get Application Details Service Error (ID: ${applicationId}):`, error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error fetching financial aid application details');
+  }
+};
 
 // --- ADMIN FUNCTIONS ---
 
@@ -188,6 +203,7 @@ export const updateAdminApplicationStatus = async (
 export default {
   submitFinancialAidApplication,
   getUserApplications,
+  getApplicationDetails,
   getAllAdminApplications,
   getAdminApplicationById,
   updateAdminApplicationStatus
