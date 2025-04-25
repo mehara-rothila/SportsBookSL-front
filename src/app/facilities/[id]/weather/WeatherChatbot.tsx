@@ -287,7 +287,7 @@ const extractWeatherDataFromResponse = (response: string): { data: EnhancedWeath
   try {
     // Try to extract structured JSON data from response
     const structuredMatch = response.match(/<weather_data>([\s\S]*?)<\/weather_data>/);
-        if (structuredMatch && structuredMatch[1]) {
+    if (structuredMatch && structuredMatch[1]) {
       const jsonData = JSON.parse(structuredMatch[1]);
       
       // Helper function to safely extract values from potential arrays
@@ -300,6 +300,10 @@ const extractWeatherDataFromResponse = (response: string): { data: EnhancedWeath
       
       // Clean the user-visible response by removing the structured data
       cleanedText = response.replace(/<weather_data>[\s\S]*?<\/weather_data>/, '').trim();
+      
+      // Also remove any JSON code blocks that might be present
+      cleanedText = cleanedText.replace(/```json[\s\S]*?```/, '').trim();
+      cleanedText = cleanedText.replace(/```[\s\S]*?```/, '').trim(); // For code blocks without language specification
       
       return {
         data: {
@@ -317,7 +321,10 @@ const extractWeatherDataFromResponse = (response: string): { data: EnhancedWeath
     console.error('Failed to parse structured weather data:', error);
     // Still clean the response even if parsing fails
     cleanedText = response.replace(/<weather_data>[\s\S]*?<\/weather_data>/, '').trim();
-}
+    // Also remove any JSON code blocks
+    cleanedText = cleanedText.replace(/```json[\s\S]*?```/, '').trim();
+    cleanedText = cleanedText.replace(/```[\s\S]*?```/, '').trim(); // For code blocks without language specification
+  }
   
   // Fallback to regex extraction if structured data isn't available
   const data: EnhancedWeatherData = { verified: false };

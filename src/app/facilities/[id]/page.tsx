@@ -53,7 +53,8 @@ import {
     PlayCircleIcon,
     HeartIcon as HeartIconOutline,
     ShareIcon as ShareIconOutline,
-    PlusCircleIcon
+    PlusCircleIcon,
+    ViewfinderCircleIcon
 } from '@heroicons/react/24/solid';
 import { startOfMonth, format as formatDateFns } from 'date-fns';
 
@@ -114,6 +115,78 @@ const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://loc
 const FALLBACK_IMAGE = '/images/facility-placeholder.jpg';
 const FALLBACK_AVATAR = '/images/default-avatar.png';
 
+// --- 360° View Component ---
+const GoogleMaps360View = ({ lat, lng, facilityName }) => {
+  const [showView, setShowView] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
+  if (!lat || !lng) return (
+    <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-emerald-900/40 to-green-800/30">
+      <p className="text-white/70">Coordinates not available for 360° view</p>
+    </div>
+  );
+  
+  // Create URL for Google Maps Embed with Street View mode
+  const streetViewUrl = `https://www.google.com/maps/embed?pb=!4v1619961505757!6m8!1m7!1sCAoSLEFGMVFpcE1OUXE0cjczLWlvNDRVR2pGZFFtUUZxWTl0QUQ0Qk54bGxfOUIw!2m2!1d${lat}!2d${lng}!3f0!4f0!5f0.8`;
+  
+  const handleLoadView = () => {
+    setLoading(true);
+    setShowView(true);
+  };
+  
+  const handleIframeLoad = () => {
+    setLoading(false);
+  };
+  
+  return (
+    <div className="h-full w-full bg-gradient-to-br from-emerald-900/40 to-green-800/30 relative">
+      {!showView ? (
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 animate-fade-in">
+          <div className="w-16 h-16 bg-emerald-600/30 rounded-full flex items-center justify-center mb-4 animate-pulse">
+            <ViewfinderCircleIcon className="h-10 w-10 text-emerald-300" />
+          </div>
+          <h5 className="text-lg font-bold text-emerald-300 mb-1">Interactive 360° View</h5>
+          <p className="text-white/80 mb-3">Explore the area around {facilityName}</p>
+          <p className="text-xs text-white/60 mb-3">Coordinates: {lat?.toFixed(5)}, {lng?.toFixed(5)}</p>
+          <button
+            onClick={handleLoadView}
+            className="px-4 py-2 bg-white text-emerald-700 rounded-full font-medium shadow-lg transform hover:scale-105 transition-all duration-300"
+          >
+            Load 360° View
+          </button>
+        </div>
+      ) : (
+        <>
+          {loading && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-gradient-to-br from-emerald-900/70 to-green-800/70">
+              <div className="w-12 h-12 border-4 border-emerald-200/30 border-t-emerald-600 rounded-full animate-spin mb-3"></div>
+              <p className="text-emerald-200">Loading 360° view...</p>
+            </div>
+          )}
+          <iframe
+            src={streetViewUrl}
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen=""
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title={`360° view of ${facilityName}`}
+            className="absolute inset-0"
+            onLoad={handleIframeLoad}
+          />
+          <button
+            onClick={() => setShowView(false)}
+            className="absolute top-2 right-2 p-2 bg-black/50 backdrop-blur-sm rounded-full text-white z-10 hover:bg-black/70 transition-colors"
+          >
+            <XMarkIcon className="w-5 h-5" />
+          </button>
+        </>
+      )}
+    </div>
+  );
+};
+
 // --- Component ---
 export default function FacilityDetailPage() {
     const router = useRouter();
@@ -154,6 +227,7 @@ export default function FacilityDetailPage() {
     const [loadingAvailability, setLoadingAvailability] = useState(false);
     const [activeFaq, setActiveFaq] = useState<number | null>(null);
     const [currentAvailabilityMonth, setCurrentAvailabilityMonth] = useState(startOfMonth(new Date()));
+    const [activeMapView, setActiveMapView] = useState('standard');  // 'standard' or '360'
 
     // Review State
     const [reviews, setReviews] = useState<Review[]>([]);
@@ -616,8 +690,76 @@ useEffect(() => {
                                 <Tab.Panel className="rounded-2xl bg-white/20 backdrop-blur-sm p-6 md:p-8 shadow-xl border border-white/20">
                                     <div className="prose prose-sm sm:prose-base max-w-none mb-8 text-white"><h3 className="text-2xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300">About this facility</h3><p className="whitespace-pre-line leading-relaxed">{facility.longDescription || facility.description}</p></div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        {/* Location */}
-                                        <div className="transform hover:scale-[1.02] transition-transform duration-300"><h4 className="text-xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300 flex items-center"><MapPinIcon className="w-6 h-6 mr-2 text-emerald-500"/> Location</h4><p className="text-white mb-2">{facility.address}</p><div className="mt-4 h-60 md:h-72 w-full bg-gradient-to-br from-emerald-900/40 to-green-800/30 rounded-xl overflow-hidden border border-white/20 shadow-lg relative group"><div className="h-full w-full bg-gray-800/30 flex items-center justify-center overflow-hidden"><div className="text-center p-4 relative z-10"><MapIcon className="w-16 h-16 text-emerald-400 mx-auto mb-3 animate-bounce-subtle"/><h5 className="text-lg font-bold text-emerald-300 mb-1">View on Map</h5><p className="text-white/80 mb-2">Get directions easily</p>{facility.mapLocation?.lat && facility.mapLocation?.lng && ( <p className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs text-white">Lat: {facility.mapLocation.lat.toFixed(4)}, Lng: {facility.mapLocation.lng.toFixed(4)}</p> )}</div></div><div className="absolute inset-0 bg-gradient-to-t from-emerald-900/70 to-transparent opacity-0 group-hover:opacity-100 flex items-end justify-center pb-6 transition-opacity duration-300"><a href={`https://www.google.com/maps/search/?api=1&query=${facility.mapLocation?.lat ?? ''},${facility.mapLocation?.lng ?? ''}`} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-white text-emerald-700 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300"> Open in Google Maps </a></div></div></div>
+                                        {/* Location Section with 360° View */}
+                                        <div className="transform hover:scale-[1.02] transition-transform duration-300">
+                                            <h4 className="text-xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300 flex items-center">
+                                                <MapPinIcon className="w-6 h-6 mr-2 text-emerald-500"/> Location
+                                            </h4>
+                                            <p className="text-white mb-2">{facility.address}</p>
+                                            
+                                            {/* Map View Tabs */}
+                                            <div className="mt-4">
+                                                <div className="flex space-x-2 mb-3">
+                                                    <button 
+                                                        onClick={() => setActiveMapView('standard')} 
+                                                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                                                        activeMapView === 'standard' 
+                                                            ? 'bg-emerald-500 text-white shadow-lg' 
+                                                            : 'bg-white/20 text-white hover:bg-white/30'
+                                                        }`}
+                                                    >
+                                                        <MapIcon className="w-4 h-4 inline mr-1.5"/> Standard View
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => setActiveMapView('360')} 
+                                                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                                                        activeMapView === '360' 
+                                                            ? 'bg-emerald-500 text-white shadow-lg' 
+                                                            : 'bg-white/20 text-white hover:bg-white/30'
+                                                        }`}
+                                                    >
+                                                        <ViewfinderCircleIcon className="w-4 h-4 inline mr-1.5"/> 360° View
+                                                    </button>
+                                                </div>
+                                                
+                                                {/* Map Container */}
+                                                <div className="h-60 md:h-72 w-full rounded-xl overflow-hidden border border-white/20 shadow-lg relative group">
+                                                    {activeMapView === 'standard' ? (
+                                                        // Standard Map View
+                                                        <div className="h-full w-full bg-gradient-to-br from-emerald-900/40 to-green-800/30 flex items-center justify-center overflow-hidden">
+                                                            <div className="text-center p-4 relative z-10">
+                                                                <MapIcon className="w-16 h-16 text-emerald-400 mx-auto mb-3 animate-bounce-subtle"/>
+                                                                <h5 className="text-lg font-bold text-emerald-300 mb-1">View on Map</h5>
+                                                                <p className="text-white/80 mb-2">Get directions easily</p>
+                                                                {facility.mapLocation?.lat && facility.mapLocation?.lng && (
+                                                                <p className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs text-white">
+                                                                    Lat: {facility.mapLocation.lat.toFixed(4)}, Lng: {facility.mapLocation.lng.toFixed(4)}
+                                                                </p>
+                                                                )}
+                                                            </div>
+                                                            <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/70 to-transparent opacity-0 group-hover:opacity-100 flex items-end justify-center pb-6 transition-opacity duration-300">
+                                                                <a 
+                                                                href={`https://www.google.com/maps/search/?api=1&query=${facility.mapLocation?.lat ?? ''},${facility.mapLocation?.lng ?? ''}`} 
+                                                                target="_blank" 
+                                                                rel="noopener noreferrer" 
+                                                                className="px-4 py-2 bg-white text-emerald-700 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300"
+                                                                > 
+                                                                Open in Google Maps 
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        // 360° Street View
+                                                        <GoogleMaps360View 
+                                                        lat={facility.mapLocation?.lat} 
+                                                        lng={facility.mapLocation?.lng} 
+                                                        facilityName={facility.name} 
+                                                        />
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
                                         {/* Contact & Hours */}
                                         <div className="transform hover:scale-[1.02] transition-transform duration-300"><h4 className="text-xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300 flex items-center"><PhoneIcon className="w-6 h-6 mr-2 text-emerald-500"/> Contact & Hours</h4><ul className="space-y-4 text-sm text-white mb-6">{facility.contactInfo?.phone && ( <li className="flex items-start bg-gradient-to-r from-emerald-900/40 to-green-800/30 p-3 rounded-lg shadow-sm border border-white/20"><PhoneIcon className="w-5 h-5 mr-3 text-emerald-400 mt-0.5 flex-shrink-0"/><span className="font-medium">{facility.contactInfo.phone}</span></li> )}{facility.contactInfo?.email && ( <li className="flex items-start bg-gradient-to-r from-emerald-900/40 to-green-800/30 p-3 rounded-lg shadow-sm border border-white/20"><EnvelopeIcon className="w-5 h-5 mr-3 text-emerald-400 mt-0.5 flex-shrink-0"/><span className="font-medium">{facility.contactInfo.email}</span></li> )}{facility.contactInfo?.website && ( <li className="flex items-start bg-gradient-to-r from-emerald-900/40 to-green-800/30 p-3 rounded-lg shadow-sm border border-white/20"><GlobeAltIcon className="w-5 h-5 mr-3 text-emerald-400 mt-0.5 flex-shrink-0"/><a href={facility.contactInfo.website.startsWith('http') ? facility.contactInfo.website : `http://${facility.contactInfo.website}`} target="_blank" rel="noopener noreferrer" className="font-medium hover:text-emerald-300 hover:underline">{facility.contactInfo.website}</a></li> )}</ul><h4 className="text-xl font-bold mt-6 mb-4 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300 flex items-center"><ClockIcon className="w-6 h-6 mr-2 text-emerald-500"/> Operating Hours</h4><div className="space-y-2 text-sm text-white bg-gradient-to-r from-emerald-900/40 to-green-800/30 rounded-2xl p-5 border border-white/20 shadow-lg">{facility.operatingHours?.map((hours, index) => ( <div key={hours.day} className={`flex justify-between p-2 rounded-lg ${index % 2 === 0 ? 'bg-white/10' : 'bg-transparent'} hover:bg-white/20 transition-colors duration-200`}><span className="font-medium text-emerald-300">{hours.day}</span><span className="text-white">{hours.open} - {hours.close}</span></div> ))}{(!facility.operatingHours || facility.operatingHours.length === 0) && <p className="text-gray-400 text-center">Operating hours not listed.</p>}</div></div>
                                     </div>
@@ -1239,6 +1381,22 @@ useEffect(() => {
                     animation: umpire-movement 3s ease-in-out infinite;
                 }
                 
+                @keyframes rotate-360 {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+                .animate-rotate-360 {
+                    animation: rotate-360 3s linear infinite;
+                }
+                
+                @keyframes pulse-glow {
+                    0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+                    50% { box-shadow: 0 0 20px 10px rgba(16, 185, 129, 0.2); }
+                }
+                .animate-pulse-glow {
+                    animation: pulse-glow 2s ease-in-out infinite;
+                }
+                
                 .animation-delay-200 {
                     animation-delay: 0.2s;
                 }
@@ -1265,6 +1423,14 @@ useEffect(() => {
                 
                 .animation-delay-1200 {
                     animation-delay: 1.2s;
+                }
+                
+                /* These are useful for the 3D perspective */
+                .perspective-1000 {
+                    perspective: 1000px;
+                }
+                .transform-style-3d {
+                    transform-style: preserve-3d;
                 }
             `}</style>
         </div>
