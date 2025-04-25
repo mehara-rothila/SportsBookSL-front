@@ -937,7 +937,8 @@ function ProfilePageContent() {
                                 <button
                                     onClick={() => setConfirmAvatarRemoveModalOpen(true)}
                                     disabled={isRemovingAvatar}
-                                    className="btn-secondary bg-red-600 text-white hover:bg-red-700 text-sm py-1.5 px-3 rounded shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                    // **** CHANGE HERE: Added red background and white text ****
+                                    className="inline-flex items-center bg-red-600 text-white hover:bg-red-700 text-sm py-1.5 px-3 rounded shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                 >
                                     {isRemovingAvatar ? 'Removing...' : (
                                         <>
