@@ -299,7 +299,7 @@ const extractWeatherDataFromResponse = (response: string): { data: EnhancedWeath
       };
       
       // Clean the user-visible response by removing the structured data
-      cleanedText = response.replace(/<weather_data>.*?<\/weather_data>/s, '').trim();
+      cleanedText = response.replace(/<weather_data>[\s\S]*?<\/weather_data>/, '').trim();
       
       return {
         data: {
@@ -316,8 +316,8 @@ const extractWeatherDataFromResponse = (response: string): { data: EnhancedWeath
   } catch (error) {
     console.error('Failed to parse structured weather data:', error);
     // Still clean the response even if parsing fails
-    cleanedText = response.replace(/<weather_data>.*?<\/weather_data>/s, '').trim();
-  }
+    cleanedText = response.replace(/<weather_data>[\s\S]*?<\/weather_data>/, '').trim();
+}
   
   // Fallback to regex extraction if structured data isn't available
   const data: EnhancedWeatherData = { verified: false };
