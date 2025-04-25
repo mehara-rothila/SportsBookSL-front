@@ -286,8 +286,8 @@ const extractWeatherDataFromResponse = (response: string): { data: EnhancedWeath
   
   try {
     // Try to extract structured JSON data from response
-    const structuredMatch = response.match(/<weather_data>(.*?)<\/weather_data>/s);
-    if (structuredMatch && structuredMatch[1]) {
+    const structuredMatch = response.match(/<weather_data>([\s\S]*?)<\/weather_data>/);
+        if (structuredMatch && structuredMatch[1]) {
       const jsonData = JSON.parse(structuredMatch[1]);
       
       // Helper function to safely extract values from potential arrays
