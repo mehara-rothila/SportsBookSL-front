@@ -72,7 +72,7 @@ export default function ReviewForm({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-xl overflow-hidden max-w-lg w-full mx-auto">
+    <div className="bg-green-50/90 backdrop-blur-sm rounded-lg shadow-xl overflow-hidden max-w-lg w-full mx-auto border border-green-300/50">
       {/* Header */}
       <div className="flex justify-between items-center bg-green-700 text-white px-6 py-4">
         <h2 className="text-xl font-bold">
@@ -87,9 +87,9 @@ export default function ReviewForm({
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6">
+      <form onSubmit={handleSubmit} className="p-6 bg-green-100/80">
         {/* Header Banner */}
-        <div className="bg-green-100 rounded-lg p-4 mb-6 flex items-center">
+        <div className="bg-green-600/20 backdrop-blur-sm rounded-lg p-4 mb-6 flex items-center border border-green-500/30">
           <div className="bg-green-600 rounded-full p-2 mr-3">
             <PencilIcon className="h-5 w-5 text-white" />
           </div>
@@ -98,7 +98,7 @@ export default function ReviewForm({
 
         {/* Star Rating */}
         <div className="mb-6">
-          <label htmlFor="rating" className="block text-gray-800 font-medium mb-2">
+          <label htmlFor="rating" className="block text-green-800 font-medium mb-2">
             Your Rating <span className="text-red-500">*</span>
           </label>
           <div className="flex space-x-1">
@@ -115,9 +115,9 @@ export default function ReviewForm({
                 <StarIcon 
                   className={`w-10 h-10 ${
                     (hoverRating || rating) >= star 
-                      ? 'text-green-500' 
-                      : 'text-gray-300'
-                  }`} 
+                      ? 'text-green-600' 
+                      : 'text-green-200'
+                  } drop-shadow-md`} 
                 />
               </button>
             ))}
@@ -133,37 +133,37 @@ export default function ReviewForm({
 
         {/* Review Text */}
         <div className="mb-6">
-          <label htmlFor="review-content" className="block text-gray-800 font-medium mb-2">
+          <label htmlFor="review-content" className="block text-green-800 font-medium mb-2">
             Your Review <span className="text-red-500">*</span>
           </label>
           <textarea
             id="review-content"
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+            className="w-full px-3 py-2 bg-white/70 backdrop-blur-sm border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors text-green-900 placeholder-green-700/50"
             placeholder={`Share your experience with this ${targetType}...`}
             value={content}
             onChange={handleContentChange}
             maxLength={500}
           ></textarea>
-          <div className="flex justify-end mt-1 text-xs text-gray-500">
+          <div className="flex justify-end mt-1 text-xs text-green-700">
             {charCount}/500 characters
           </div>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start">
+          <div className="mb-6 bg-red-100/80 backdrop-blur-sm border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start">
             <XMarkIcon className="w-5 h-5 mr-2 flex-shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3 mt-8">
           <button
             type="button"
             onClick={onCancel}
-            className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+            className="px-6 py-2.5 rounded-lg bg-white/70 backdrop-blur-sm border border-green-300 text-green-700 font-medium hover:bg-white/90 transition-colors"
             disabled={isLoading}
           >
             Cancel
@@ -172,7 +172,7 @@ export default function ReviewForm({
             type="submit"
             className={`px-6 py-2.5 rounded-lg bg-green-600 text-white font-medium 
               ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-green-700'} 
-              transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-sm`}
+              transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-md`}
             disabled={isLoading || rating === 0 || !content.trim()}
           >
             {isLoading ? 'Submitting...' : 'Submit Review'}
@@ -197,11 +197,11 @@ function getRatingText(rating: number): string {
 
 function getRatingBadgeColor(rating: number): string {
   switch(rating) {
-    case 1: return "bg-red-100 text-red-800";
-    case 2: return "bg-orange-100 text-orange-800";
-    case 3: return "bg-yellow-100 text-yellow-800";
-    case 4: return "bg-green-100 text-green-800";
-    case 5: return "bg-green-100 text-green-800";
-    default: return "bg-gray-100 text-gray-800";
+    case 1: return "bg-red-100/80 text-red-800 border border-red-200";
+    case 2: return "bg-orange-100/80 text-orange-800 border border-orange-200";
+    case 3: return "bg-yellow-100/80 text-yellow-800 border border-yellow-200";
+    case 4: return "bg-green-100/80 text-green-800 border border-green-200";
+    case 5: return "bg-green-100/80 text-green-800 border border-green-200";
+    default: return "bg-gray-100/80 text-gray-800 border border-gray-200";
   }
 }
