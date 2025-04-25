@@ -755,9 +755,75 @@ function ProfilePageContent() {
 
     // --- Main Render ---
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50 to-green-50">
+        <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-green-800 to-emerald-800">
+            {/* Basketball Court Background - Added from layout.tsx */}
+            <div className="absolute inset-0 overflow-hidden mt-28">
+                {/* Full Court with enhanced styling */}
+                <div className="absolute top-[10%] left-[5%] right-[5%] bottom-[5%] rounded-lg bg-gradient-to-b from-emerald-700/30 to-emerald-600/20 border-2 border-white/10 shadow-inner"></div>
+                
+                {/* Center Circle with glow */}
+                <div className="absolute top-1/2 left-1/2 w-36 h-36 rounded-full border-2 border-white/20 -translate-x-1/2 -translate-y-1/2 shadow-[0_0_30px_rgba(16,185,129,0.1)]"></div>
+                
+                {/* Center Line */}
+                <div className="absolute top-[10%] left-1/2 bottom-[5%] w-0.5 bg-white/20 -translate-x-1/2"></div>
+                
+                {/* Three-Point Line - Left */}
+                <div className="absolute top-[25%] left-[10%] w-64 h-96 border-2 border-white/20 rounded-tr-full rounded-br-full border-l-0 shadow-inner"></div>
+                
+                {/* Three-Point Line - Right */}
+                <div className="absolute top-[25%] right-[10%] w-64 h-96 border-2 border-white/20 rounded-tl-full rounded-bl-full border-r-0 shadow-inner"></div>
+                
+                {/* Free Throw Line - Left */}
+                <div className="absolute top-[40%] left-[10%] w-40 h-0.5 bg-white/20"></div>
+                
+                {/* Free Throw Line - Right */}
+                <div className="absolute top-[40%] right-[10%] w-40 h-0.5 bg-white/20"></div>
+                
+                {/* Free Throw Circle - Left */}
+                <div className="absolute top-[40%] left-[20%] w-24 h-24 border-2 border-white/20 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+                
+                {/* Free Throw Circle - Right */}
+                <div className="absolute top-[40%] right-[20%] w-24 h-24 border-2 border-white/20 rounded-full translate-x-1/2 -translate-y-1/2"></div>
+                
+                {/* Key/Paint - Left */}
+                <div className="absolute top-[30%] left-[10%] w-40 h-80 border-2 border-white/20 border-l-0 bg-emerald-800/10"></div>
+                
+                {/* Key/Paint - Right */}
+                <div className="absolute top-[30%] right-[10%] w-40 h-80 border-2 border-white/20 border-r-0 bg-emerald-800/10"></div>
+                
+                {/* Backboard - Left */}
+                <div className="absolute top-[70%] left-[10%] w-20 h-1 bg-white/40 -translate-y-1/2"></div>
+                
+                {/* Backboard - Right */}
+                <div className="absolute top-[70%] right-[10%] w-20 h-1 bg-white/40 -translate-y-1/2"></div>
+                
+                {/* Rim - Left */}
+                <div className="absolute top-[70%] left-[10%] w-8 h-8 rounded-full border-2 border-emerald-500/60 -translate-x-1/2 -translate-y-1/2 shadow-[0_0_10px_rgba(16,185,129,0.3)]"></div>
+                
+                {/* Rim - Right */}
+                <div className="absolute top-[70%] right-[10%] w-8 h-8 rounded-full border-2 border-emerald-500/60 translate-x-1/2 -translate-y-1/2 shadow-[0_0_10px_rgba(16,185,129,0.3)]"></div>
+                
+                {/* Basketballs - animated */}
+                <div className="absolute w-6 h-6 top-[45%] left-[45%] animate-basketball-bounce">
+                    <div className="w-full h-full rounded-full bg-emerald-500/80 border border-emerald-700/60"></div>
+                </div>
+                
+                <div className="absolute w-5 h-5 top-[25%] right-[45%] animate-basketball-bounce animation-delay-700">
+                    <div className="w-full h-full rounded-full bg-emerald-500/80 border border-emerald-700/60"></div>
+                </div>
+                
+                <div className="absolute w-5 h-5 bottom-[35%] left-[55%] animate-basketball-bounce animation-delay-300">
+                    <div className="w-full h-full rounded-full bg-emerald-500/80 border border-emerald-700/60"></div>
+                </div>
+                
+                {/* Court shadows and glows */}
+                <div className="absolute inset-0 bg-gradient-to-b from-emerald-900/5 to-emerald-800/10 pointer-events-none"></div>
+                <div className="absolute top-[5%] left-[50%] w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/4 pointer-events-none"></div>
+                <div className="absolute bottom-[10%] right-[10%] w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+            </div>
+
             {/* Profile Header */}
-            <div className="bg-gradient-to-r from-emerald-700 via-emerald-600 to-green-600 shadow-lg border-b-4 border-emerald-800/50">
+            <div className="relative z-10 bg-gradient-to-r from-emerald-700 via-emerald-600 to-green-600 shadow-lg border-b-4 border-emerald-800/50">
                 <div className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
                     <div className="flex flex-col md:flex-row items-center">
 
@@ -900,7 +966,7 @@ function ProfilePageContent() {
             </div>
 
             {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+            <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
                 <div className="bg-white/70 backdrop-blur-md shadow-xl rounded-xl overflow-hidden border border-gray-200/50">
                     <div className="p-4 sm:p-6">
                         <Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
@@ -1351,7 +1417,7 @@ function ProfilePageContent() {
             {/* Debug Controls */}
             {process.env.NODE_ENV !== 'production' && renderDebugControls()}
 
-            {/* Global CSS Styles */}
+            {/* Global CSS Styles - UPDATED with basketball theme styles */}
             <style jsx global>{`
                 /* Table Cell Padding */
                 .th-profile, .td-profile { padding: 0.75rem; font-size: 0.875rem; }
@@ -1386,7 +1452,6 @@ function ProfilePageContent() {
                     opacity: 0.7;
                 }
 
-
                 /* Button Styles */
                 .btn-primary { display: inline-flex; align-items: center; padding: 0.5rem 1rem; border-width: 1px; border-color: transparent; border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); font-size: 0.875rem; font-weight: 500; color: #ffffff; background-color: #059669; }
                 .btn-primary:hover:not(:disabled) { background-color: #047857; }
@@ -1399,6 +1464,144 @@ function ProfilePageContent() {
 
                 /* Spinner inside button */
                 .btn-primary .animate-spin { width: 1rem; height: 1rem; border-width: 2px; border-color: rgba(255,255,255,0.3); border-top-color: #ffffff; margin-right: 0.5rem; }
+                
+                /* ======== BASKETBALL THEME STYLES FROM ADMIN LAYOUT ======== */
+                
+                /* Color scheme overrides to match green theme */
+                .bg-primary-600 { background-color: #10B981 !important; } /* emerald-500 */
+                .hover\\:bg-primary-700:hover { background-color: #047857 !important; } /* emerald-600 */
+                .text-primary-600 { color: #10B981 !important; } /* emerald-500 */
+                .text-primary-700 { color: #047857 !important; } /* emerald-600 */
+                .focus\\:ring-primary-500:focus { --tw-ring-color: #10B981 !important; } /* emerald-500 */
+                .border-primary-500 { border-color: #10B981 !important; } /* emerald-500 */
+                .border-t-primary-600 { border-top-color: #10B981 !important; } /* emerald-500 */
+                
+                /* Button overrides for green theme */
+                .btn-primary {
+                  background-color: #10B981 !important;
+                  border-color: #047857 !important;
+                  color: white !important;
+                }
+                .btn-primary:hover {
+                  background-color: #047857 !important;
+                }
+                
+                /* Add custom shadows to match the theme */
+                .shadow-basketball {
+                  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 0 0 3px rgba(16, 185, 129, 0.1);
+                }
+                
+                /* Make headers and important text stand out */
+                h1, h2, .text-header {
+                  color: white !important;
+                  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+                }
+                
+                /* Form control styling */
+                input, select, textarea {
+                  background-color: rgba(255, 255, 255, 0.1) !important;
+                  border-color: rgba(16, 185, 129, 0.3) !important;
+                  color: white !important;
+                }
+                input::placeholder, select::placeholder, textarea::placeholder {
+                  color: rgba(255, 255, 255, 0.5) !important;
+                }
+                input:focus, select:focus, textarea:focus {
+                  border-color: #10B981 !important;
+                  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
+                }
+
+                /* Animations for basketball elements */
+                @keyframes player-move {
+                  0% { transform: translate(0, 0); }
+                  25% { transform: translate(30px, 20px); }
+                  50% { transform: translate(10px, 40px); }
+                  75% { transform: translate(-20px, 10px); }
+                  100% { transform: translate(0, 0); }
+                }
+                .animate-player-move {
+                  animation: player-move 10s ease-in-out infinite;
+                }
+                
+                @keyframes basketball-bounce {
+                  0%, 100% { transform: translateY(0) scale(1); }
+                  50% { transform: translateY(40px) scale(0.9); }
+                }
+                .animate-basketball-bounce {
+                  animation: basketball-bounce 1.5s ease-in-out infinite;
+                }
+                
+                .animation-delay-100 { animation-delay: 0.1s; }
+                .animation-delay-200 { animation-delay: 0.2s; }
+                .animation-delay-300 { animation-delay: 0.3s; }
+                .animation-delay-350 { animation-delay: 0.35s; }
+                .animation-delay-420 { animation-delay: 0.42s; }
+                .animation-delay-500 { animation-delay: 0.5s; }
+                .animation-delay-550 { animation-delay: 0.55s; }
+                .animation-delay-600 { animation-delay: 0.6s; }
+                .animation-delay-700 { animation-delay: 0.7s; }
+                .animation-delay-750 { animation-delay: 0.75s; }
+                .animation-delay-800 { animation-delay: 0.8s; }
+                .animation-delay-850 { animation-delay: 0.85s; }
+                .animation-delay-1000 { animation-delay: 1s; }
+
+                /* ========== TABLE STYLES FOR ADMIN PAGES ========== */
+                /* Table styling improvements */
+                table {
+                  border-collapse: separate;
+                  border-spacing: 0;
+                  width: 100%;
+                }
+
+                table th {
+                  color: white;
+                  font-weight: 600;
+                  text-transform: uppercase;
+                  font-size: 0.75rem;
+                  letter-spacing: 0.05em;
+                  padding: 0.75rem 1rem;
+                }
+
+                table td {
+                  padding: 1rem;
+                  vertical-align: middle;
+                }
+
+                /* Progress bar styling */
+                .progress-bar {
+                  height: 0.5rem;
+                  border-radius: 9999px;
+                  background-color: rgba(255, 255, 255, 0.1);
+                  overflow: hidden;
+                }
+                
+                .progress-bar-fill {
+                  height: 100%;
+                  background-color: #10B981;
+                  transition: width 0.3s ease;
+                }
+
+                /* Status badge */
+                .status-badge {
+                  display: inline-flex;
+                  align-items: center;
+                  padding: 0.25rem 0.75rem;
+                  border-radius: 9999px;
+                  font-size: 0.75rem;
+                  font-weight: 600;
+                  text-transform: uppercase;
+                  letter-spacing: 0.05em;
+                }
+                
+                .status-badge.active {
+                  background-color: rgba(16, 185, 129, 0.2);
+                  color: #10B981;
+                }
+                
+                .status-badge.inactive {
+                  background-color: rgba(239, 68, 68, 0.2);
+                  color: #EF4444;
+                }
             `}</style>
         </div>
     );
