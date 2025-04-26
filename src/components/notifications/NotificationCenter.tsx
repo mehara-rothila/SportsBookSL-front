@@ -14,7 +14,11 @@ import * as notificationService from '@/services/notificationService';
 import type { Notification } from '@/services/notificationService';
 import { useNotificationContext } from '@/context/NotificationContext';
 
-export default function NotificationCenter() {
+interface NotificationCenterProps {
+  isScrolled?: boolean; // Add prop to handle different background colors
+}
+
+export default function NotificationCenter({ isScrolled = false }: NotificationCenterProps) {
   // Use context for unread count
   const { unreadCount, setUnreadCount } = useNotificationContext();
   // Local state for the list displayed in the dropdown and open state
@@ -204,7 +208,12 @@ export default function NotificationCenter() {
         aria-label="Notifications"
       >
         <span className="sr-only">View notifications</span>
-        <BellIcon className={`h-6 w-6 ${unreadCount > 0 ? 'text-white' : 'text-white/80'}`} />
+        {/* Only this part has been modified to change color based on background */}
+        <BellIcon className={`h-6 w-6 ${
+          isScrolled 
+            ? unreadCount > 0 ? 'text-emerald-600' : 'text-gray-600' 
+            : unreadCount > 0 ? 'text-white' : 'text-white/80'
+        }`} />
         
         {/* Enhanced unread badge with gradient styling */}
         {unreadCount > 0 && (
