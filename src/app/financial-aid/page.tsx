@@ -276,11 +276,11 @@ export default function FinancialAidOverviewPage() {
                       <div className="text-sm text-white/80">Athletes Supported</div>
                     </div>
                     <div className="p-3 bg-emerald-800/60 backdrop-blur-sm rounded-lg text-center">
-                      <div className="text-2xl font-bold text-white">₹3.2M</div>
+                      <div className="text-2xl font-bold text-white">Rs 3.2M</div>
                       <div className="text-sm text-white/80">Aid Distributed</div>
                     </div>
                     <div className="p-3 bg-emerald-800/60 backdrop-blur-sm rounded-lg text-center">
-                      <div className="text-2xl font-bold text-white">12</div>
+                      <div className="text-2xl font-bold text-white">10+</div>
                       <div className="text-sm text-white/80">National Athletes</div>
                     </div>
                   </div>

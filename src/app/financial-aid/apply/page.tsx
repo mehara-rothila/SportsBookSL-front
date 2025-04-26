@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect, Fragment } from 'react';
@@ -5,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Listbox, Transition, Disclosure } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
-import { InformationCircleIcon, PaperClipIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { InformationCircleIcon, PaperClipIcon, TrashIcon, SparklesIcon } from '@heroicons/react/24/outline'; // --- DEMO FILL --- Added SparklesIcon
 import api from '@/services/api';
 import * as authService from '@/services/authService';
 // Removed direct import of financialAidService as we use api.post
@@ -93,6 +94,46 @@ const facilityTypes = [
   { id: 'table-tennis-table', name: 'Table Tennis Facilities' }, { id: 'multi-purpose-hall', name: 'Multi-purpose Hall' }
 ];
 
+// --- DEMO FILL --- Define Demo Data ---
+const demoFormData: FormData = {
+    personalInfo: {
+        fullName: 'Alex Perera',
+        email: 'alex.perera.demo@mail.com',
+        phone: '0771234567',
+        dateOfBirth: '2002-05-15',
+        address: '123 Demo Lane, Kollupitiya',
+        city: 'Colombo',
+        postalCode: '00300'
+    },
+    sportsInfo: {
+        primarySport: sportOptions.find(s => s.id === 'cricket') || null, // Find the cricket option
+        skillLevel: levelOptions.find(l => l.id === 'intermediate') || null, // Find the intermediate option
+        yearsExperience: '5',
+        currentAffiliation: 'Colombo Stars Youth Academy',
+        achievements: 'Captain of the school U19 team, scored 2 centuries last season. Aspiring to play at the national level.'
+    },
+    financialNeed: {
+        description: 'My family faces financial constraints making it difficult to afford the monthly academy fees and facility usage costs. Access to regular practice is crucial for my development.',
+        requestedAmount: '15000',
+        facilitiesNeeded: ['cricket-ground', 'practice-nets', 'indoor-gym'], // Select a few relevant IDs
+        monthlyUsage: 'frequently' // Select one of the dropdown values
+    },
+    reference: {
+        name: 'Mr. Silva (Coach)',
+        relationship: 'Head Coach',
+        contactInfo: 'coach.silva@email.com / 0719876543',
+        organizationName: 'Colombo Stars Youth Academy'
+    },
+    documents: [], // Leave empty for demo, cannot create File objects easily
+    supportingInfo: {
+        previousAid: 'Received a partial school sports scholarship in 2022.',
+        otherPrograms: 'Applied for a local club grant, awaiting response.',
+        additionalInfo: 'I practice diligently 5 days a week and volunteer to help junior players. This aid would significantly ease the burden on my parents.'
+    },
+    terms: true // Pre-check the terms for faster demo submission
+};
+// --- END DEMO FILL ---
+
 export default function FinancialAidApplicationPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -119,6 +160,17 @@ export default function FinancialAidApplicationPage() {
     supportingInfo: { previousAid: '', otherPrograms: '', additionalInfo: '' },
     terms: false
   });
+
+  // --- DEMO FILL --- Handler function ---
+  const fillWithDemoData = () => {
+      setFormData(demoFormData);
+      // Optionally clear errors if any were showing
+      setFormErrors({});
+      setApiError(null);
+      // You might want to jump to the last step for a quick demo submission
+      // setCurrentStep(6);
+  };
+  // --- END DEMO FILL ---
 
   // --- Validation ---
   const validateStep = (step: number): boolean => {
@@ -177,10 +229,7 @@ export default function FinancialAidApplicationPage() {
     const path = name.split('.');
     if (path.length === 2) {
       setFormData(prev => {
-        // Get the section object (personalInfo, sportsInfo, etc.)
         const section = prev[path[0] as keyof FormData];
-        
-        // Check if section is an object before spreading
         if (section && typeof section === 'object' && !Array.isArray(section)) {
           return {
             ...prev,
@@ -190,8 +239,6 @@ export default function FinancialAidApplicationPage() {
             }
           };
         }
-        
-        // Fallback if section is not an object
         return prev;
       });
     }
@@ -206,7 +253,6 @@ export default function FinancialAidApplicationPage() {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
       setFormData(prev => ({ ...prev, documents: [...prev.documents, ...newFiles].slice(0, 5) })); // Limit to 5 files
-      // Clear file input value to allow re-uploading the same file
       if(fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -436,6 +482,19 @@ export default function FinancialAidApplicationPage() {
         <div className="bg-white/20 backdrop-blur-sm shadow-xl rounded-lg overflow-hidden border border-white/30">
           {/* Header */}
           <div className="bg-gradient-to-r from-emerald-900/80 to-emerald-800/80 backdrop-blur-sm px-6 py-8 text-white border-b border-white/20">
+             {/* --- DEMO FILL --- Add button near header --- */}
+             <div className="absolute top-4 right-4 z-20">
+                <button
+                    type="button"
+                    onClick={fillWithDemoData}
+                    title="Fill form with demo data"
+                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-indigo-600/70 backdrop-blur-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-emerald-900 transition-colors duration-200"
+                >
+                    <SparklesIcon className="-ml-0.5 mr-1.5 h-4 w-4" aria-hidden="true" />
+                    Demo Fill
+                </button>
+            </div>
+            {/* --- END DEMO FILL --- */}
             <h1 className="text-2xl font-bold">Financial Aid Application</h1>
             <p className="mt-2 text-emerald-100">Complete this form to apply for assistance with accessing sports facilities</p>
           </div>
@@ -1041,7 +1100,7 @@ export default function FinancialAidApplicationPage() {
                       <p className="text-sm text-emerald-200 mb-6">Please review all the information you've provided carefully before submitting your application.</p>
                       <div className="space-y-6">
 
-                        {/* Review Sections (Condensed for brevity - show key info) */}
+                        {/* Review Sections (Using Disclosure) */}
                         <div className="bg-emerald-900/40 backdrop-blur-sm shadow overflow-hidden sm:rounded-md border border-white/20">
                            <Disclosure>
                             {({ open }) => (
@@ -1107,7 +1166,7 @@ export default function FinancialAidApplicationPage() {
                                      <dl>
                                         <div className="py-2 sm:grid sm:grid-cols-3 sm:gap-4"> <dt className="text-emerald-200">Description:</dt><dd className="text-white sm:col-span-2 whitespace-pre-wrap">{formData.financialNeed.description}</dd> </div>
                                         <div className="py-2 sm:grid sm:grid-cols-3 sm:gap-4"> <dt className="text-emerald-200">Amount:</dt><dd className="text-white sm:col-span-2">Rs. {formData.financialNeed.requestedAmount} / month</dd> </div>
-                                        <div className="py-2 sm:grid sm:grid-cols-3 sm:gap-4"> <dt className="text-emerald-200">Facilities:</dt><dd className="text-white sm:col-span-2">{formData.financialNeed.facilitiesNeeded.join(', ')}</dd> </div>
+                                        <div className="py-2 sm:grid sm:grid-cols-3 sm:gap-4"> <dt className="text-emerald-200">Facilities:</dt><dd className="text-white sm:col-span-2">{formData.financialNeed.facilitiesNeeded.map(id => facilityTypes.find(f => f.id === id)?.name || id).join(', ')}</dd> </div>
                                         <div className="py-2 sm:grid sm:grid-cols-3 sm:gap-4"> <dt className="text-emerald-200">Usage:</dt><dd className="text-white sm:col-span-2 capitalize">{formData.financialNeed.monthlyUsage}</dd> </div>
                                     </dl>
                                 </Disclosure.Panel>
@@ -1301,6 +1360,15 @@ export default function FinancialAidApplicationPage() {
                 .focus-visible\:ring-opacity-75:focus-visible {
                      --tw-ring-opacity: 0.75;
                  }
+                 /* Fix disclosure panel transition */
+                .transition { transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+                .duration-100 { transition-duration: 100ms; }
+                .ease-out { transition-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+                .scale-95 { transform: scale(.95); }
+                .opacity-0 { opacity: 0; }
+                .scale-100 { transform: scale(1); }
+                .opacity-100 { opacity: 1; }
+                .duration-75 { transition-duration: 75ms; }
             `}</style>
           </div>
         );
