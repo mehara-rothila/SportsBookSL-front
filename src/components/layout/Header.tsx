@@ -261,8 +261,8 @@ export default function Header() {
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all group-hover:w-full"></span>
                 </Link>
 
-                {/* Notification Center */}
-                <NotificationCenter />
+                {/* Notification Center with isScrolled prop */}
+                <NotificationCenter isScrolled={isScrolled} />
 
                 {/* User Profile Menu */}
                 <Menu as="div" className="relative">
@@ -439,7 +439,7 @@ export default function Header() {
                   </div>
                   <div className="ml-auto">
                     {/* Ensure NotificationCenter doesn't interfere with button clicks if positioned badly */}
-                    <NotificationCenter />
+                    <NotificationCenter isScrolled={isScrolled} />
                   </div>
                 </div>
                 <div className="mt-3 space-y-1 px-2">
